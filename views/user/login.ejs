@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Login</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>-->
+  <script>window.jQuery || document.write('<script src="js/jquery-1.8.3.min.js"><\/script>')</script>
+  <script src="js/html5.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/radio.js"></script>
+  <script src="js/checkbox.js"></script>
+  <script src="js/selectBox.js"></script>
+  <script src="js/jquery.carouFredSel-6.2.0-packed.js"></script>
+  <script src="js/jquery.touchSwipe.min.js"></script>
+  <script src="js/jquery.jqzoom-core.js"></script>
+  <script src="js/jquery.transit.js"></script>
+  <script src="js/jquery.easing.1.2.js"></script>
+  <script src="js/jquery.anythingslider.js"></script>
+  <script src="js/jquery.anythingslider.fx.js"></script>
+  <style>
+    .error-message {
+      color: red;
+      font-size: 0.75rem;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+
+
+  <section id="main" class="page-login">
+    <div class="container_12">
+      <div id="content" class="grid_12">
+        <header>
+          <h1 class="page_title">Login or Create an Account</h1>
+        </header>
+
+        <article>
+          <div class="grid_6 new_customers">
+            <h2>New Customers</h2>
+            <p>By creating an account with our store, you will be able to move through the checkout process faster,
+              store multiple shipping addresses, view and track your orders in your account and more.</p>
+            <div class="clear"></div>
+            <button class="account" onclick="location.href = '/signup';">Create An Account</button>
+          </div><!-- .grid_6 -->
+
+          <div class="grid_6 registed_form">
+            <form class="registed" method="post" action="/login" id="loginform">
+              <h2>Registed Customers</h2>
+              <div id="erro2" class="error-message"></div>
+              <div class="email">
+                <strong>Email Adress:</strong><sup>*</sup><br>
+                <input type="email" name="email" class="" value="" id="email">
+                <div id="error1" class="error-message"></div>
+              </div><!-- .email -->
+              <div class="password">
+                <strong>Password:</strong><sup>*</sup><br>
+                <input type="password" name="password" class="" value="" id="password">
+                <div id="error2" class="error-message"></div>
+              </div><!-- .password -->
+              <%if(locals.message && message.length>0){%>
+                <div class="text-danger text-center alert alert-warning fs-5">
+                  <%=message%>
+                </div>
+                <%}%>
+                  <div class="submit">
+                    <button type="submit">Log In</button>
+                    <a class="forgot" href="#">Forgot Your Password?</a>
+                    <span>* Required Field</span>
+                    <div class="clear"></div>
+                  </div><!-- .submit -->
+                  <!--google login-->
+                  <div class="google-signup-wrapper">
+                    <div class="or-text">OR</div>
+                    <a href="/auth/google" class="google-btn">
+                      <i class="fab fa-google"></i> Login with Google
+                    </a>
+                  </div>
+                  <!--.google login-->
+            </form><!-- .registed -->
+          </div><!-- .grid_6 -->
+        </article>
+
+        <div class="clear"></div>
+      </div><!-- #content -->
+
+      <div class="clear"></div>
+    </div><!-- .container_12 -->
+  </section><!-- #main -->
+  <div class="clear"></div>
+  <!--validation script-->
+  <script>
+    const emailid = document.getElementById("email");
+    const passid = document.getElementById("password");
+    const error1 = document.getElementById("error1");
+    const error2 = document.getElementById("error2");
+    const loginform = document.getElementById("loginform");
+
+    function emailValidateChecking(e) {
+      const emailval = emailid.value;
+      const emailpattern =
+        /^[a-zA-Z0-9._-]+@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,4})$/;
+
+      if (!emailpattern.test(emailval)) {
+        error1.style.display = "block";
+        error1.innerHTML = "Enter valid Email";
+      } else {
+        error1.style.display = "none";
+        error1.innerHTML = "";
+      }
+    }
+
+    function passValidateChecking(e) {
+      const passval = passid.value;
+      if (passval.length < 8) {
+        error2.style.display = "block";
+        error2.innerHTML = "Password Should contain at least 8 characters";
+      } else {
+        error2.style.display = "none";
+        error2.innerHTML = "";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      loginform.addEventListener("submit", function (e) {
+        emailValidateChecking();
+        passValidateChecking();
+
+        if (!emailid || !passid || !error1 || !error2 || !loginform) {
+          console.error("One or more elements not found");
+        }
+
+        if (error1.innerHTML || error2.innerHTML) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

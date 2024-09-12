@@ -1,0 +1,87 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Edit Category</h1>
+      <form id="edit-category-form" method="POST">
+        <div class="form-group">
+          <label for="name">Category Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            value="<%= category.name %>"
+            required
+          />
+          
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            class="form-control"
+            id="description"
+            name="description"
+            rows="3"
+            required
+          ><%= category.description %></textarea>
+        </div>
+        <div class="form-group">
+          <label for="offer">Offer (%)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="offer"
+            name="offer"
+            value="<%= category.offer %>"
+            min="0"
+            max="100"
+          />
+        </div>
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <div class="error-message text-danger"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  // Get the category ID from the EJS template and store it in a JavaScript variable
+  const categoryId = "<%= category._id %>";
+
+  const form = document.querySelector("form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Get form field values
+    const name = document.querySelector("#name").value.trim();
+    const description = document.querySelector("#description").value.trim();
+    const offer = document.querySelector("#offer").value;
+
+    // Submit form data via fetch
+    try {
+      const response = await fetch(`/admin/categories/edit/${categoryId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, offer }),
+      });
+
+      const data = await response.json();
+
+      // Handle errors or success
+      if (data.error) {
+        document.querySelector(".error-message").innerHTML = data.error;
+      } else if (data.success) {
+        // Redirect to the category list page upon success
+        window.location.href = "/admin/categories";
+      }
+    } catch (error) {
+      console.log("Error updating category:", error);
+    }
+  });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Sign Up</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>-->
+    <script>window.jQuery || document.write('<script src="js/jquery-1.8.3.min.js"><\/script>')</script>
+    <script src="js/html5.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/radio.js"></script>
+    <script src="js/checkbox.js"></script>
+    <script src="js/selectBox.js"></script>
+    <script src="js/jquery.carouFredSel-6.2.0-packed.js"></script>
+    <script src="js/jquery.touchSwipe.min.js"></script>
+    <script src="js/jquery.jqzoom-core.js"></script>
+    <script src="js/jquery.transit.js"></script>
+    <script src="js/jquery.easing.1.2.js"></script>
+    <script src="js/jquery.anythingslider.js"></script>
+    <script src="js/jquery.anythingslider.fx.js"></script>
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.75rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <section id="main" class="page-login">
+        <div class="container_12">
+            <div id="content" class="grid_12">
+                <header>
+                    <h1 class="page_title">Login or Create an Account</h1>
+                </header>
+
+                <article>
+                    <div class="grid_6 registed_form">
+                        <form id="signform" class="registed" action="/signup" method="post">
+                            <h2>Register Here</h2>
+                            <p>If you already have an account with us, please <a href="/login">Log in</a>.</p>
+
+                            <div class="name">
+                                <strong>Full Name:</strong><sup>*</sup><br>
+                                <input type="text" name="name" class="" value="" id="name">
+                                <div id="error1" class="error-message"></div>
+                            </div><!-- .name -->
+
+                            <div class="email">
+                                <strong>Email Address:</strong><sup>*</sup><br>
+                                <input type="email" name="email" class="" value="" id="email">
+                                <div id="error2" class="error-message"></div>
+                            </div><!-- .email -->
+
+                            <div class="phone">
+                                <strong>Phone Number:</strong><sup>*</sup><br>
+                                <input type="text" name="phone" class="" value="" id="phone">
+                                <div id="error3" class="error-message"></div>
+                            </div><!-- .phone -->
+
+                            <div class="password">
+                                <strong>Password:</strong><sup>*</sup><br>
+                                <input type="password" name="password" class="" value="" id="password">
+                                <div id="error4" class="error-message"></div>
+                            </div><!-- .password -->
+
+                            <div class="confirm_password">
+                                <strong>Confirm Password:</strong><sup>*</sup><br>
+                                <input type="password" name="cpassword" class="" value="" id="cpassword">
+                                <div id="error5" class="error-message"></div>
+                            </div><!-- .confirm_password -->
+                            <%if(locals.message && message.length>0){%>
+                                <div class="text-danger text-center alert alert-warning fs-5">
+                                    <%=message%>
+                                </div>
+                                <%}%>
+                                    <div class="terms">
+                                        <input class="niceCheck" type="checkbox" name="accept_terms">
+                                        <span class="rem">I agree to the <a href="#">terms and conditions</a></span>
+                                    </div><!-- .terms -->
+
+                                    <div class="submit">
+                                        <input type="submit" value="Sign Up">
+                                        <span>* Required Field</span>
+                                        <div class="clear"></div>
+                                    </div><!-- .submit -->
+                        </form><!-- .registed -->
+                    </div><!-- .grid_6 -->
+                </article>
+                
+
+                <!-- Google Sign-Up Button -->
+                <div class="google-signup-wrapper">
+                    <div class="or-text">OR</div>
+                    <a href="/auth/google" class="google-btn">
+                        <i class="fab fa-google"></i> Sign up with Google
+                    </a>
+                </div>
+                <div class="clear"></div>
+            </div><!-- #content -->
+
+            <div class="clear"></div>
+        </div><!-- .container_12 -->
+    </section><!-- #main -->
+
+    <div class="clear"></div>
+    </div><!-- #content -->
+    <div class="clear"></div>
+    </div><!-- .container_12 -->
+    </section><!-- #main -->
+
+    <div class="clear"></div>
+
+    <!--validaition-->
+    <script>
+        const nameid = document.getElementById('name');
+        const emailid = document.getElementById('email');
+        const phoneid = document.getElementById('phone');
+        const passwordid = document.getElementById('password');
+        const cpasswordid = document.getElementById('cpassword');
+        const error1 = document.getElementById('error1');
+        const error2 = document.getElementById('error2');
+        const error3 = document.getElementById('error3');
+        const error4 = document.getElementById('error4');
+        const error5 = document.getElementById('error5');
+        const signform = document.getElementById('signform');
+
+        // Name validation
+        function nameValidateChecking() {
+            const nameval = nameid.value.trim();
+            const namepattern = /^[A-Za-z\s]+$/;
+            if (nameval === "") {
+                error1.style.display = "block";
+                error1.innerHTML = "Please enter a valid name";
+            } else if (!namepattern.test(nameval)) {
+                error1.style.display = "block";
+                error1.innerHTML = "Name can only have alphabets and spaces";
+            } else {
+                error1.style.display = "none";
+                error1.innerHTML = "";
+            }
+        }
+
+        // Email validation
+        function emailValidateChecking() {
+            const emailval = emailid.value.trim();
+            const emailpattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (emailval === "") {
+                error2.style.display = "block";
+                error2.innerHTML = "Please enter an email address";
+            } else if (!emailpattern.test(emailval)) {
+                error2.style.display = "block";
+                error2.innerHTML = "Enter a valid email address";
+            } else {
+                error2.style.display = "none";
+                error2.innerHTML = "";
+            }
+        }
+
+        // Phone number validation
+        function phoneValidateChecking() {
+            const phoneval = phoneid.value.trim();
+            if (phoneval === "") {
+                error3.style.display = "block";
+                error3.innerHTML = "Enter a valid phone number";
+            } else if (phoneval.length !== 10 || isNaN(phoneval)) {
+                error3.style.display = "block";
+                error3.innerHTML = "Enter a 10-digit phone number";
+            } else {
+                error3.style.display = "none";
+                error3.innerHTML = "";
+            }
+        }
+
+        // Password validation
+        function passwordValidateChecking() {
+            const passval = passwordid.value.trim();
+            const cpassval = cpasswordid.value.trim();
+            const alpha = /[a-zA-Z]/;
+            const digit = /\d/;
+
+            if (passval.length < 8) {
+                error4.style.display = "block";
+                error4.innerHTML = "Password should contain at least 8 characters";
+            } else if (!alpha.test(passval) || !digit.test(passval)) {
+                error4.style.display = "block";
+                error4.innerHTML = "Password should contain both numbers and alphabets";
+            } else {
+                error4.style.display = "none";
+                error4.innerHTML = "";
+            }
+
+            if (passval !== cpassval) {
+                error5.style.display = "block";
+                error5.innerHTML = "Passwords do not match";
+            } else {
+                error5.style.display = "none";
+                error5.innerHTML = "";
+            }
+        }
+
+        // Adding event listener for validation
+        document.addEventListener('DOMContentLoaded', function () {
+            signform.addEventListener('submit', function (e) {
+                nameValidateChecking();
+                emailValidateChecking();
+                phoneValidateChecking();
+                passwordValidateChecking();
+
+                // Prevent form submission if there are any errors
+                if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

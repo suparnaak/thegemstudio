@@ -1,0 +1,51 @@
+<%- include("../../views/partials/admin/header") %>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+        <h1>Add New Category</h1>
+        <form action="/admin/categories/add" method="POST">
+          <div class="form-group">
+            <label for="name">Category Name</label>
+            <input type="text" class="form-control" id="name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="offer">Offer (%)</label>
+            <input type="number" class="form-control" id="offer" name="offer" value="0" min="0" max="100" />
+          </div>
+          <button type="submit" class="btn btn-success">Add Category</button>
+          <div class="error-message text-danger"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    const form = document.querySelector("form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.querySelector("#name").value;
+      const description = document.querySelector("#description").value;
+      const offer = document.querySelector("#offer").value;
+      try {
+        const response = await fetch("/admin/categories/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description, offer }),
+        });
+        const data = await response.json();
+        if (data.error) {
+          document.querySelector(".error-message").innerHTML = data.error;
+        } else {
+          window.location.href = "/admin/categories";
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  </script>
+
+  <%- include("../../views/partials/admin/footer") %>

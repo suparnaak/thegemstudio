@@ -1,0 +1,277 @@
+<%- include("../../views/partials/admin/header") %>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-md-2 p-0">
+        <div class="sidebar bg-dark text-white p-3">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/admin/users">Users</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/admin/categories">Categories</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="/admin/products">Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#">Coupons</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content: Edit Product Form -->
+      <div class="col-md-10">
+        <div class="container mt-4">
+          <h2>Edit Product</h2>
+
+          <!-- Edit Product Form -->
+          <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data"
+            onsubmit="return validateForm()">
+            <div class="row">
+              <div class="col-md-6">
+                <!-- Product Name -->
+                <div class="form-group">
+                  <label for="name">Product Name</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea class="form-control" id="description" name="description"
+                    required><%= product.description %></textarea>
+                </div>
+
+                <!-- Brand -->
+                <div class="form-group">
+                  <label for="brand">Brand</label>
+                  <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand %>" required>
+                </div>
+                <!-- Category -->
+                <div class="form-group">
+                  <label for="brand">Category</label>
+                 <!--  <button type="button" class="btn btn-success ml-2" id="addCategoryBtn"
+                    onclick="openCategoryModal()">+</button> -->
+                  <select class="form-control same-width" id="category" name="category" required>
+                    <% categories.forEach(category=> { %>
+                      <option value="<%= category._id %>" <%=product.category._id.equals(category._id) ? 'selected' : ''%>><%= category.name %>
+                      </option>
+                      <% }) %>
+                  </select>
+                </div>
+                <!-- Color -->
+                <div class="form-group">
+                  <label for="color">Color</label>
+                  <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
+                </div>
+
+                <!-- Material -->
+                <div class="form-group">
+                  <label for="material">Material</label>
+                  <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>"
+                    required>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <!-- Price -->
+                <div class="form-group">
+                  <label for="price">Price</label>
+                  <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>"
+                    required min="0">
+                </div>
+
+                <!-- Discount -->
+                <div class="form-group">
+                  <label for="discount">Discount (%)</label>
+                  <input type="number" class="form-control" id="discount" name="discount"
+                    value="<%= product.discount %>" min="0">
+                </div>
+
+                <!-- Quantity -->
+                <div class="form-group">
+                  <label for="quantity">Quantity</label>
+                  <input type="number" class="form-control" id="quantity" name="quantity"
+                    value="<%= product.quantity %>" required min="0">
+                </div>
+
+                <!-- Stock Status -->
+                <div class="form-group">
+                  <label for="status">Stock Status</label>
+                  <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>"
+                    required>
+                </div>
+              </div>
+            </div>
+
+          <!-- Image Preview and Upload Section at Bottom -->
+<div class="form-group">
+  <label for="existingImages">Current Product Images</label>
+  <div class="d-flex flex-wrap">
+    <% if (product.images && product.images.length > 0) { %>
+      <% product.images.forEach(function(image) { %>
+        <div class="me-2">
+          <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
+        </div>
+      <% }); %>
+    <% } else { %>
+      <p>No images available for this product.</p>
+    <% } %>
+  </div>
+</div>
+
+<!-- 
+            <div class="form-group">
+              <label for="images">Upload New Images (min 3)</label>
+              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*"
+                onchange="previewImages(event)">
+            </div>
+ -->
+            <!-- Preview new images -->
+            <!-- <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div> -->
+
+
+            <div class="form-group">
+              <label for="images">Upload New Images (min 3)</label>
+              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+            </div>
+    
+    
+            <!-- Preview new images -->
+            <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+    
+
+
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-success">Update Product</button><br><br>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for adding a new category -->
+  <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="categoryModalLabel">Add New Category</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addCategoryForm">
+            <div class="form-group">
+              <label for="newCategory">Category Name</label>
+              <input type="text" class="form-control" id="newCategory" name="newCategory" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="submitNewCategory()">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+   const fileInput = document.getElementById('images');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+    fileInput.addEventListener('change', function() {
+      const files = fileInput.files;
+      imagePreviewContainer.innerHTML = ''; // Clear previous previews
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const imageData = event.target.result;
+          const imagePreview = document.createElement('div');
+          imagePreview.className = 'image-preview';
+          const img = document.createElement('img');
+          img.src = imageData;
+          imagePreview.appendChild(img);
+          imagePreviewContainer.appendChild(imagePreview);
+
+          img.addEventListener('click', function() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            const closeButton = document.createElement('span');
+            closeButton.className = 'close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', function() {
+              modal.style.display = 'none';
+              cropper.destroy(); // Destroy the cropper instance
+            });
+            modalContent.appendChild(closeButton);
+
+            const cropImage = document.createElement('img');
+            cropImage.src = imageData;
+            modalContent.appendChild(cropImage);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            modal.style.display = 'block';
+
+            const cropper = new Cropper(cropImage, {
+              aspectRatio: 16 / 9,
+              viewMode: 1,
+              dragMode: 'move',
+              cropBoxResizable: true,
+              ready: function() {
+                const cropButton = document.createElement('button');
+                cropButton.innerHTML = 'Crop';
+                cropButton.className = 'crop';
+                cropButton.addEventListener('click', function() {
+                  const croppedCanvas = cropper.getCroppedCanvas();
+                  const croppedImage = croppedCanvas.toDataURL("image/png");
+                  img.src = croppedImage; // Update preview with cropped image
+                  modal.style.display = 'none';
+                  cropper.destroy(); // Destroy the cropper instance
+                });
+                modalContent.appendChild(cropButton);
+              }
+            });
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+
+    // Form Validation to ensure at least 3 images
+    function validateForm() {
+      const imageInput = document.getElementById('images');
+      if (imageInput.files.length < 3) {
+        alert('Please upload at least 3 images.');
+        return false;
+      }
+      return true;
+    }
+
+    // Open Add Category Modal
+    function openCategoryModal() {
+      $('#categoryModal').modal('show');
+    }
+
+    // Add New Category
+    function submitNewCategory() {
+      const newCategoryName = document.getElementById('newCategory').value;
+      if (newCategoryName.trim()) {
+        // Example: Submit new category via Ajax or refresh category options with the new category.
+        // You would write the actual logic based on your backend setup.
+        alert(`New Category "${newCategoryName}" added!`);
+        $('#categoryModal').modal('hide');
+      } else {
+        alert('Please enter a valid category name.');
+      }
+    }
+  </script>
+
+  <%- include("../../views/partials/admin/footer") %>

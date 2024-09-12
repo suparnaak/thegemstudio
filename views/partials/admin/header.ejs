@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet"/>
+  
+  <link rel="stylesheet" href="/css/admin.css" />
+  <!-- Link to your custom CSS -->
+</head>
+
+<body>
+  <!-- Top Bar -->
+   
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Admin Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="text-danger" href="/admin/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="d-flex">
+    <div class="sidebar bg-dark text-white p-3">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="/admin/users">Users</a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link text-white" href="/admin/categories">Categories</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="/admin/products">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Coupons</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
