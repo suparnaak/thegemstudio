@@ -135,18 +135,19 @@
 
 <body>
 	<form id="adminLoginForm" method="post" action="/admin/login">
-
 		<h2>Admin Login</h2>
-
 		<input type="email" id="adminEmail" name="email" required class="text-field" placeholder="Email" />
 		<div id="emailError" class="error-message"></div>
 		<input type="password" id="adminPassword" name="password" class="text-field" placeholder="Password" />
-		<div id="passwordError" class="error-message"></div>
+		</div>
 		<button type="submit" class="button">Log In</button>
-		<!-- <input type="button"  class="button" value="Log In" /> -->
-
+		<% if (typeof message !=='undefined' && message) { %>
+			<div id="passwordError" class="error-message fs-5">
+				<%= message %>
+			</div>
+			<% } %>
 	</form>
-	<!--scripts for validation-->
+
 	<script src="/js/jquery.min.js"></script>
 	<script src="/js/bootstrap.bundle.min.js"></script>
 	<script>
@@ -166,13 +167,6 @@
 				} else {
 					emailError.textContent = "";
 				}
-				if (passwordField.value.length < 8) {
-					passwordError.textContent =
-						"Password should contain at least 8 characters";
-					isValid = false;
-				} else {
-					passwordError.textContent = "";
-				}
 
 				if (!isValid) {
 					event.preventDefault();
@@ -180,7 +174,6 @@
 			});
 		});
 	</script>
-
 </body>
 
 </html>

@@ -171,7 +171,7 @@
         }
 
         // Phone number validation
-        function phoneValidateChecking() {
+        /* function phoneValidateChecking() {
             const phoneval = phoneid.value.trim();
             if (phoneval === "") {
                 error3.style.display = "block";
@@ -183,7 +183,23 @@
                 error3.style.display = "none";
                 error3.innerHTML = "";
             }
-        }
+        } */
+        function phoneValidateChecking() {
+  const phoneval = phoneid.value.trim();
+  if (phoneval === "") {
+    error3.style.display = "block";
+    error3.innerHTML = "Enter a valid phone number";
+  } else if (phoneval.length !== 10 || isNaN(phoneval)) {
+    error3.style.display = "block";
+    error3.innerHTML = "Enter a 10-digit phone number";
+  } else if (/^(0){10}$/.test(phoneval)) {
+    error3.style.display = "block";
+    error3.innerHTML = "Phone number cannot be all zeros";
+  } else {
+    error3.style.display = "none";
+    error3.innerHTML = "";
+  }
+}
 
         // Password validation
         function passwordValidateChecking() {

@@ -4,17 +4,19 @@ const Product = require("../../models/productsSchema");
 // List categories
 const listCategories = async (req, res) => {
   try {
-
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
-    const categories = await Category.find({ isListed: true }).skip(skip).limit(limit);
+    const categories = await Category.find({ isListed: true })
+      .skip(skip)
+      .limit(limit);
     const totalCategories = await Category.countDocuments({ isListed: true });
     const totalPages = Math.ceil(totalCategories / limit);
-    res.render("categories-list", { categories,
+    res.render("categories-list", {
+      categories,
       currentPage: page,
       totalPages,
-     });
+    });
   } catch (error) {
     console.log("Error listing categories:", error);
     res.redirect("/admin/pageerror");
@@ -39,7 +41,6 @@ const addCategory = async (req, res) => {
     let { name, description, offer } = req.body;
     const formattedName = name.trim().toLowerCase();
 
-    
     if (!isValidCategoryName(formattedName)) {
       return res.json({ error: "Invalid Category Name." });
     }
@@ -51,7 +52,7 @@ const addCategory = async (req, res) => {
       const newCategory = new Category({
         name: formattedName,
         description,
-        offer
+        offer,
       });
       await newCategory.save();
       res.json({ success: true });
@@ -73,20 +74,7 @@ const loadEditCategory = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
-
-// Edit a category
-/* const editCategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, description, offer } = req.body;
-    await Category.findByIdAndUpdate(id, { name, description, offer });
-    res.redirect("/admin/categories");
-  } catch (error) {
-    console.log("Error editing category:", error);
-    res.redirect("/admin/pageerror");
-  }
-}; */
- 
+//edit category
 const editCategory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -113,7 +101,6 @@ const editCategory = async (req, res) => {
   }
 };
 
- 
 // Soft delete a category
 const deleteCategory = async (req, res) => {
   try {

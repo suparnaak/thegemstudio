@@ -165,9 +165,8 @@ const resendOtp = async (req,res)=>{
 
 // Google OAuth callback logic
 const googleCallback = (req, res) => {
-    // Set the user session after successful authentication
-    req.session.user = req.user;  // Store the user in the session
-    res.redirect('/');  // Redirect to the home page after login
+    req.session.user = req.user;  
+    res.redirect('/'); 
 };
 
 
@@ -223,23 +222,6 @@ const logout = async (req,res)=>{
         res.redirect("/pageNotFound")
     }
 }
- 
-/* const logout = (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            console.log("Error logging out:", err);
-            return next(err);  // Pass the error to the next middleware if any
-        }
-        req.session.destroy((err) => {
-            if (err) {
-                console.log("Error in destroying session:", err);
-                return res.redirect("/pageNotFound");
-            }
-            res.redirect('/');  // Redirect to the home page after successful logout
-        });
-    });
-};
- */
 // Load products with pagination
 const loadProducts = async (req, res) => {
     try {
@@ -277,12 +259,13 @@ const loadProductPage = async (req, res) => {
         if (!product) {
             return res.status(404).send('Product not found');
         }
+        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
         if (user) {
             // Directly use the user data from the session to render the product page
-            res.render("product-page", { user: user,product });
+            res.render("product-page", { user: user,product,relatedProducts });
         } else {
             // If no user is in the session, render the product page without user data
-            res.render("product-page", { user: null,product });
+            res.render("product-page", { user: null,product,relatedProducts });
         }
     } catch (error) {
         console.log("Product page not found:", error);
@@ -291,7 +274,7 @@ const loadProductPage = async (req, res) => {
 };
 
 //related products
-const getProductPage = async (req, res) => {
+/* const getProductPage = async (req, res) => {
     try {
         const productId = req.params.id;
         const product = await Product.findById(productId).lean();
@@ -301,7 +284,7 @@ const getProductPage = async (req, res) => {
         }
 
         // Fetch related products (e.g., same category, limit to 4)
-        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4).lean();
+        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
 
         res.render('product-page', { product, relatedProducts });
     } catch (error) {
@@ -309,7 +292,7 @@ const getProductPage = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
+ */
 
 module.exports = {
     pageNotFound,
@@ -324,4 +307,5 @@ module.exports = {
     loadProducts,
     loadProductPage,
     googleCallback
+    
 };
