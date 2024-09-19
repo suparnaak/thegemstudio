@@ -36,33 +36,6 @@ const isLoggedIn = (req, res, next) => {
     next();
   }
 };
-/* const userAuth = (req, res, next) => {
-  if (req.session.user) {
-    User.findById(req.session.user)
-      .then((data) => {
-        if (data && !data.isBlocked) {
-          next();
-        } else {
-          // Destroy the session if the user is blocked
-          req.session.destroy((err) => {
-            if (err) {
-              console.error("Error destroying session:", err);
-              res.status(500).send("Error destroying session");
-            } else {
-              res.redirect("/login");
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        console.log("Error in user auth middleware");
-        res.status(500).send("Internal server Error");
-      });
-  }  else {
-    res.redirect("/login");
-  } 
-}; */
-
 const adminAuth = (req, res, next) => {
   if(req.session.admin){
     User.findOne({ isAdmin: "true" })

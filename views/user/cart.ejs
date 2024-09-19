@@ -1,0 +1,178 @@
+<!--header begins-->
+<%- include("../../views/partials/user/header") %>
+<!--header ends-->
+<section id="main">
+    <div class="container_12">
+      <div id="content" class="grid_12">
+        <header>
+          <h1 class="page_title">Shopping cart</h1>
+        </header>
+        <article>
+          <div id="cart-container">
+          <table class="cart_product">
+            <tr class="bg">
+              <th class="images"></th>
+              <th class="name">Product Name</th>
+              <th class="price">Unit Price</th>
+              <th class="discount">Discount</th>
+              <th class="qty">Qty</th>
+              <th class="subtotal">Subtotal</th>
+              <th class="close"> </th>
+            </tr>
+            <% if (cart) { %>
+              <% cart.forEach(function(item) { %>
+                <tr data-product-id="<%= item.product._id %>">
+                  <td class="images">
+                    <a href="/product-page/<%= item.product._id %>">
+                      <img src="/uploads/products/<%= item.product.images[0] %>" alt="<%= item.product.name %>" title="">
+                    </a>
+                  </td>
+                  <td class="name"><%= item.product.name %></td>
+                  <td class="price">₹<%= item.product.price %></td>
+                  <td class="discount"><%= item.product.discount %> %</td>
+                  <td class="qty">
+                    <span style="margin-bottom: 5px;"><%= item.quantity %></span>
+                    <div style="text-align: center;">
+                      <button class="qty-btn minus" data-product-id="<%= item.product._id %>" style="display: inline-block; margin: 0 auto; padding: 0 5px; height: 20px; line-height: 20px;">-</button>
+                      <button class="qty-btn plus" data-product-id="<%= item.product._id %>" style="display: inline-block; margin: 0 auto; padding: 0 5px; height: 20px; line-height: 20px;">+</button>
+                    </div>
+                  </td>
+                  <td class="subtotal">
+                    ₹<%= ((item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity).toFixed(2) %>
+                  </td>
+                  <td class="close"><span class="close" data-product-id="<%= item.product._id %>">×</span></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr>
+                <td colspan="7">Your cart is empty.</td>
+              </tr>
+            <% } %>
+          </table>
+        </div>
+          <div id="cart_forms" class="negative-grid">
+            <div class="grid_4">
+              <div class="bottom_block discount">
+                <h3>Discount Codes</h3>
+                <p>Enter your coupon code if you have one.</p>
+                <form>
+                  <p><input type="text" name="" value=""></p>
+                  <input type="submit" id="apply_coupon" value="Apply Coupon">
+                </form>
+              </div><!-- .discount -->
+            </div><!-- .grid_4 -->
+            <div class="grid_4">
+              <div class="bottom_block total">
+                <table class="subtotal">
+                  <tr>
+                    <td>Subtotal</td><td class="price">₹<%= totalPrice %></td>
+                  </tr>
+                  <tr class="grand_total">
+                    <td>Grand Total</td><td class="price">₹<%= totalPrice %></td>
+                  </tr>
+                </table>
+                <button class="checkout">PROCEED TO CHECKOUT <img src="/img/checkout.png" alt="" title=""></button>
+                <a href="#">Checkout with Multiple Addresses</a>
+              </div><!-- .total -->
+            </div><!-- .grid_4 -->
+            <div class="clear"></div>
+          </div><!-- #cart_forms -->
+          <div class="clear"></div>
+        </article>
+      </div><!-- #content -->
+      <div class="clear"></div>
+    </div><!-- .container_12 -->
+  </section><!-- #main -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  <script>
+const plusButtons = document.querySelectorAll('.plus');
+const minusButtons = document.querySelectorAll('.minus');
+
+plusButtons.forEach(button => {
+  button.addEventListener('click', function() {
+    const productId = this.getAttribute('data-product-id');
+    const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
+    const previousQuantity = parseInt(quantityElement.textContent);
+    const quantity = previousQuantity + 1;
+    quantityElement.textContent = quantity;
+    updateQuantity(productId, quantity, previousQuantity);
+  });
+});
+
+minusButtons.forEach(button => {
+  button.addEventListener('click', function() {
+    const productId = this.getAttribute('data-product-id');
+    const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
+    const previousQuantity = parseInt(quantityElement.textContent);
+    const quantity = previousQuantity - 1;
+    if (quantity < 1) {
+      quantity = 1;
+    }
+    quantityElement.textContent = quantity;
+    updateQuantity(productId, quantity, previousQuantity);
+  });
+});
+
+function updateQuantity(productId, quantity, previousQuantity) {
+  fetch('/cart/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ productId, quantity }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Cart updated successfully',
+        text: 'Your cart has been updated successfully.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      // Update the subtotal and total price on the page
+      updateCartTotals(data.cart);
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to update cart',
+        text: data.error || 'Failed to update cart',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      // Revert the quantity change
+      const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
+      quantityElement.textContent = previousQuantity;
+    }
+  })
+  .catch(error => console.error('Error updating cart:', error));
+}
+
+function updateCartTotals(cart) {
+  const subtotalElement = document.querySelector('.subtotal .price');
+  const grandTotalElement = document.querySelector('.grand_total .price');
+
+  if (subtotalElement && grandTotalElement) {
+    const total = cart.reduce((sum, item) => {
+      return sum + (item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity;
+    }, 0);
+
+    subtotalElement.textContent = `₹${total.toFixed(2)}`;
+    grandTotalElement.textContent = `₹${total.toFixed(2)}`;
+  }
+
+  // Update individual item subtotals
+  cart.forEach(item => {
+    const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product._id}"] .subtotal`);
+    if (itemSubtotalElement) {
+      const itemSubtotal = (item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity;
+      itemSubtotalElement.textContent = `₹${itemSubtotal.toFixed(2)}`;
+    }
+  });
+}
+
+    </script>
+
+     <!--footer begins-->
+     <%- include("../../views/partials/user/footer")%>

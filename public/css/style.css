@@ -1108,9 +1108,7 @@ form.search:hover .search_button {
     height: 56px;
     vertical-align: middle;
     width: 56px;
-    //display:block;
-    //height:auto;
-    //margin-top: expression((28-parseInt(offsetHeight)/2)  <0 ? "0" : 28-(parseInt(offsetHeight)/2) +'px') ;
+   
 }
 .cart_cont .prev_cart img {
     height: 56px;
@@ -4836,3 +4834,5 @@ ul.f_contact li+li+li {
 .google-btn:hover {
     background-color: #357AE8; /* Darker blue on hover */
 }
+
+/* forgot password */

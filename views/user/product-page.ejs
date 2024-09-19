@@ -69,7 +69,16 @@
                             
                                 Material: <span><%= product.material %></span>
                             
-                        </div><!-- .parameter_selection -->
+                        </div>
+                        <div class="quantity_selection">
+                          Quantity:
+                          <select name="quantity" id="quantity">
+                              <% for (var i = 1; i <= 5; i++) { %>
+                                  <option value="<%= i %>"><%= i %></option>
+                              <% } %>
+                          </select>
+                      </div>
+                        <!-- .parameter_selection -->
                             </div><!-- .availability_sku -->
                             <div class="clear"></div>
                         </div><!-- .ava_price -->
@@ -77,10 +86,11 @@
                         
 
                         <div class="cart">
-                            <a href="#" class="bay"><img src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
-                            <a href="#" class="wishlist"><span></span>Add to Wishlist</a>
-                            <a href="#" class="compare"><span></span>Add to Compare</a>
-                        </div><!-- .cart -->
+                          <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"><img src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
+                          <a href="#" class="wishlist"><span></span>Add to Wishlist</a>
+                          <a href="#" class="compare"><span></span>Add to Compare</a>
+                      </div><!-- .cart -->
+                      
                     </div><!-- .entry_content -->
                 </div><!-- .grid_7 -->
                 <div class="clear"></div>
@@ -284,4 +294,47 @@
     </div><!-- .container_12 -->
 </section><!-- #main -->
 <div class="clear"></div>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+  document.getElementById('addToCartBtn').addEventListener('click', function (e) {
+      e.preventDefault();
+      const productId = this.getAttribute('data-id');
+      const quantity = document.getElementById('quantity').value; // Get selected quantity
+  
+      fetch('/cart/add', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productId: productId, quantity: quantity })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              swal({
+                  title: "Success!",
+                  text: "Product added to cart successfully!",
+                  icon: "success",
+                  button: "OK",
+              });
+          } else {
+              swal({
+                  title: "Error!",
+                  text: data.error || "Failed to add product to cart",
+                  icon: "error",
+                  button: "OK",
+              });
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          swal({
+              title: "Error!",
+              text: "An unexpected error occurred",
+              icon: "error",
+              button: "OK",
+          });
+      });
+  });
+  </script>  
 <%- include("../../views/partials/user/footer") %>

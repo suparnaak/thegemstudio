@@ -273,26 +273,6 @@ const loadProductPage = async (req, res) => {
     }
 };
 
-//related products
-/* const getProductPage = async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const product = await Product.findById(productId).lean();
-        
-        if (!product) {
-            return res.status(404).send('Product not found');
-        }
-
-        // Fetch related products (e.g., same category, limit to 4)
-        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
-
-        res.render('product-page', { product, relatedProducts });
-    } catch (error) {
-        console.error('Error fetching product:', error);
-        res.status(500).send('Server Error');
-    }
-};
- */
 
 module.exports = {
     pageNotFound,
@@ -307,5 +287,5 @@ module.exports = {
     loadProducts,
     loadProductPage,
     googleCallback
-    
+       
 };
