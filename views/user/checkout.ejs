@@ -1,0 +1,119 @@
+<!--header begins-->
+<%- include("../../views/partials/user/header") %>
+<!--header ends-->
+
+<div class="breadcrumbs">
+    <div class="container_12">
+        <div class="grid_12">
+            <a href="/">Home</a><span></span><span class="current">Checkout</span>
+        </div>
+    </div>
+</div>
+
+<section id="checkout-main" class="checkout-section">
+    <div class="container_12">
+        <div class="grid_12">
+            <header>
+                <h1 class="page_title">Checkout</h1>
+            </header>
+
+            <div id="checkout-content" class="checkout-content">
+                <form action="/checkout/placeOrder" method="POST" id="checkout-form">
+                    <!-- Step 1: Delivery Address -->
+                    <div id="delivery-address" class="checkout-step">
+                        <h3 class="step-title">1. Delivery Address</h3>
+
+                        <!-- Display Saved Addresses -->
+                        <div class="saved-addresses">
+                            <h5>Select a Saved Address:</h5>
+                            <ul class="address-list">
+                                <% addresses.forEach(function(address) { %>
+                                    <li>
+                                        <input type="radio" id="<%= address._id %>" name="delivery_address"
+                                            value="<%= address._id %>">
+                                        <label for="<%= address._id %>">
+                                            <%= address.name %>, <%= address.houseName %>, <%= address.street %>, <%=
+                                                address.city %>, <%= address.country %>, <%= address.mobile %>
+                                        </label>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </div>
+
+                        <!-- Add New Address Link -->
+                        <div class="add-new-address">
+                            <a href="/manage-addresses/add-address" class="add-address-link">Click here to add a new address</a>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Payment Method -->
+                    <div id="payment-method" class="checkout-step">
+                        <h3 class="step-title">2. Payment Method</h3>
+                        <div class="payment-options">
+                            <ul class="payment-list">
+                                <li>
+                                    <input type="radio" id="cod" name="payment_method" value="cod">
+                                    <label for="cod">Cash on Delivery (COD)</label>
+                                </li>
+                                <li>
+                                    <input type="radio" id="card" name="payment_method" value="card">
+                                    <label for="card">Credit/Debit Card</label>
+                                </li>
+                                <li>
+                                    <input type="radio" id="netbanking" name="payment_method" value="netbanking">
+                                    <label for="netbanking">Net Banking</label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Place Order -->
+                    <div id="place-order" class="checkout-step">
+                        <h3 class="step-title">3. Place Your Order</h3>
+                        <button type="submit" class="button place-order-button" disabled>Place Order</button>
+                    </div>
+                </form>
+            </div>
+        </div><!-- .grid_12 -->
+    </div><!-- .container_12 -->
+</section><!-- #checkout-main -->
+
+<div class="clear"></div>
+
+<script>
+    // Enable the "Place Order" button when both address and payment are selected
+    const addressRadioButtons = document.querySelectorAll('input[name="delivery_address"]');
+    const paymentRadioButtons = document.querySelectorAll('input[name="payment_method"]');
+    const placeOrderButton = document.querySelector('.place-order-button');
+    const checkoutForm = document.getElementById('checkout-form');
+
+    function checkSelections() {
+        const addressSelected = document.querySelector('input[name="delivery_address"]:checked');
+        const paymentSelected = document.querySelector('input[name="payment_method"]:checked');
+
+        if (addressSelected && paymentSelected) {
+            placeOrderButton.disabled = false;
+            placeOrderButton.classList.add('active');
+        } else {
+            placeOrderButton.disabled = true;
+            placeOrderButton.classList.remove('active');
+        }
+    }
+
+    addressRadioButtons.forEach(radio => radio.addEventListener('change', checkSelections));
+    paymentRadioButtons.forEach(radio => radio.addEventListener('change', checkSelections));
+
+    checkoutForm.addEventListener('submit', function(event) {
+        const addressSelected = document.querySelector('input[name="delivery_address"]:checked');
+        const paymentSelected = document.querySelector('input[name="payment_method"]:checked');
+
+        if (!addressSelected || !paymentSelected) {
+            event.preventDefault();
+            alert('Please select both a delivery address and a payment method.');
+        }
+    });
+</script>
+
+<!--header begins-->
+<%- include("../../views/partials/user/footer") %>
+<!--header ends-->

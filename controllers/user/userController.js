@@ -227,15 +227,34 @@ const loadProducts = async (req, res) => {
     try {
         const user = req.session.user;
 
-        // Get the current page from query params, default to 1
+        // Get the current page and sort option from query params
         const page = parseInt(req.query.page) || 1;
+        const sortOption = req.query.sort || 'newest'; // Default to newest
         const itemsPerPage = 9; // Number of products per page
 
         // Count total products to calculate pagination
         const totalProducts = await Product.countDocuments({ isListed: true });
 
-        // Retrieve products for the current page with pagination
+        // Define sorting criteria based on the selected option
+        let sortCriteria;
+        switch (sortOption) {
+            case 'price-asc':
+                sortCriteria = { price: 1 }; // Ascending order by price
+                break;
+            case 'price-desc':
+                sortCriteria = { price: -1 }; // Descending order by price
+                break;
+            case 'newest':
+                sortCriteria = { createdAt: -1 }; // Descending order by created date
+                break;
+            default:
+                sortCriteria = { createdAt: -1 }; // Default to newest
+                break;
+        }
+
+        // Retrieve products for the current page with pagination and sorting
         const products = await Product.find({ isListed: true })
+            .sort(sortCriteria) // Apply sorting
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage);
 
@@ -243,13 +262,15 @@ const loadProducts = async (req, res) => {
             user: user || null,
             products: products,
             currentPage: page,
-            totalPages: Math.ceil(totalProducts / itemsPerPage)
+            totalPages: Math.ceil(totalProducts / itemsPerPage),
+            sortOption: sortOption // Pass the selected sort option to the view
         });
     } catch (error) {
         console.log("Products page not found:", error);
         res.status(500).send('Server Error');
     }
 };
+
 // Load product details page
 const loadProductPage = async (req, res) => {
     try {

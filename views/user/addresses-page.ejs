@@ -1,0 +1,99 @@
+<!-- Header -->
+<%- include("../../views/partials/user/header") %>
+<!-- End Header -->
+
+<div class="breadcrumbs">
+    <div class="container_12">
+        <div class="grid_12">
+            <a href="/">Home</a><span></span><span class="current">Address Management</span>
+        </div>
+    </div>
+</div>
+
+<div class="address-page">
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/sidebar") %>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <h2 class="mb-4">Manage Addresses</h2>
+
+                <!-- New Address Button -->
+                <a href="/manage-addresses/add-address" class="btn btn-primary mb-3">Add New Address</a>
+
+                <!-- Address Cards -->
+                <div id="addressCards" class="row mt-4">
+                    <% if (addresses && addresses.length > 0) { %>
+                        <% addresses.forEach(address => { %>
+                            <div class="col-md-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><%= address.name %>,</h5>
+                                        <p><%= address.houseName %>,</p>
+                                        <p><%= address.street %>, <%= address.city %></p>
+                                        <p><%= address.country %>, <%= address.zipcode %></p>
+                                        <p>Mobile: <%= address.mobile %></p>
+                                        <a href="/manage-addresses/edit-address/<%= address._id %>" class="btn btn-primary edit-btn">Edit</a>
+                                        <button class="btn btn-danger delete-btn" data-address-id="<%= address._id %>">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="col-12">
+                            <p>No addresses added. Add a new address to get started!</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   // Delete address function
+function deleteAddress(addressId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/manage-addresses/delete-address/${addressId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Address deleted:', data);
+                    Swal.fire(
+                        'Deleted!',
+                        'Your address has been deleted.',
+                        'success'
+                    ).then(() => {
+                        window.location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error deleting address:', error);
+                    Swal.fire('Error', 'Failed to delete address', 'error');
+                });
+        }
+    });
+}
+
+// Handle delete buttons
+document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const addressId = this.getAttribute('data-address-id');
+        deleteAddress(addressId);
+    });
+});
+</script>
+
+<!-- Footer -->
+<%- include("../../views/partials/user/footer") %>
+<!-- End Footer -->

@@ -1,6 +1,13 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
 <!--header ends-->
+<div class="breadcrumbs">
+  <div class="container_12">
+      <div class="grid_12">
+          <a href="/">Home</a><span></span><span class="current">Cart</span>
+      </div>
+  </div>
+</div>
 <section id="main">
     <div class="container_12">
       <div id="content" class="grid_12">
@@ -23,7 +30,7 @@
               <% cart.forEach(function(item) { %>
                 <tr data-product-id="<%= item.product._id %>">
                   <td class="images">
-                    <a href="/product-page/<%= item.product._id %>">
+                    <a href="/product_page/<%= item.product._id %>">
                       <img src="/uploads/products/<%= item.product.images[0] %>" alt="<%= item.product.name %>" title="">
                     </a>
                   </td>
@@ -40,7 +47,9 @@
                   <td class="subtotal">
                     ₹<%= ((item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity).toFixed(2) %>
                   </td>
-                  <td class="close"><span class="close" data-product-id="<%= item.product._id %>">×</span></td>
+                  <td class="close">
+                    <button class="close" data-product-id="<%= item.product._id %>" style="opacity: 1;"  >X</button>
+                </td>
                 </tr>
               <% }); %>
             <% } else { %>
@@ -48,6 +57,12 @@
                 <td colspan="7">Your cart is empty.</td>
               </tr>
             <% } %>
+            <tr>
+              <td colspan="7" class="cart_but">
+                  <a href="/products" class="continue"><img src="img/cont.png" alt="" title=""> Continue Shopping</a>
+                 
+              </td>
+          </tr>
           </table>
         </div>
           <div id="cart_forms" class="negative-grid">
@@ -71,8 +86,11 @@
                     <td>Grand Total</td><td class="price">₹<%= totalPrice %></td>
                   </tr>
                 </table>
-                <button class="checkout">PROCEED TO CHECKOUT <img src="/img/checkout.png" alt="" title=""></button>
-                <a href="#">Checkout with Multiple Addresses</a>
+                <form action="/checkout" method="POST">
+                  <button type="submit" class="checkout">PROCEED TO ORDER <img src="/img/checkout.png" alt="" title=""></button>
+                </form>
+                
+                
               </div><!-- .total -->
             </div><!-- .grid_4 -->
             <div class="clear"></div>
@@ -150,28 +168,131 @@ function updateQuantity(productId, quantity, previousQuantity) {
 }
 
 function updateCartTotals(cart) {
+  console.log('Updating cart totals with:', JSON.stringify(cart, null, 2));
+
   const subtotalElement = document.querySelector('.subtotal .price');
   const grandTotalElement = document.querySelector('.grand_total .price');
 
-  if (subtotalElement && grandTotalElement) {
-    const total = cart.reduce((sum, item) => {
-      return sum + (item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity;
-    }, 0);
-
-    subtotalElement.textContent = `₹${total.toFixed(2)}`;
-    grandTotalElement.textContent = `₹${total.toFixed(2)}`;
+  // If cart is empty, set subtotal and grand total to zero
+  if (!cart || cart.length === 0) {
+    console.log('Cart is empty, setting totals to zero');
+    subtotalElement.textContent = `₹0.00`;
+    grandTotalElement.textContent = `₹0.00`;
+    return;
   }
+
+  // Calculate subtotal and grand total with proper checks
+  const total = cart.reduce((sum, item) => {
+    console.log('Processing item:', JSON.stringify(item, null, 2));
+    
+    const price = parseFloat(item.price) || 0;
+    const discount = parseFloat(item.discount) || 0;
+    const quantity = parseInt(item.quantity) || 1;
+    
+    const itemTotal = (price - (price * discount / 100)) * quantity;
+    
+    console.log(`Item: ${item.product}, Price: ${price}, Discount: ${discount}, Quantity: ${quantity}, Total: ${itemTotal}`);
+    
+    return sum + itemTotal;
+  }, 0);
+
+  console.log('Calculated total:', total);
+
+  // Update subtotal and grand total elements
+  subtotalElement.textContent = `₹${total.toFixed(2)}`;
+  grandTotalElement.textContent = `₹${total.toFixed(2)}`;
 
   // Update individual item subtotals
   cart.forEach(item => {
-    const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product._id}"] .subtotal`);
+    const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product}"] .subtotal`);
     if (itemSubtotalElement) {
-      const itemSubtotal = (item.product.price - (item.product.price * item.product.discount / 100)) * item.quantity;
+      const price = parseFloat(item.price) || 0;
+      const discount = parseFloat(item.discount) || 0;
+      const quantity = parseInt(item.quantity) || 1;
+      const itemSubtotal = (price - (price * discount / 100)) * quantity;
+
       itemSubtotalElement.textContent = `₹${itemSubtotal.toFixed(2)}`;
     }
   });
 }
+/* remove product */
+const removeButtons = document.querySelectorAll('.close');
 
+document.addEventListener('click', function(event) {
+    if (event.target.matches('.close')) {
+        const productId = event.target.getAttribute('data-product-id');
+        console.log('Product ID from button:', productId); // Check the ID
+
+        // Proceed only if productId is valid
+        if (productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    removeFromCart(productId);
+                }
+            });
+        } else {
+            console.error('No product ID found for this button.'); 
+        }
+    }
+});
+
+function removeFromCart(productId) {
+  console.log('Removing product with ID:', productId); 
+
+  fetch('/cart/remove', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ productId }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Server response:', JSON.stringify(data, null, 2));
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Removed!',
+        text: 'The product has been removed from your cart.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+      const productRow = document.querySelector(`tr[data-product-id="${productId}"]`);
+      if (productRow) {
+        productRow.remove();
+      }
+      
+      // Check if data.cart exists and is not empty
+      if (data.cart && Array.isArray(data.cart) && data.cart.length > 0) {
+        console.log('Updated cart:', JSON.stringify(data.cart, null, 2));
+        updateCartTotals(data.cart);
+      } else {
+        console.error('Cart is empty or invalid after removal');
+        // Handle empty cart scenario
+        updateCartTotals([]);
+      }
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: data.error || 'Failed to remove product',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  })
+  .catch(error => console.error('Error removing product:', error));
+}
+/* remove product */
     </script>
 
      <!--footer begins-->

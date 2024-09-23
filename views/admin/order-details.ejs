@@ -1,0 +1,143 @@
+<%- include("../partials/admin/header") %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+            <h1>Order Details</h1>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Order ID: <%= order.orderId %></h5>
+                    <p class="card-text">Customer: <%= order.userId.name %> (<%= order.userId.email %>)</p>
+                    <p class="card-text">Order Date: <%= order.orderDate.toLocaleDateString() %></p>
+                    <p class="card-text">
+                        Payment Status: 
+                        <select id="paymentStatus" class="form-control d-inline-block w-auto ml-2">
+                            <option value="Pending" <%= order.paymentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Paid" <%= order.paymentStatus === 'Paid' ? 'selected' : '' %>>Paid</option>
+                        </select>
+                    </p>
+                    <p class="card-text">Grand Total: ₹<%= order.grandTotal.toFixed(2) %></p>
+                </div>
+            </div>
+
+            <h2>Products</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                        <th>Delivery Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% order.items.forEach((item, index) => { %>
+                        <tr>
+                            <td><%= item.productId.name %></td>
+                            <td>₹<%= item.price.toFixed(2) %></td>
+                            <td><%= item.quantity %></td>
+                            <td>₹<%= item.subtotal.toFixed(2) %></td>
+                            <td><%= item.deliveryStatus %></td>
+                            <td>
+                                <% if (item.deliveryStatus === 'Pending') { %>
+                                    <button class="btn btn-success btn-sm changeStatus" 
+                                            data-product-id="<%= item.productId._id %>" 
+                                            data-item-index="<%= index %>"
+                                            data-status="Delivered">
+                                        Mark as Delivered
+                                    </button>
+                                    <button class="btn btn-danger btn-sm changeStatus" 
+                                            data-product-id="<%= item.productId._id %>" 
+                                            data-item-index="<%= index %>"
+                                            data-status="Admin Cancelled">
+                                        Cancel Order
+                                    </button>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <h2>Delivery Address</h2>
+            <p>
+                <%= order.addressId.houseName %>, <%= order.addressId.street %>, <%= order.addressId.city %>, 
+                <%= order.addressId.country %> - <%= order.addressId.zipcode %><br>
+                Mobile: <%= order.addressId.mobile %>
+            </p>
+
+            <button id="updateOrder" class="btn btn-primary">Update Payment Status</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.getElementById('updateOrder').addEventListener('click', function() {
+    const paymentStatus = document.getElementById('paymentStatus').value;
+
+    fetch('/admin/update-order-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            orderId: '<%= order._id %>',
+            paymentStatus
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the payment status');
+    });
+});
+
+document.querySelectorAll('.changeStatus').forEach(button => {
+    button.addEventListener('click', function() {
+        const newStatus = this.getAttribute('data-status');
+        const productId = this.getAttribute('data-product-id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to change the delivery status to ${newStatus}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, change it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/admin/update-order-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: '<%= order._id %>',
+                        productId: productId,
+                        newStatus: newStatus
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire('Updated!', data.message, 'success');
+                    location.reload();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    Swal.fire('Error!', 'An error occurred while updating the status.', 'error');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<%- include("../partials/admin/footer") %>

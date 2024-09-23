@@ -1,4 +1,5 @@
 const User = require('../../models/userSchema');
+const Order  = require('../../models/orderSchema');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config();
@@ -166,11 +167,68 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ success: false, message: "Error resetting password" });
     }
 }
+//load account
+const loadMyAccount = async (req,res)=>{
+    try {
+        const user = req.session.user;
+        if (user) {
+            
+            res.render("account-page", { user: user });
+        } 
+    } catch (error) {
+        console.log("My account page not found:", error);
+        res.status(500).send('Server Error');
+    }
+}
+
+const loadMyOrders = async (req, res) => {
+    try {
+      const user = req.session.user;
+      if (user) {
+        const orders = await Order.find({ userId: user._id })
+          .populate('addressId')
+          .populate('items.productId')
+          .sort({ createdAt: -1 });
+  
+        res.render("myorders-page", { user: user, orders: orders });
+      } else {
+        res.redirect('/login'); 
+      }
+    } catch (error) {
+      console.log("Orders page not found:", error);
+      res.status(500).send('Server Error');
+    }
+  };
+  const updateProfile = async (req, res) => {
+    const { userId, name, email, phone } = req.body;
+    try {
+    // Basic validation
+    if (!name || !email || !phone) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+
+  
+        // Update user information
+        const user = await User.findByIdAndUpdate(userId, { name, email, phone }, { new: true });
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        req.session.user.name = name;
+        res.json({ message: 'Profile updated successfully', user });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 module.exports = {
     loadForgotPassword,
     forgotPassword,
     loadResetPassword,
     verifyOtp,
     resendOtp,
-    resetPassword
+    resetPassword,
+    loadMyAccount,
+    loadMyOrders,
+    updateProfile
 }

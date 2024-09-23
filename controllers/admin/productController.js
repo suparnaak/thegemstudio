@@ -10,13 +10,31 @@ const listProducts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
-    const products = await Product.find({ isListed: true })
-      .populate({ path: "category", match: { isListed: true } })
+    const search = req.query.search;
+    const regex = new RegExp(search, 'i');
+
+    const products = await Product.find({
+      $or: [
+        { name: regex },
+        { brand: regex },
+        // Add more fields to search if needed
+      ],
+      isListed: true,
+    })
+      .populate({ path: "category", match: { name: regex, isListed: true } }) // Update this line
       .skip(skip)
       .limit(limit);
-    const totalProducts = await Product.countDocuments();
+
+    const totalProducts = await Product.countDocuments({
+      $or: [
+        { name: regex },
+        { brand: regex },
+        // Add more fields to search if needed
+      ],
+      isListed: true,
+    });
     const totalPages = Math.ceil(totalProducts / limit);
-    res.render("products-list", { products, currentPage: page, totalPages });
+    res.render("products-list", { products, currentPage: page, totalPages, search });
   } catch (error) {
     console.log("Error listing products:", error);
     res.redirect("/admin/pageerror");

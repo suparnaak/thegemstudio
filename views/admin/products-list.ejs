@@ -7,11 +7,22 @@
     <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
       <h1>Product Management</h1>
       <a href="/admin/products/add" class="btn btn-primary mb-3">Add New Product</a>
+
+      <!-- Search input field -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form action="/admin/products" method="get">
+            <input type="search" name="search" class="form-control" placeholder="Search products..." value="<%= search %>">
+            <br>
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+        </div>
+      </div>
+
       <table class="table table-bordered">
         <thead class="thead-dark">
           <tr>
             <th>Product Name</th>
-            <th>Description</th>
             <th>Brand</th>
             <th>Category</th>
             <th>Price</th>
@@ -25,7 +36,6 @@
           <% products.forEach(product => { %>
           <tr>
             <td><%= product.name %></td>
-            <td><%= product.description %></td>
             <td><%= product.brand %></td>
             <td><%= product.category ? product.category.name : 'Uncategorized' %></td>
             <td>₹<%= product.price.toFixed(2) %></td>
@@ -43,25 +53,25 @@
           <% }) %>
         </tbody>
       </table>
-      
+
       <!-- Pagination -->
       <nav aria-label="Page navigation" class="d-flex justify-content-center">
         <ul class="pagination">
           <% if (currentPage > 1) { %>
           <li class="page-item">
-            <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+            <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">Previous</a>
           </li>
           <% } %>
 
           <% for (let i = 1; i <= totalPages; i++) { %>
           <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+            <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
           </li>
           <% } %>
 
           <% if (currentPage < totalPages) { %>
           <li class="page-item">
-            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+            <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
           </li>
           <% } %>
         </ul>
@@ -69,5 +79,20 @@
     </div>
   </div>
 </div>
+<script>
+  // Get the search input field
+const searchInput = document.querySelector('input[type="search"]');
+
+// Add an event listener to the close button
+searchInput.addEventListener('search', (e) => {
+  // If the close button is clicked, reset the input field
+  if (e.target.value === '') {
+    // Reset the input field
+    searchInput.value = '';
+    // Submit the form to refresh the product list
+    searchInput.form.submit();
+  }
+});
+</script>
 
 <%- include("../../views/partials/admin/footer") %>
