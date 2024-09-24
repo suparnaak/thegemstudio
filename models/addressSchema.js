@@ -20,7 +20,7 @@ const addressSchema = new Schema({
     required: true,
   },
   city: {
-    type: String, // Corrected from `required` to `type`
+    type: String, 
     required: true,
   },
   country: {

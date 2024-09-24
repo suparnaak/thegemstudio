@@ -1,86 +1,105 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
+    <!--header ends-->
 
-<div class="breadcrumbs">
-    <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><span class="current">My Orders</span>
-        </div>
-    </div>
-</div>
-<div class="order-page">
-    <div class="container mt-4">
-    <div class="row">
-        <!-- Sidebar -->
-        <%- include("../../views/partials/user/sidebar") %> <!-- Include the sidebar here -->
-
-        <!-- Order List -->
-        <div class="col-lg-9 col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header" style="background-color: rgb(108, 128, 157); color: white;">
-                    <h5 class="mb-0">My Orders</h5>
-                </div>
-                <div class="card-body">
-                    <% if (orders.length > 0) { %>
-                        <% orders.forEach(function(order) { %>
-                            <div class="orderCard">
-                                <div class="d-flex justify-content-between">
-                                    <ul class="list-unstyled">
-                                        <li><strong>ORDER PLACED:</strong> <%= order.orderDate.toLocaleDateString() %></li>
-                                        <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %></li>
-                                        <li><strong>SHIP TO:</strong> <%= order.addressId.name %>, <%= order.addressId.houseName %>, <%= order.addressId.street %>, <%= order.addressId.city %>, <%= order.addressId.country %>,<%= order.addressId.zipcode %></li>
-                                    </ul>
-                                    <div>
-                                        <p class="mb-0"><strong>ORDER #</strong> <%= order.orderId %></p>
-                                        <!-- <a href="#" class="text-primary">View Order Details</a> -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Order Item -->
-                            <% order.items.forEach(function(item) { %>
-                                <div class="order-item mt-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="/uploads/products/<%= item.productId.images[0] %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: auto;">
-                                        <div class="ml-3">
-                                            <h6><%= item.productId.name %></h6>
-                                            <p>Sold by: <span class="text-muted"><%= item.productId.brand %></span></p>
-                                            <strong class="text-success">₹<%= item.price %></strong>
-                                        </div>
-                                    </div>
-                                    
-                                    <p class="text-muted">Delivery: <%= item.deliveryStatus %></p>
-
-                                    <!-- Action Buttons -->
-                                    <div class="d-flex justify-content-start">
-                                        
-                                       <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>
-                                        <button class="btn btn-outline-warning btn-sm mr-2">Return or Replace</button> -->
-                                        <% if (item.deliveryStatus !== 'Cancelled' && item.deliveryStatus !== 'Delivered') { %>
-                                        <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>" class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
-                                            <%}%>
-                                    </div>
-                                </div>
-                            <% }); %>
-                            <hr>
-                        <% }); %>
-                    <% } else { %>
-                        <p>No orders found.</p>
-                    <% } %>
-                </div>
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">My Orders</span>
             </div>
         </div>
     </div>
+    <div class="order-page">
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Sidebar -->
+                <%- include("../../views/partials/user/sidebar") %> <!-- Include the sidebar here -->
 
-    <!-- Add a gap before the footer -->
-    <div class="my-5"></div>
-</div>
-</div>
-<!-- Including external scripts -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+                    <!-- Order List -->
+                    <div class="col-lg-9 col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header" style="background-color: rgb(108, 128, 157); color: white;">
+                                <h5 class="mb-0">My Orders</h5>
+                            </div>
+                            <div class="card-body">
+                                <% if (orders.length> 0) { %>
+                                    <% orders.forEach(function(order) { %>
+                                        <div class="orderCard">
+                                            <div class="d-flex justify-content-between">
+                                                <ul class="list-unstyled">
+                                                    <li><strong>ORDER PLACED:</strong>
+                                                        <%= order.orderDate.toLocaleDateString() %>
+                                                    </li>
+                                                    <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %>
+                                                    </li>
+                                                    <li><strong>SHIP TO:</strong>
+                                                        <%= order.addressId.name %>, <%= order.addressId.houseName %>,
+                                                                <%= order.addressId.street %>, <%= order.addressId.city
+                                                                        %>, <%= order.addressId.country %>,<%=
+                                                                                order.addressId.zipcode %>
+                                                    </li>
+                                                </ul>
+                                                <div>
+                                                    <p class="mb-0"><strong>ORDER #</strong>
+                                                        <%= order.orderId %>
+                                                    </p>
+                                                    <!-- <a href="#" class="text-primary">View Order Details</a> -->
+                                                </div>
+                                            </div>
+                                        </div>
 
-<!--footer begins-->
-<%- include("../../views/partials/user/footer") %>
-<!--footer ends-->
+                                        <!-- Order Item -->
+                                        <% order.items.forEach(function(item) { %>
+                                            <div class="order-item mt-4">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <img src="/uploads/products/<%= item.productId.images[0] %>"
+                                                        alt="Product Image" class="img-thumbnail"
+                                                        style="width: 100px; height: auto;">
+                                                    <div class="ml-3">
+                                                        <h6>
+                                                            <%= item.productId.name %>
+                                                        </h6>
+                                                        <p>Sold by: <span class="text-muted">
+                                                                <%= item.productId.brand %>
+                                                            </span></p>
+                                                        <strong class="text-success">₹<%= item.price %></strong>
+                                                    </div>
+                                                </div>
+
+                                                <p class="text-muted">Delivery: <%= item.deliveryStatus %>
+                                                </p>
+
+                                                <!-- Action Buttons -->
+                                                <div class="d-flex justify-content-start">
+
+                                                    <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>
+                                        <button class="btn btn-outline-warning btn-sm mr-2">Return or Replace</button> -->
+                                                    <% if (item.deliveryStatus !=='Cancelled' && item.deliveryStatus
+                                                        !=='Delivered' ) { %>
+                                                        <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
+                                                            class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
+                                                        <%}%>
+                                                </div>
+                                            </div>
+                                            <% }); %>
+                                                <hr>
+                                                <% }); %>
+                                                    <% } else { %>
+                                                        <p>No orders found.</p>
+                                                        <% } %>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <!-- Add a gap before the footer -->
+            <div class="my-5"></div>
+        </div>
+    </div>
+    <!-- Including external scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <!--footer begins-->
+    <%- include("../../views/partials/user/footer") %>
+        <!--footer ends-->

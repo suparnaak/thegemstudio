@@ -1,59 +1,74 @@
 <%- include("../../views/partials/user/header") %>
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h2 class="text-center">Order Placed Successfully!</h2>
-                </div>
-                <div class="card-body">
-                    <h4>Order Details</h4>
-                    <p><strong>Order ID:</strong> <%= order.orderId %></p>
-                    <p><strong>Order Date:</strong> <%= order.orderDate.toLocaleDateString() %></p>
-                    <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-                    <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="text-center">Order Placed Successfully!</h2>
+                    </div>
+                    <div class="card-body">
+                        <h4>Order Details</h4>
+                        <p><strong>Order ID:</strong>
+                            <%= order.orderId %>
+                        </p>
+                        <p><strong>Order Date:</strong>
+                            <%= order.orderDate.toLocaleDateString() %>
+                        </p>
+                        <p><strong>Payment Method:</strong>
+                            <%= order.paymentMethod %>
+                        </p>
+                        <p><strong>Payment Status:</strong>
+                            <%= order.paymentStatus %>
+                        </p>
 
-                    <h5 class="mt-4">Items Ordered</h5>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% order.items.forEach(item => { %>
+                        <h5 class="mt-4">Items Ordered</h5>
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td><%= item.productId.name %></td>
-                                    <td><%= item.quantity %></td>
-                                    <td>₹<%= item.price.toFixed(2) %></td>
-                                    <td>₹<%= item.subtotal.toFixed(2) %></td>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
                                 </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <% order.items.forEach(item=> { %>
+                                    <tr>
+                                        <td>
+                                            <%= item.productId.name %>
+                                        </td>
+                                        <td>
+                                            <%= item.quantity %>
+                                        </td>
+                                        <td>₹<%= item.price.toFixed(2) %>
+                                        </td>
+                                        <td>₹<%= item.subtotal.toFixed(2) %>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
 
-                    <h5 class="mt-4">Delivery Address</h5>
-                    <p>
-                        <%= order.addressId.name %><br>
-                        <%= order.addressId.houseName %>, <%= order.addressId.street %><br>
-                        <%= order.addressId.city %>, <%= order.addressId.country %><br>
-                        Phone: <%= order.addressId.mobile %>
-                    </p>
+                        <h5 class="mt-4">Delivery Address</h5>
+                        <p>
+                            <%= order.addressId.name %><br>
+                                <%= order.addressId.houseName %>, <%= order.addressId.street %><br>
+                                        <%= order.addressId.city %>, <%= order.addressId.country %><br>
+                                                Phone: <%= order.addressId.mobile %>
+                        </p>
 
-                    <h4 class="mt-4">Grand Total: ₹<%= order.grandTotal.toFixed(2) %></h4>
+                        <h4 class="mt-4">Grand Total: ₹<%= order.grandTotal.toFixed(2) %>
+                        </h4>
 
-                    <div class="mt-5 text-center">
-                        <a href="/products" class="btn btn-primary">Continue Shopping</a>
-                        <a href="/my-orders" class="btn btn-secondary">View All Orders</a>
+                        <div class="mt-5 text-center">
+                            <a href="/products" class="btn btn-primary">Continue Shopping</a>
+                            <a href="/my-orders" class="btn btn-secondary">View All Orders</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<%- include("../../views/partials/user/footer") %>
+    <%- include("../../views/partials/user/footer") %>

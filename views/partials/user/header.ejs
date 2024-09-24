@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
   <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>-->
   <script>
@@ -78,56 +78,62 @@
       <div class="grid_9">
         <div class="top_header">
           <% if (user) { %>
-            <div class="welcome">Welcome <%= user.name %>!</div> 
-          <% } else { %>
-            <div class="welcome">Welcome visitor!</div>
-          <% } %>
-          <!-- .welcome -->
+            <div class="welcome">Welcome <%= user.name %>!</div>
+            <% } else { %>
+              <div class="welcome">Welcome visitor!</div>
+              <% } %>
+                <!-- .welcome -->
 
-          <ul id="cart_nav">
-            <li>
-              <a class="cart_li" href="#">
-                <div class="cart_ico"></div>
-                Cart
-                <span>₹<%= typeof totalPrice !== 'undefined' ? totalPrice.toFixed(2) : '0.00' %></span>
-              </a>
-              <ul class="cart_cont">
-                <li class="no_border recently">Recently added item(s)</li>
-                <% if (recentItems && recentItems.length > 0) { %>
-                  <% recentItems.forEach(item => { %>
-                    <li>
-                      <a href="/product_page/<%= item.product._id %>" class="prev_cart">
-                        <div class="cart_vert">
-                          <img src="/uploads/products/<%= item.product.images[0] %>" alt="<%= item.product.name %>" title="" />
-                        </div>
-                      </a>
-                      <div class="cont_cart">
-                        <h4><%= item.product.name %></h4>
-                        <div class="price"><%= item.quantity %> x <span>₹<%= item.product.price - item.product.discount %></span></div>
-                      </div>
-                      <a title="close" class="close" href="/cart/remove/<%= item.product._id %>"></a>
-                      <div class="clear"></div>
-                    </li>
-                  <% }) %>
-                <% } else { %>
-                  <li class="no_items">No items in the cart</li>
-                <% } %>
-                
-                <li class="no_border">
-                  <a href="/cart" class="view_cart">View shopping cart</a>
-                  <a href="/checkout" class="checkout">Proceed to Checkout</a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          
-          <!-- .cart_nav -->
+                <ul id="cart_nav">
+                  <li>
+                    <a class="cart_li" href="#">
+                      <div class="cart_ico"></div>
+                      Cart
+                      <span>₹<%= typeof totalPrice !=='undefined' ? totalPrice.toFixed(2) : '0.00' %></span>
+                    </a>
+                    <ul class="cart_cont">
+                      <li class="no_border recently">Recently added item(s)</li>
+                      <% if (recentItems && recentItems.length> 0) { %>
+                        <% recentItems.forEach(item=> { %>
+                          <li>
+                            <a href="/product_page/<%= item.product._id %>" class="prev_cart">
+                              <div class="cart_vert">
+                                <img src="/uploads/products/<%= item.product.images[0] %>"
+                                  alt="<%= item.product.name %>" title="" />
+                              </div>
+                            </a>
+                            <div class="cont_cart">
+                              <h4>
+                                <%= item.product.name %>
+                              </h4>
+                              <div class="price">
+                                <%= item.quantity %> x <span>₹<%= item.product.price - item.product.discount %></span>
+                              </div>
+                            </div>
+                            <a title="close" class="close" href="/cart/remove/<%= item.product._id %>"></a>
+                            <div class="clear"></div>
+                          </li>
+                          <% }) %>
+                            <% } else { %>
+                              <li class="no_items">No items in the cart</li>
+                              <% } %>
 
-          <form class="search">
-            <input type="submit" class="search_button" value="" />
-            <input type="text" name="search" class="search_form" value="" placeholder="Search entire store here..." />
-          </form>
-          <!-- .search -->
+                                <li class="no_border">
+                                  <a href="/cart" class="view_cart">View shopping cart</a>
+                                  <a href="/checkout" class="checkout">Proceed to Checkout</a>
+                                </li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <!-- .cart_nav -->
+
+                <form class="search">
+                  <input type="submit" class="search_button" value="" />
+                  <input type="text" name="search" class="search_form" value=""
+                    placeholder="Search entire store here..." />
+                </form>
+                <!-- .search -->
         </div>
         <!-- .top_header -->
       </div>
@@ -182,5 +188,3 @@
     </div>
     <div class="clear"></div>
   </header>
-
-

@@ -1,44 +1,44 @@
-
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
-<div class="breadcrumbs">
-    <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><a href="">My Orders</a><span></span><span class="current">Cancel Confirm</span>
-        </div><!-- .grid_12 -->
-    </div><!-- .container_12 -->
-</div><!-- .breadcrumbs -->
-<div class="container profile-page mt-5">
-    <div class="row">
-        <!-- Sidebar -->
-        <!-- <div class="col-md-3 profile-sidebar">
-            <ul class="profile-menu">
-                <li><a href="/manage-addresses">Manage Addresses</a></li>
-                <li><a href="/my-orders">My Orders</a></li>
-                <li><a href="/payment-methods">Payment Methods</a></li>
-            </ul>
-        </div> -->
-        <%- include("../../views/partials/user/sidebar") %>
+    <!--header ends-->
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><a href="">My Orders</a><span></span><span class="current">Cancel
+                    Confirm</span>
+            </div><!-- .grid_12 -->
+        </div><!-- .container_12 -->
+    </div><!-- .breadcrumbs -->
+    <div class="container profile-page mt-5">
+        <div class="row">
+            <!-- Sidebar -->
 
-        <!-- Profile Content -->
-        <div class="col-md-9 profile-content">
+            <%- include("../../views/partials/user/sidebar") %>
+
+                <!-- Profile Content -->
+                <div class="col-md-9 profile-content">
 
 
 
-<h1>Order Cancellation Confirmation</h1>
+                    <h1>Order Cancellation Confirmation</h1>
 
-<p>Your order has been successfully canceled.</p>
+                    <p>Your order has been successfully canceled.</p>
 
-<p><strong>Order ID:</strong> <%= order._id %></p>
-<p><strong>Product:</strong> <%= product.name %></p>
-<p><strong>Quantity:</strong> <%= order.items.find(item => item.productId.equals(product._id)).quantity %></p>
-<!-- <p><strong>Reason for Cancellation:</strong> <%= cancelReason %></p> -->
+                    <p><strong>Order ID:</strong>
+                        <%= order._id %>
+                    </p>
+                    <p><strong>Product:</strong>
+                        <%= product.name %>
+                    </p>
+                    <p><strong>Quantity:</strong>
+                        <%= order.items.find(item=> item.productId.equals(product._id)).quantity %>
+                    </p>
+                    <!-- <p><strong>Reason for Cancellation:</strong> <%= cancelReason %></p> -->
 
-<a href="/my-orders">Back to My Orders</a>
-</div>
-</div>
-</div>
+                    <a href="/my-orders">Back to My Orders</a>
+                </div>
+        </div>
+    </div>
 
-<!--footer begins-->
-<%- include("../../views/partials/user/footer") %>
+    <!--footer begins-->
+    <%- include("../../views/partials/user/footer") %>

@@ -1,79 +1,88 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
+  <!--header ends-->
 
-<div class="breadcrumbs">
-  <div class="container_12">
-    <div class="grid_12">
-      <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
+  <div class="breadcrumbs">
+    <div class="container_12">
+      <div class="grid_12">
+        <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
+      </div>
     </div>
   </div>
-</div>
 
-<section id="main">
-  <div class="container_12">
-    <div id="content" class="grid_12">
-      <header>
-        <h1 class="page_title">Confirm Your Order</h1>
-      </header>
+  <section id="main">
+    <div class="container_12">
+      <div id="content" class="grid_12">
+        <header>
+          <h1 class="page_title">Confirm Your Order</h1>
+        </header>
 
-      <h3>Shipping to:</h3>
-      <p>
-        <%= addressFull.name %>,<br> 
-        <%= addressFull.houseName %>,<br> 
-        <%= addressFull.street %>,<br> 
-        <%= addressFull.city %>,<br> 
-        <%= addressFull.country %>,<br> 
-        <%= addressFull.zipcode %>
-      </p>
+        <h3>Shipping to:</h3>
+        <p>
+          <%= addressFull.name %>,<br>
+            <%= addressFull.houseName %>,<br>
+              <%= addressFull.street %>,<br>
+                <%= addressFull.city %>,<br>
+                  <%= addressFull.country %>,<br>
+                    <%= addressFull.zipcode %>
+        </p>
 
-      <h3>Products in Your Order:</h3>
-      <table class="order-table">
-        <thead>
-          <tr>
-            <th style="text-align: left;">Product Name</th>
-            <th style="text-align: left;">Quantity</th>
-            <th style="text-align: left;">Price</th>
-            <th style="text-align: left;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% availableProducts.forEach(function(product) { %>
-          <tr>
-            <td style="text-align: left;"><%= product.name %></td>
-            <td style="text-align: left;"><%= product.quantity %></td>
-            <td style="text-align: left;">₹<%= product.price %></td>
-            <td style="text-align: left;">Available</td>
-          </tr>
-          <% }) %>
+        <h3>Products in Your Order:</h3>
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th style="text-align: left;">Product Name</th>
+              <th style="text-align: left;">Quantity</th>
+              <th style="text-align: left;">Price</th>
+              <th style="text-align: left;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% availableProducts.forEach(function(product) { %>
+              <tr>
+                <td style="text-align: left;">
+                  <%= product.name %>
+                </td>
+                <td style="text-align: left;">
+                  <%= product.quantity %>
+                </td>
+                <td style="text-align: left;">₹<%= product.price %>
+                </td>
+                <td style="text-align: left;">Available</td>
+              </tr>
+              <% }) %>
 
-          <% unavailableProducts.forEach(function(product) { %>
-          <tr style="color: red;">
-            <td style="text-align: left;"><%= product.name %></td>
-            <td style="text-align: left;">N/A</td>
-            <td style="text-align: left;">N/A</td>
-            <td style="text-align: left;"><%= product.status %></td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
+                <% unavailableProducts.forEach(function(product) { %>
+                  <tr style="color: red;">
+                    <td style="text-align: left;">
+                      <%= product.name %>
+                    </td>
+                    <td style="text-align: left;">N/A</td>
+                    <td style="text-align: left;">N/A</td>
+                    <td style="text-align: left;">
+                      <%= product.status %>
+                    </td>
+                  </tr>
+                  <% }) %>
+          </tbody>
+        </table>
 
-      <% if (availableProducts.length > 0) { %>
-      <form action="/checkout/confirmOrder" method="post">
-        <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
-        <input type="hidden" name="addressId" value="<%= address %>">
-        <input type="hidden" name="paymentMethod" value="COD"> <!-- Example: Cash on Delivery -->
-        <button type="submit" class="btn-confirm-order">Confirm Order</button>
-      </form>
-      
-      <% } else { %>
-      <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
-      <% } %>
-        
-    </div><!-- #content -->
-  </div><!-- .container_12 -->
-</section><!-- #main -->
-<div class="clear"></div>
-<!--footer begins-->
-<%- include("../../views/partials/user/footer") %>
-<!--footer ends-->
+        <% if (availableProducts.length> 0) { %>
+          <form action="/checkout/confirmOrder" method="post">
+            <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
+            <input type="hidden" name="addressId" value="<%= address %>">
+            <input type="hidden" name="paymentMethod" value="COD"> <!-- Example: Cash on Delivery -->
+            <button type="submit" class="btn-confirm-order">Confirm Order</button>
+          </form>
+
+          <% } else { %>
+            <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
+            <% } %>
+
+      </div><!-- #content -->
+    </div><!-- .container_12 -->
+  </section><!-- #main -->
+  <div class="clear"></div>
+  <!--footer begins-->
+  <%- include("../../views/partials/user/footer") %>
+    <!--footer ends-->

@@ -1,57 +1,54 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
-<div class="breadcrumbs">
+  <!--header ends-->
+  <div class="breadcrumbs">
     <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><a href="">My Orders</a><span></span><span class="current">Cancel Order</span>
-        </div><!-- .grid_12 -->
+      <div class="grid_12">
+        <a href="/">Home</a><span></span><a href="">My Orders</a><span></span><span class="current">Cancel Order</span>
+      </div><!-- .grid_12 -->
     </div><!-- .container_12 -->
-</div><!-- .breadcrumbs -->
-<div class="container profile-page mt-5">
+  </div><!-- .breadcrumbs -->
+  <div class="container profile-page mt-5">
     <div class="row">
-        <!-- Sidebar -->
-        <!-- <div class="col-md-3 profile-sidebar">
-            <ul class="profile-menu">
-                <li><a href="/manage-addresses">Manage Addresses</a></li>
-                <li><a href="/my-orders">My Orders</a></li>
-                <li><a href="/payment-methods">Payment Methods</a></li>
-            </ul>
-        </div> -->
-        <%- include("../../views/partials/user/sidebar") %>
+      <!-- Sidebar -->
+
+      <%- include("../../views/partials/user/sidebar") %>
 
         <!-- Profile Content -->
         <div class="col-md-9 profile-content">
 
 
-<h1>Cancel Order</h1>
+          <h1>Cancel Order</h1>
 
-<p>Order ID: <%= order._id %></p>
-<p><strong>Product: <%= product.name %></strong></p>
-<p>Quantity: <%= item.quantity %></p>
-<p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: auto;"></p>
+          <p>Order ID: <%= order._id %>
+          </p>
+          <p><strong>Product: <%= product.name %></strong></p>
+          <p>Quantity: <%= item.quantity %>
+          </p>
+          <p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail"
+              style="width: 100px; height: auto;"></p>
 
-<form action="/my-orders/cancel-order/<%= order._id %>/<%= product._id %>" method="post">
-  <label>Reason for cancellation:</label>
-  <ul style="list-style-type: none;">
-    <li>
-      <input type="radio" name="cancelReason" value="Incorrect Item" />
-      Incorrect Item
-    </li>
-    <li>
-      <input type="radio" name="cancelReason" value="Damaged Item" />
-      Damaged Item
-    </li>
-    <li>
-      <input type="radio" name="cancelReason" value="Item Not as Described" />
-      Item Not as Described
-    </li>
-  </ul>
-  <button type="submit">Cancel Order</button>
-</form>
-</div>
-</div>
-</div>
+          <form action="/my-orders/cancel-order/<%= order._id %>/<%= product._id %>" method="post">
+            <label>Reason for cancellation:</label>
+            <ul style="list-style-type: none;">
+              <li>
+                <input type="radio" name="cancelReason" value="Incorrect Item" />
+                Incorrect Item
+              </li>
+              <li>
+                <input type="radio" name="cancelReason" value="Damaged Item" />
+                Damaged Item
+              </li>
+              <li>
+                <input type="radio" name="cancelReason" value="Item Not as Described" />
+                Item Not as Described
+              </li>
+            </ul>
+            <button type="submit">Cancel Order</button>
+          </form>
+        </div>
+    </div>
+  </div>
 
-<!--footer begins-->
-<%- include("../../views/partials/user/footer") %>
+  <!--footer begins-->
+  <%- include("../../views/partials/user/footer") %>

@@ -1,124 +1,134 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
-<div class="breadcrumbs">
-    <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><span class="current">My Profile</span>
-        </div><!-- .grid_12 -->
-    </div><!-- .container_12 -->
-</div><!-- .breadcrumbs -->
-<div class="container profile-page mt-5">
-    <div class="row">
-        <!-- Sidebar -->
-        <%- include("../../views/partials/user/sidebar") %>
+    <!--header ends-->
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">My Profile</span>
+            </div><!-- .grid_12 -->
+        </div><!-- .container_12 -->
+    </div><!-- .breadcrumbs -->
+    <div class="container profile-page mt-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/sidebar") %>
 
-        <!-- Profile Content -->
-        <div class="col-md-9 profile-content">
-            <h2 class="mb-4">My Profile</h2>
+                <!-- Profile Content -->
+                <div class="col-md-9 profile-content">
+                    <h2 class="mb-4">My Profile</h2>
 
-            <div class="card mb-4" id="profileCard">
-                <div class="card-body">
-                    <h5>Name: <span id="display-name"><%= user.name %></span></h5>
-                    <h5>Email: <span class="email-value"><%= user.email %></span></h5>
-                    <h5>Phone: <span id="display-phone"><%= user.phone %></span></h5>
-                    <button type="button" class="btn btn-primary edit-btn" style="width: auto;">Edit</button>
-                </div>
-            </div>
+                    <div class="card mb-4" id="profileCard">
+                        <div class="card-body">
+                            <h5>Name: <span id="display-name">
+                                    <%= user.name %>
+                                </span></h5>
+                            <h5>Email: <span class="email-value">
+                                    <%= user.email %>
+                                </span></h5>
+                            <h5>Phone: <span id="display-phone">
+                                    <%= user.phone %>
+                                </span></h5>
+                            <button type="button" class="btn btn-primary edit-btn" style="width: auto;">Edit</button>
+                        </div>
+                    </div>
 
-            <form id="editProfileForm" style="display: none;">
-                <div class="form-group mb-3">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" class="form-control form-control-rounded" value="<%= user.name %>" style="width: 100%;">
+                    <form id="editProfileForm" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" class="form-control form-control-rounded"
+                                value="<%= user.name %>" style="width: 100%;">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" class="form-control form-control-rounded"
+                                value="<%= user.email %>" style="width: 100%;">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="phone">Phone</label>
+                            <input type="text" id="phone" class="form-control form-control-rounded"
+                                value="<%= user.phone %>" style="width: 100%;">
+                        </div>
+                        <div class="text-center">
+                            <button type="button" class="btn btn-secondary cancel-btn"
+                                style="width: 100px; margin-right: 10px;">Cancel</button>
+                            <button type="button" class="btn btn-success save-btn" style="width: 100px;">Save</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group mb-3">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" class="form-control form-control-rounded" value="<%= user.email %>" style="width: 100%;">
-                </div>
-                <div class="form-group mb-3">
-                    <label for="phone">Phone</label>
-                    <input type="text" id="phone" class="form-control form-control-rounded" value="<%= user.phone %>" style="width: 100%;">
-                </div>
-                <div class="text-center">
-                    <button type="button" class="btn btn-secondary cancel-btn" style="width: 100px; margin-right: 10px;">Cancel</button>
-                    <button type="button" class="btn btn-success save-btn" style="width: 100px;">Save</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const editButton = document.querySelector('.edit-btn');
-        const cancelButton = document.querySelector('.cancel-btn');
-        const saveButton = document.querySelector('.save-btn');
-        const editForm = document.getElementById('editProfileForm');
-        const profileCard = document.getElementById('profileCard');
-        const displayName = document.getElementById('display-name');
-        const displayEmail = document.querySelector('.email-value');
-        const displayPhone = document.getElementById('display-phone');
-        const nameInput = document.getElementById('name');
-        const emailInput = document.getElementById('email');
-        const phoneInput = document.getElementById('phone');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const editButton = document.querySelector('.edit-btn');
+            const cancelButton = document.querySelector('.cancel-btn');
+            const saveButton = document.querySelector('.save-btn');
+            const editForm = document.getElementById('editProfileForm');
+            const profileCard = document.getElementById('profileCard');
+            const displayName = document.getElementById('display-name');
+            const displayEmail = document.querySelector('.email-value');
+            const displayPhone = document.getElementById('display-phone');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
 
-        editButton.addEventListener('click', function() {
-            profileCard.style.display = 'none'; // Hide the card
-            editForm.style.display = 'block'; // Show the edit form
-        });
+            editButton.addEventListener('click', function () {
+                profileCard.style.display = 'none'; // Hide the card
+                editForm.style.display = 'block'; // Show the edit form
+            });
 
-        cancelButton.addEventListener('click', function() {
-            profileCard.style.display = 'block'; // Show the card again
-            editForm.style.display = 'none'; // Hide the edit form
-        });
+            cancelButton.addEventListener('click', function () {
+                profileCard.style.display = 'block'; // Show the card again
+                editForm.style.display = 'none'; // Hide the edit form
+            });
 
-        saveButton.addEventListener('click', function() {
-            // Basic validation
-            const name = nameInput.value.trim();
-            const email = emailInput.value.trim();
-            const phone = phoneInput.value.trim();
+            saveButton.addEventListener('click', function () {
+                // Basic validation
+                const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
+                const phone = phoneInput.value.trim();
 
-            if (!name || !email || !phone) {
-                alert('All fields are required');
-                return;
-            }
-
-            // If valid, send the data to the backend
-            fetch('/update-profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: '<%= user._id %>', // Send the user ID
-                    name,
-                    email,
-                    phone
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    alert(data.message);
-                    // Update displayed values
-                    displayName.textContent = name;
-                    displayEmail.textContent = email;
-                    displayPhone.textContent = phone;
-                    
-                    // Reset the form and UI
-                    profileCard.style.display = 'block'; // Show the card again
-                    editForm.style.display = 'none'; // Hide the edit form
-                } else {
-                    alert('Error updating profile');
+                if (!name || !email || !phone) {
+                    alert('All fields are required');
+                    return;
                 }
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('An error occurred while updating the profile');
+
+                // If valid, send the data to the backend
+                fetch('/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: '<%= user._id %>',
+                        name,
+                        email,
+                        phone
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            alert(data.message);
+
+                            displayName.textContent = name;
+                            displayEmail.textContent = email;
+                            displayPhone.textContent = phone;
+
+
+                            profileCard.style.display = 'block';
+                            editForm.style.display = 'none';
+                        } else {
+                            alert('Error updating profile');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('An error occurred while updating the profile');
+                    });
             });
         });
-    });
-</script>
+    </script>
 
-<!--footer begins-->
-<%- include("../../views/partials/user/footer") %>
+    <!--footer begins-->
+    <%- include("../../views/partials/user/footer") %>

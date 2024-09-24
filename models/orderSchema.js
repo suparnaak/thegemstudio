@@ -47,14 +47,14 @@ const orderSchema = new Schema(
             return this.quantity * this.price; // Adjusted to calculate without discount
           },
         },
-/*         status: {
+        /*         status: {
           type: String,
           enum: ["Delivered", "Pending", "Returned", "Cancelled"],
           default: "Pending",
         }, */
         deliveryStatus: {
-          type: String,  // Added type property
-          enum: ["Delivered", "Pending",  "Cancelled","Admin Cancelled"],
+          type: String, // Added type property
+          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled"],
           default: "Pending",
         },
         cancelReason: {
