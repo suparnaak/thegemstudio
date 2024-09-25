@@ -9,8 +9,37 @@ const loadCheckout = async (req, res) => {
   try {
     const user = req.session.user;
     if (user) {
+      const cartItems = await Cart.findOne({ userId: user._id });
+
+    if (!cartItems || cartItems.items.length === 0) {
+      return res.status(400).send("Your cart is empty.");
+    }
+
+    const unavailableProducts = [];
+    const availableProducts = [];
+
+    for (const item of cartItems.items) {
+      const product = await Product.findById(item.product);
+
+      if (!product || !product.isListed || product.quantity < item.quantity) {
+        unavailableProducts.push({
+          id: product._id,
+          name: product.name,
+          status: !product.isListed ? "Blocked by Admin" : "Out of Stock",
+        });
+      } else {
+        availableProducts.push({
+          name: product.name,
+          quantity: item.quantity,
+          price: product.price,
+        });
+      }
+    }
       const addresses = await Address.find({ userId: user._id });
-      res.render("checkout", { user: user, addresses });
+      res.render("checkout", { user: user, 
+        addresses,
+        availableProducts,
+        unavailableProducts});
     }
   } catch (error) {
     console.log("checkout page not found:", error);
@@ -56,12 +85,19 @@ const placeOrder = async (req, res) => {
         });
       }
     }
+    if (availableProducts.length === 0) {
+      if (unavailableProducts.length > 0) {
+        return res.status(400).send("No products are available.");
+      } else {
+        return res.status(400).send("Your cart is empty.");
+      }
+    }
 
     res.render("confirmOrder", {
       address: delivery_address,
       addressFull,
       availableProducts,
-      unavailableProducts,
+     /*  unavailableProducts, */
       user,
     });
   } catch (error) {
@@ -102,10 +138,9 @@ const confirmOrder = async (req, res) => {
       const product = cartItem.product;
       const quantity = cartItem.quantity;
 
-      if (!product || product.quantity < quantity) {
-        return res
-          .status(400)
-          .json({ message: `Insufficient stock for product: ${product.name}` });
+      if (!product || !product.isListed || product.quantity < quantity || product.quantity === 0) {
+        // Skip this product if it's not listed or out of stock
+        continue;
       }
 
       const discountedPrice =
@@ -126,6 +161,10 @@ const confirmOrder = async (req, res) => {
       await product.save();
 
       grandTotal += subtotal;
+    }
+
+    if (orderItems.length === 0) {
+      return res.status(400).json({ message: "No products are available" });
     }
 
     const newOrder = new Order({
@@ -155,7 +194,6 @@ const confirmOrder = async (req, res) => {
       .json({ message: "Failed to place order", error: error.message });
   }
 };
-
 function mapPaymentMethod(method) {
   switch (method) {
     case "COD":

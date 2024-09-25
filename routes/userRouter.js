@@ -51,7 +51,7 @@ router.post('/cart/update', userAuth,fetchCartData, cartController.updateCartIte
 router.post('/cart/remove', userAuth, fetchCartData,cartController.removeFromCart);
 
 //checkout management
-router.get('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
+//router.get('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
 router.post('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
 router.post('/add-address', userAuth,fetchCartData, addressController.addAddress);
 router.post('/checkout/placeOrder', userAuth,fetchCartData, orderController.placeOrder);

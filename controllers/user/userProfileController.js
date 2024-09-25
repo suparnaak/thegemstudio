@@ -241,15 +241,15 @@ const loadMyOrders = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const { userId, name, email, phone } = req.body;
+  const { userId, name, phone } = req.body;
   try {
-    if (!name || !email || !phone) {
+    if (!name || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { name, email, phone },
+      { name, phone },
       { new: true }
     );
 

@@ -11,91 +11,179 @@
         </div>
     </div>
     </div>
-    <section id="main" class="page-login">
-        <div class="container_12">
-            <div id="content" class="grid_12">
-                <%- include("../../views/partials/user/sidebar") %>
+   <!-- HTML Code (Same as Before) -->
 
+<section id="main" class="page-login">
+    <div class="container_12">
+        <div id="content" class="grid_12">
+            <%- include("../../views/partials/user/sidebar") %>
 
-                    <article>
-                        <div class="grid_6 registed_form">
-                            <form id="addressform" class="registed" action="/manage-addresses/add-address"
-                                method="post">
-                                <h2>Add New Address</h2>
+            <article>
+                <div class="grid_6 registed_form">
+                    <form id="addressform" class="registed" action="/manage-addresses/add-address" method="post">
+                        <h2>Add New Address</h2>
 
-                                <div class="name">
-                                    <strong>Full Name:</strong><sup>*</sup><br>
-                                    <input type="text" name="name" class="" value="" id="name">
-                                    <div id="error1" class="error-message"></div>
-                                </div><!-- .name -->
+                        <div class="name">
+                            <strong>Full Name:</strong><sup>*</sup><br>
+                            <input type="text" name="name" class="" value="" id="name">
+                            <div id="error1" class="error-message"></div>
+                        </div>
 
-                                <div class="housename">
-                                    <strong>House Name:</strong><sup>*</sup><br>
-                                    <input type="text" name="houseName" class="" value="" id="houseName">
-                                    <div id="error2" class="error-message"></div>
-                                </div><!-- .email -->
+                        <div class="housename">
+                            <strong>House Name:</strong><sup>*</sup><br>
+                            <input type="text" name="houseName" class="" value="" id="houseName">
+                            <div id="error2" class="error-message"></div>
+                        </div>
 
-                                <div class="street">
-                                    <strong>Street:</strong><sup>*</sup><br>
-                                    <input type="text" name="street" class="" value="" id="street">
-                                    <div id="error3" class="error-message"></div>
-                                </div><!-- .phone -->
+                        <div class="street">
+                            <strong>Street:</strong><sup>*</sup><br>
+                            <input type="text" name="street" class="" value="" id="street">
+                            <div id="error3" class="error-message"></div>
+                        </div>
 
-                                <div class="city">
-                                    <strong>City:</strong><sup>*</sup><br>
-                                    <input type="text" name="city" class="" value="" id="city">
-                                    <div id="error4" class="error-message"></div>
-                                </div><!-- .password -->
+                        <div class="city">
+                            <strong>City:</strong><sup>*</sup><br>
+                            <input type="text" name="city" class="" value="" id="city">
+                            <div id="error4" class="error-message"></div>
+                        </div>
 
-                                <div class="country">
-                                    <strong>Country:</strong><sup>*</sup><br>
-                                    <input type="text" name="country" class="" value="" id="country">
-                                    <div id="error5" class="error-message"></div>
-                                </div><!-- .confirm_password -->
-                                <div class="zipcode">
-                                    <strong>Zipcode:</strong><sup>*</sup><br>
-                                    <input type="text" name="zipcode" class="" value="" id="zipcode">
-                                    <div id="error6" class="error-message"></div>
-                                </div><!-- .confirm_password -->
-                                <div class="phone">
-                                    <strong>Phone:</strong><sup>*</sup><br>
-                                    <input type="text" name="mobile" class="" value="" id="mobile">
-                                    <div id="error7" class="error-message"></div>
-                                </div><!-- .confirm_password -->
-                                <div class="submit">
-                                    <input type="submit" value="Add">
-                                    <span>* Required Field</span>
-                                    <div class="clear"></div>
-                                </div><!-- .submit -->
+                        <div class="country">
+                            <strong>Country:</strong><sup>*</sup><br>
+                            <input type="text" name="country" class="" value="" id="country">
+                            <div id="error5" class="error-message"></div>
+                        </div>
 
-                            </form><!-- .registed -->
-                        </div><!-- .grid_6 -->
-                    </article>
+                        <div class="zipcode">
+                            <strong>Zipcode:</strong><sup>*</sup><br>
+                            <input type="text" name="zipcode" class="" value="" id="zipcode">
+                            <div id="error6" class="error-message"></div>
+                        </div>
 
-                    <div class="clear"></div>
-            </div><!-- #content -->
+                        <div class="phone">
+                            <strong>Phone:</strong><sup>*</sup><br>
+                            <input type="text" name="mobile" class="" value="" id="mobile">
+                            <div id="error7" class="error-message"></div>
+                        </div>
+
+                        <div class="submit">
+                            <input type="submit" value="Add">
+                            <span>* Required Field</span>
+                            <div class="clear"></div>
+                        </div>
+                    </form>
+                </div>
+            </article>
 
             <div class="clear"></div>
-        </div><!-- .container_12 -->
-    </section><!-- #main -->
-    <script>
-        document.getElementById('addressform').addEventListener('submit', function (event) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, save it!'
-            }).then((result) => {
-                if (result.value) {
-                    this.submit();
-                }
-            })
+        </div>
+
+        <div class="clear"></div>
+    </div>
+</section>
+<script>
+document.getElementById('addressform').addEventListener('submit', function (event) {
+    event.preventDefault(); // Prevent form submission for validation
+    console.log("Form submission prevented for validation");
+
+    // Get all input values
+    const name = document.getElementById('name').value.trim();
+    const houseName = document.getElementById('houseName').value.trim();
+    const street = document.getElementById('street').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const zipcode = document.getElementById('zipcode').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+
+    // Clear all previous errors
+    clearErrors();
+    console.log("Clearing previous errors...");
+
+    // Validation flags
+    let isValid = true;
+
+    // Regex Patterns
+    const namePattern = /^[a-zA-Z\s]+$/;
+    const phonePattern = /^[1-9][0-9]{9}$/;
+
+    // Validate Name
+    if (!name || !namePattern.test(name) || name.replace(/\s/g, '').length === 0) {
+        showError('error1', 'Name should only contain letters and spaces and cannot be empty or only spaces.');
+        isValid = false;
+        console.log("Name validation failed");
+    }
+
+    // Validate Phone
+    if (!phonePattern.test(mobile)) {
+        showError('error7', 'Phone must be a 10-digit number and cannot start with 0.');
+        isValid = false;
+        console.log("Phone validation failed");
+    }
+
+    // Validate other fields
+    if (!houseName || houseName.replace(/\s/g, '').length === 0) {
+        showError('error2', 'House name cannot be empty or contain only spaces.');
+        isValid = false;
+        console.log("House name validation failed");
+    }
+    if (!street || street.replace(/\s/g, '').length === 0) {
+        showError('error3', 'Street cannot be empty or contain only spaces.');
+        isValid = false;
+        console.log("Street validation failed");
+    }
+    if (!city || city.replace(/\s/g, '').length === 0) {
+        showError('error4', 'City cannot be empty or contain only spaces.');
+        isValid = false;
+        console.log("City validation failed");
+    }
+    if (!country || country.replace(/\s/g, '').length === 0) {
+        showError('error5', 'Country cannot be empty or contain only spaces.');
+        isValid = false;
+        console.log("Country validation failed");
+    }
+    if (!zipcode || zipcode.replace(/\s/g, '').length === 0) {
+        showError('error6', 'Zipcode cannot be empty or contain only spaces.');
+        isValid = false;
+        console.log("Zipcode validation failed");
+    }
+
+    // If validation fails, don't submit the form
+    if (isValid) {
+        console.log("Form is valid, showing confirmation popup");
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, save it!'
+        }).then((result) => {
+            if (result.value) {
+                document.getElementById('addressform').submit(); // Submit the form
+            }
         });
-    </script>
+    } else {
+        console.log("Form is invalid, errors should be displayed");
+    }
+});
+
+function clearErrors() {
+    const errorFields = document.querySelectorAll('.error-message');
+    errorFields.forEach((field) => {
+        field.textContent = ''; // Clear error message
+    });
+    console.log("Errors cleared");
+}
+
+function showError(errorId, message) {
+    const errorElement = document.getElementById(errorId);
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block'; // Ensure the error message is visible
+    }
+}
+</script>
+
     <!-- Footer -->
     <%- include("../../views/partials/user/footer") %>
         <!-- End Footer -->

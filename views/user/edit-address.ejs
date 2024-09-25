@@ -20,41 +20,41 @@
                     <div class="col-md-9">
                         <h2 class="mb-4">Edit Address</h2>
 
-                        <form action="/manage-addresses/edit-address/<%= address._id %>" method="POST">
+                        <form id="addressForm" action="/manage-addresses/edit-address/<%= address._id %>" method="POST" onsubmit="return validateForm()">
                             <div class="form-group">
                                 <label for="name">Name</label>
-                                <input type="text" class="form-control" id="name" name="name"
-                                    value="<%= address.name %>" required>
+                                <input type="text" class="form-control" id="name" name="name" value="<%= address.name %>" required>
+                                <small class="text-danger" id="errorName"></small>
                             </div>
                             <div class="form-group">
                                 <label for="houseName">House Name</label>
-                                <input type="text" class="form-control" id="houseName" name="houseName"
-                                    value="<%= address.houseName %>" required>
+                                <input type="text" class="form-control" id="houseName" name="houseName" value="<%= address.houseName %>" required>
+                                <small class="text-danger" id="errorHouseName"></small>
                             </div>
                             <div class="form-group">
                                 <label for="street">Street</label>
-                                <input type="text" class="form-control" id="street" name="street"
-                                    value="<%= address.street %>" required>
+                                <input type="text" class="form-control" id="street" name="street" value="<%= address.street %>" required>
+                                <small class="text-danger" id="errorStreet"></small>
                             </div>
                             <div class="form-group">
                                 <label for="city">City</label>
-                                <input type="text" class="form-control" id="city" name="city"
-                                    value="<%= address.city %>" required>
+                                <input type="text" class="form-control" id="city" name="city" value="<%= address.city %>" required>
+                                <small class="text-danger" id="errorCity"></small>
                             </div>
                             <div class="form-group">
                                 <label for="zipCode">Zip Code</label>
-                                <input type="text" class="form-control" id="zipCode" name="zipCode"
-                                    value="<%= address.zipcode %>" required>
+                                <input type="text" class="form-control" id="zipCode" name="zipCode" value="<%= address.zipcode %>" required>
+                                <small class="text-danger" id="errorZipCode"></small>
                             </div>
                             <div class="form-group">
                                 <label for="country">Country</label>
-                                <input type="text" class="form-control" id="country" name="country"
-                                    value="<%= address.country %>" required>
+                                <input type="text" class="form-control" id="country" name="country" value="<%= address.country %>" required>
+                                <small class="text-danger" id="errorCountry"></small>
                             </div>
                             <div class="form-group">
                                 <label for="mobile">Mobile</label>
-                                <input type="text" class="form-control" id="mobile" name="mobile"
-                                    value="<%= address.mobile %>" required>
+                                <input type="text" class="form-control" id="mobile" name="mobile" value="<%= address.mobile %>" required>
+                                <small class="text-danger" id="errorMobile"></small>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Update Address</button>
@@ -67,4 +67,90 @@
 
     <!-- Footer -->
     <%- include("../../views/partials/user/footer") %>
-        <!-- End Footer -->
+    <!-- End Footer -->
+
+    <!-- SweetAlert Script -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Validation Script -->
+    <script>
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            document.querySelectorAll('.text-danger').forEach(error => error.textContent = '');
+
+            // Get input values
+            const name = document.getElementById('name').value.trim();
+            const houseName = document.getElementById('houseName').value.trim();
+            const street = document.getElementById('street').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const zipCode = document.getElementById('zipCode').value.trim();
+            const country = document.getElementById('country').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+
+            // Regular expressions
+            const namePattern = /^[a-zA-Z\s]+$/;
+            const mobilePattern = /^[1-9]{1}[0-9]{9}$/;
+            const zipPattern = /^\d+$/;
+
+            // Validation for Name
+            if (!name || !namePattern.test(name)) {
+                document.getElementById('errorName').textContent = 'Name should contain only letters and spaces.';
+                isValid = false;
+            }
+
+            // Validation for House Name
+            if (!houseName) {
+                document.getElementById('errorHouseName').textContent = 'House name cannot be empty.';
+                isValid = false;
+            }
+
+            // Validation for Street
+            if (!street) {
+                document.getElementById('errorStreet').textContent = 'Street cannot be empty.';
+                isValid = false;
+            }
+
+            // Validation for City
+            if (!city) {
+                document.getElementById('errorCity').textContent = 'City cannot be empty.';
+                isValid = false;
+            }
+
+            // Validation for Zip Code
+            if (!zipPattern.test(zipCode)) {
+                document.getElementById('errorZipCode').textContent = 'Zip code should contain only digits.';
+                isValid = false;
+            }
+
+            // Validation for Country
+            if (!country) {
+                document.getElementById('errorCountry').textContent = 'Country cannot be empty.';
+                isValid = false;
+            }
+
+            // Validation for Mobile
+            if (!mobilePattern.test(mobile)) {
+                document.getElementById('errorMobile').textContent = 'Mobile must be a valid 10-digit number.';
+                isValid = false;
+            }
+
+            // If validation passes, show SweetAlert confirmation
+            if (isValid) {
+                Swal.fire({
+                    title: 'Address Updated!',
+                    text: 'Your address has been updated successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('addressForm').submit(); // Submit the form
+                    }
+                });
+                return false; // Prevent immediate form submission
+            }
+
+            return false; // Prevent form submission if validation fails
+        }
+    </script>

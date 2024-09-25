@@ -35,100 +35,137 @@
                     <form id="editProfileForm" style="display: none;">
                         <div class="form-group mb-3">
                             <label for="name">Name</label>
-                            <input type="text" id="name" class="form-control form-control-rounded"
-                                value="<%= user.name %>" style="width: 100%;">
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" class="form-control form-control-rounded"
-                                value="<%= user.email %>" style="width: 100%;">
+                            <input type="text" id="name" class="form-control form-control-rounded" value="<%= user.name %>" style="width: 100%;">
+                            <small id="nameError" class="text-danger" style="display: none;"></small> <!-- Error message placeholder -->
                         </div>
                         <div class="form-group mb-3">
                             <label for="phone">Phone</label>
-                            <input type="text" id="phone" class="form-control form-control-rounded"
-                                value="<%= user.phone %>" style="width: 100%;">
+                            <input type="text" id="phone" class="form-control form-control-rounded" value="<%= user.phone %>" style="width: 100%;">
+                            <small id="phoneError" class="text-danger" style="display: none;"></small> <!-- Error message placeholder -->
                         </div>
                         <div class="text-center">
-                            <button type="button" class="btn btn-secondary cancel-btn"
-                                style="width: 100px; margin-right: 10px;">Cancel</button>
+                            <button type="button" class="btn btn-secondary cancel-btn" style="width: 100px; margin-right: 10px;">Cancel</button>
                             <button type="button" class="btn btn-success save-btn" style="width: 100px;">Save</button>
                         </div>
                     </form>
+                    
                 </div>
-        </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const editButton = document.querySelector('.edit-btn');
-            const cancelButton = document.querySelector('.cancel-btn');
-            const saveButton = document.querySelector('.save-btn');
-            const editForm = document.getElementById('editProfileForm');
-            const profileCard = document.getElementById('profileCard');
-            const displayName = document.getElementById('display-name');
-            const displayEmail = document.querySelector('.email-value');
-            const displayPhone = document.getElementById('display-phone');
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const phoneInput = document.getElementById('phone');
-
-            editButton.addEventListener('click', function () {
-                profileCard.style.display = 'none'; // Hide the card
-                editForm.style.display = 'block'; // Show the edit form
-            });
-
-            cancelButton.addEventListener('click', function () {
-                profileCard.style.display = 'block'; // Show the card again
-                editForm.style.display = 'none'; // Hide the edit form
-            });
-
-            saveButton.addEventListener('click', function () {
-                // Basic validation
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                const phone = phoneInput.value.trim();
-
-                if (!name || !email || !phone) {
-                    alert('All fields are required');
-                    return;
-                }
-
-                // If valid, send the data to the backend
-                fetch('/update-profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId: '<%= user._id %>',
-                        name,
-                        email,
-                        phone
-                    }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message) {
-                            alert(data.message);
-
-                            displayName.textContent = name;
-                            displayEmail.textContent = email;
-                            displayPhone.textContent = phone;
-
-
-                            profileCard.style.display = 'block';
-                            editForm.style.display = 'none';
-                        } else {
-                            alert('Error updating profile');
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const editButton = document.querySelector('.edit-btn');
+                        const cancelButton = document.querySelector('.cancel-btn');
+                        const saveButton = document.querySelector('.save-btn');
+                        const editForm = document.getElementById('editProfileForm');
+                        const profileCard = document.getElementById('profileCard');
+                        const displayName = document.getElementById('display-name');
+                        const displayPhone = document.getElementById('display-phone');
+                        const nameInput = document.getElementById('name');
+                        const phoneInput = document.getElementById('phone');
+                        const nameError = document.getElementById('nameError');
+                        const phoneError = document.getElementById('phoneError');
+                
+                        // Regex patterns for validation
+                        const namePattern = /^[a-zA-Z\s]+$/;
+                        const phonePattern = /^[1-9][0-9]{9}$/;
+                
+                        // Show form when clicking "Edit" button
+                        editButton.addEventListener('click', function () {
+                            profileCard.style.display = 'none'; // Hide the card
+                            editForm.style.display = 'block'; // Show the edit form
+                        });
+                
+                        // Hide form when clicking "Cancel" button
+                        cancelButton.addEventListener('click', function () {
+                            profileCard.style.display = 'block'; // Show the card again
+                            editForm.style.display = 'none'; // Hide the edit form
+                            clearErrors(); // Clear errors when cancelling
+                        });
+                
+                        // Save button click handler
+                        saveButton.addEventListener('click', function () {
+                            // Clear any previous error messages
+                            clearErrors();
+                
+                            // Validate name and phone
+                            const name = nameInput.value.trim();
+                            const phone = phoneInput.value.trim();
+                            let isValid = true;
+                
+                            // Name validation: only letters and spaces, but no only spaces allowed
+                            if (!name || !namePattern.test(name) || name.replace(/\s/g, '').length === 0) {
+                                nameError.textContent = 'Name must contain only letters and spaces, and cannot be empty or just spaces.';
+                                nameError.style.display = 'block'; // Show the error message
+                                isValid = false;
+                            }
+                
+                            // Phone validation: only digits allowed, must be exactly 10 digits, cannot be all zeros
+                            if (!phonePattern.test(phone)) {
+                                phoneError.textContent = 'Phone must be a 10-digit number and cannot be all 0.';
+                                phoneError.style.display = 'block'; // Show the error message
+                                isValid = false;
+                            }
+                
+                            // If invalid, prevent submission and show error messages
+                            if (!isValid) {
+                                return;
+                            }
+                
+                            // If valid, send the data to the backend
+                            fetch('/update-profile', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    userId: '<%= user._id %>',
+                                    name,
+                                    phone
+                                }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.message) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Profile Updated',
+                                        text: data.message,
+                                    });
+                
+                                    // Update displayed values
+                                    displayName.textContent = name;
+                                    displayPhone.textContent = phone;
+                
+                                    // Show the profile card again and hide the form
+                                    profileCard.style.display = 'block';
+                                    editForm.style.display = 'none';
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Error updating profile',
+                                    });
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while updating the profile',
+                                });
+                            });
+                        });
+                
+                        // Clear error messages
+                        function clearErrors() {
+                            nameError.style.display = 'none';
+                            phoneError.style.display = 'none';
+                            nameError.textContent = '';
+                            phoneError.textContent = '';
                         }
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                        alert('An error occurred while updating the profile');
                     });
-            });
-        });
-    </script>
-
-    <!--footer begins-->
-    <%- include("../../views/partials/user/footer") %>
+                </script>
+                
+                <!--footer begins-->
+                <%- include("../../views/partials/user/footer") %>

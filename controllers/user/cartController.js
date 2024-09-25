@@ -4,6 +4,7 @@ const Address = require("../../models/addressSchema");
 //const mongoose = require('mongoose');
 
 // Add to cart
+// Add to cart
 const addToCart = async (req, res) => {
   try {
     const MAX_QUANTITY_PER_PRODUCT = 5;

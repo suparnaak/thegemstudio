@@ -75,7 +75,8 @@
                                                     <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>
                                         <button class="btn btn-outline-warning btn-sm mr-2">Return or Replace</button> -->
                                                     <% if (item.deliveryStatus !=='Cancelled' && item.deliveryStatus
-                                                        !=='Delivered' ) { %>
+                                                        !=='Delivered' && item.deliveryStatus
+                                                        !=='Admin Cancelled' ) { %>
                                                         <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
                                                             class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
                                                         <%}%>
