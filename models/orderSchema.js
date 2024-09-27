@@ -73,21 +73,30 @@ const orderSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: [
+     /*  enum: [
         "Credit Card",
         "Debit Card",
         "Cash on Delivery",
         "UPI",
         "Net Banking",
-      ],
+      ], */
       required: true,
     },
     paymentStatus: {
       type: String,
-      enum: ["Paid", "Pending"],
+      enum: ["Paid", "Pending","Initiated","Failed"],
       default: "Pending",
     },
+    razorpayOrderId: {
+      type: String,
+      default: null,
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: null,
+    }
   },
+  
   {
     timestamps: true, // Automatically adds createdAt and updatedAt timestamps
   }

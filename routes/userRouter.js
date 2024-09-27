@@ -5,6 +5,7 @@ const cartController = require('../controllers/user/cartController');
 const userProfileController = require('../controllers/user/userProfileController')
 const addressController = require('../controllers/user/addressController');
 const orderController = require('../controllers/user/orderController');
+const wishlistController = require('../controllers/user/wishlistController');
 const passport = require('../config/passport');
 const { userAuth,isLoggedIn } = require("../middlewares/auth");
 const { fetchCartData } = require("../middlewares/fetchCartData");
@@ -56,6 +57,7 @@ router.post('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
 router.post('/add-address', userAuth,fetchCartData, addressController.addAddress);
 router.post('/checkout/placeOrder', userAuth,fetchCartData, orderController.placeOrder);
 router.post('/checkout/confirmOrder', userAuth,fetchCartData, orderController.confirmOrder);
+router.get('/payment/verify', userAuth,fetchCartData, orderController.verifyPayment);//payment
 
 
 //account management
@@ -73,5 +75,7 @@ router.get('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,
 router.post('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.cancelOrder);
 router.get('/my-orders/cancel-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadCancelConfirmation);
 
+//wishlist management
+router.post('/wishlist/add', userAuth,fetchCartData, wishlistController.addToWishlist);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const Product = require("../../models/productsSchema");
 const Cart = require("../../models/cartSchema");
 const Address = require("../../models/addressSchema");
+const Coupon = require("../../models/couponSchema");
 //const mongoose = require('mongoose');
 
 // Add to cart
@@ -90,7 +91,8 @@ const loadCart = async (req, res) => {
     }
 
     cart.items.forEach((item) => {
-      const discountedPrice = item.product.price - item.product.discount;
+      const discountAmount = item.product.price * (item.product.discount / 100);
+      const discountedPrice = item.product.price - discountAmount;
       item.subtotal = discountedPrice * item.quantity;
     });
 
@@ -98,11 +100,16 @@ const loadCart = async (req, res) => {
       (total, item) => total + item.subtotal,
       0
     );
+    const availableCoupons = await Coupon.find({
+      status: 'active',
+      min_order_price: { $lte: totalPrice },
+    });
 
     res.render("cart", {
       cart: cart.items,
       totalPrice,
       user: req.session.user,
+      availableCoupons
     });
   } catch (error) {
     console.error("Error fetching cart:", error);

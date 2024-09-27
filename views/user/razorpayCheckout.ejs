@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <title>Razorpay Checkout</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <div class="form-gap"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="text-center">
+                            <h3><i class="fa fa-lock fa-4x"></i></h3>
+  <h1 class="text-center">Complete Your Payment</h1>
+  <button id="rzp-button1" type="button" class="btn btn-lg btn-primary btn-block">Pay Now</button>
+  <script>
+    var options = {
+      "key": "<%= razorpayKeyId %>", // Your Razorpay Key ID
+      "amount": "<%= order.grandTotal * 100 %>", // Amount in paisa
+      "currency": "INR",
+      "name": "THE GEM STUDIO",
+      "description": "Order Payment",
+      "order_id": "<%= razorpayOrder.id %>", // Razorpay Order ID
+      "handler": function (response) {
+        // Payment was successful
+        window.location.href = "/payment/verify?razorpay_payment_id=" + response.razorpay_payment_id + "&razorpay_order_id=" + response.razorpay_order_id + "&razorpay_signature=" + response.razorpay_signature;
+      },
+      "prefill": {
+        "name": "<%= user.name %>", // Prefilled user name
+        "email": "<%= user.email %>" // Prefilled user email
+      },
+      "theme": {
+        "color": "#F37254" // Razorpay modal theme color
+      },
+      "modal": {
+        "ondismiss": function () {
+          // Razorpay modal was closed, payment was not completed
+          window.location.href = "/payment/verify?razorpay_order_id=<%= razorpayOrder.id %>&paymentFailed=true";
+        }
+      }
+    };
+  
+    var rzp1 = new Razorpay(options);
+  
+    // Attach click event to open Razorpay modal
+    document.getElementById('rzp-button1').onclick = function(e) {
+      rzp1.open();
+      e.preventDefault();
+    }
+  </script>
+  
+  </div></div></div></div></div></div>
+</body>
+</html>

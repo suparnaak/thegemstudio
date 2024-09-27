@@ -82,11 +82,31 @@
             <div class="bottom_block discount">
               <h3>Discount Codes</h3>
               <p>Enter your coupon code if you have one.</p>
-              <form>
-                <p><input type="text" name="" value=""></p>
-                <input type="submit" id="apply_coupon" value="Apply Coupon">
-              </form>
+                            <!-- Coupon application form -->
+                            <form id="apply_coupon_form">
+                              <p>
+                                <input type="text" name="coupon_code" placeholder="Enter your coupon code" required>
+                              </p>
+                              <input type="submit" id="apply_coupon" value="Apply Coupon">
+                            </form>
+              <!-- Display available coupons -->
+              <% if (availableCoupons && availableCoupons.length > 0) { %>
+                <h4>Available Coupons</h4>
+                <ul style="list-style-type: none;">
+                  <% availableCoupons.forEach(coupon => { %>
+                    <li>
+                      <strong style="color: #d03f3f; font-size: 1em;"><%= coupon.code %></strong>: <br>
+                      <span style="font-size: 0.8em;">Discount: <%= coupon.discount_percent %>%, Minimum Order: <%= coupon.min_order_price %></span>
+                    </li>
+                  <% }) %>
+                </ul>
+              <% } else { %>
+                <p>No active coupons available.</p>
+              <% } %>
+            
+
             </div><!-- .discount -->
+            
           </div><!-- .grid_4 -->
           <div class="grid_4">
             <div class="bottom_block total">

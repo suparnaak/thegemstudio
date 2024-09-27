@@ -59,7 +59,7 @@
           <form action="/checkout/confirmOrder" method="post">
             <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
             <input type="hidden" name="addressId" value="<%= address %>">
-            <input type="hidden" name="paymentMethod" value="COD"> <!-- Example: Cash on Delivery -->
+            <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>"> <!-- Example: Cash on Delivery -->
             <button type="submit" class="btn-confirm-order">Confirm Order</button>
           </form>
 
@@ -72,5 +72,26 @@
   </section><!-- #main -->
   <div class="clear"></div>
   <!--footer begins-->
+  <script>
+    const paymentMethod = '<%= paymentMethod %>'; // Get the payment method from the server-side variable
+    const form = document.querySelector('form[action="/checkout/confirmOrder"]'); // Get the form element
+  
+    form.addEventListener('submit', function(event) {
+      if (paymentMethod === 'Cash on Delivery') {
+        event.preventDefault(); // Prevent the form from submitting immediately
+        Swal.fire({
+          title: 'Your order is being placed...',
+          text: '',
+          icon: 'info',
+          showConfirmButton: false, // Hide the OK button
+          timer: 3000 // Display the alert for 3 seconds
+        }).then(() => {
+          form.submit(); // Submit the form after the alert is closed
+        });
+      }
+    });
+  </script>
+
+
   <%- include("../../views/partials/user/footer") %>
     <!--footer ends-->

@@ -38,6 +38,7 @@
                                                                         %>, <%= order.addressId.country %>,<%=
                                                                                 order.addressId.zipcode %>
                                                     </li>
+                                                    <li><strong>Payment:</strong> <%= order.paymentStatus %>
                                                 </ul>
                                                 <div>
                                                     <p class="mb-0"><strong>ORDER #</strong>
@@ -52,9 +53,10 @@
                                         <% order.items.forEach(function(item) { %>
                                             <div class="order-item mt-4">
                                                 <div class="d-flex align-items-center mb-3">
+                                                    <a href="/product_page/<%= item.productId._id %>">
                                                     <img src="/uploads/products/<%= item.productId.images[0] %>"
                                                         alt="Product Image" class="img-thumbnail"
-                                                        style="width: 100px; height: auto;">
+                                                        style="width: 100px; height: auto;"></a>
                                                     <div class="ml-3">
                                                         <h6>
                                                             <%= item.productId.name %>

@@ -105,7 +105,8 @@
                             <div class="cart">
                                 <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"><img
                                         src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
-                                <a href="#" class="wishlist"><span></span>Add to Wishlist</a>
+                                <a href="/wishlist/add" class="wishlist" data-id="<%= product._id %>"><span></span>Add
+                                    to Wishlist</a>
                                 <a href="#" class="compare"><span></span>Add to Compare</a>
                             </div><!-- .cart -->
 
@@ -379,6 +380,59 @@
                         text: "An unexpected error occurred",
                         icon: "error",
                         button: "OK",
+                    });
+                });
+        });
+
+        //add to wishlist script
+        document.querySelector('.wishlist').addEventListener('click', function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const productId = this.getAttribute('data-id'); // Replace with actual product ID
+
+            // Send an AJAX request to add the product to the wishlist
+            fetch('/wishlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Show SweetAlert based on the response
+                    if (data.message === 'Added to wishlist') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Product added to wishlist!',
+                        });
+                    } else if (data.message === 'Out of stock') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Out of Stock',
+                            text: 'This product is currently out of stock!',
+                        });
+                    } else if (data.message === 'Blocked by admin') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Blocked',
+                            text: 'You are blocked by the admin and cannot add products to the wishlist.',
+                        });
+                    } else if (data.message === 'Already in wishlist') {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Already Added',
+                            text: 'This product is already in your wishlist!',
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while adding the product to the wishlist.',
                     });
                 });
         });
