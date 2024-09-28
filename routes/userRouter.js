@@ -51,6 +51,8 @@ router.get('/cart', userAuth,fetchCartData, cartController.loadCart);
 router.post('/cart/update', userAuth,fetchCartData, cartController.updateCartItem);
 router.post('/cart/remove', userAuth, fetchCartData,cartController.removeFromCart);
 
+
+
 //checkout management
 //router.get('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
 router.post('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
@@ -77,5 +79,7 @@ router.get('/my-orders/cancel-confirmation/:orderId/:productId', userAuth,fetchC
 
 //wishlist management
 router.post('/wishlist/add', userAuth,fetchCartData, wishlistController.addToWishlist);
-
+router.get('/wishlist',userAuth,fetchCartData,wishlistController.loadWishlist);
+router.post('/wishlist/remove', userAuth,fetchCartData, wishlistController.removeFromWishlist);
+router.post('/wishlist/add-to-cart', userAuth,fetchCartData, wishlistController.addToCart);
 module.exports = router;

@@ -53,20 +53,36 @@
               <% }) %>
 
           </tbody>
+          <tfoot>
+            <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
+                <tr>
+                    <td colspan="3">
+                        <h5>Coupon Discount:Discount: ₹<%= appliedCoupon.discount_rs %></h5>
+                    </td>
+                </tr>
+            <% } %>
+            <tr>
+                <td colspan="3">
+                    <h3>Grand Total: ₹<%= grandTotal %></h3>
+                </td>
+            </tr>
+        </tfoot>
         </table>
 
-        <% if (availableProducts.length> 0) { %>
+        <% if (availableProducts.length > 0) { %>
           <form action="/checkout/confirmOrder" method="post">
             <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
             <input type="hidden" name="addressId" value="<%= address %>">
-            <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>"> <!-- Example: Cash on Delivery -->
+            <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
+            <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
+              <input type="hidden" name="appliedCoupon" value='<%= JSON.stringify(appliedCoupon) %>'>
+            <% } %>
+            <input type="hidden" name="grandTotal" value="<%= grandTotal %>">
             <button type="submit" class="btn-confirm-order">Confirm Order</button>
           </form>
-
-          <% } else { %>
-            <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
-            <% } %>
-
+        <% } else { %>
+          <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
+        <% } %>
       </div><!-- #content -->
     </div><!-- .container_12 -->
   </section><!-- #main -->
@@ -75,8 +91,8 @@
   <script>
     const paymentMethod = '<%= paymentMethod %>'; // Get the payment method from the server-side variable
     const form = document.querySelector('form[action="/checkout/confirmOrder"]'); // Get the form element
-  
-    form.addEventListener('submit', function(event) {
+
+    form.addEventListener('submit', function (event) {
       if (paymentMethod === 'Cash on Delivery') {
         event.preventDefault(); // Prevent the form from submitting immediately
         Swal.fire({

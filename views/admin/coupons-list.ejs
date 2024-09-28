@@ -9,7 +9,7 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>Code</th>
-                        <th>Discount (%)</th>
+                        <th>Discount (Rs)</th>
                         <th>Min Order Price</th>
                         <th>Start Date</th>
                         <th>End Date</th>
@@ -21,7 +21,7 @@
                     <% coupons.forEach(coupon => { %>
                         <tr>
                             <td><%= coupon.code %></td>
-                            <td><%= coupon.discount_percent %></td>
+                            <td><%= coupon.discount_rs %></td>
                             <td><%= coupon.min_order_price %></td>
                             <td><%= coupon.start_date.toLocaleDateString() %></td>
                             <td><%= coupon.end_date.toLocaleDateString() %></td>

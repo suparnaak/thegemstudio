@@ -28,11 +28,11 @@ const wishlistSchema = new Schema(
     },
   },
   {
-    timestamps: true, // This adds createdAt and updatedAt fields automatically
+    timestamps: true, 
   }
 );
 
-// Corrected the model creation, it's now using wishlistSchema
+
 const Wishlist = mongoose.model("Wishlist", wishlistSchema);
 
 module.exports = Wishlist;

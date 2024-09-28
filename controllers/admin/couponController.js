@@ -80,14 +80,16 @@ function generateCouponCode() {
 }
 const addCoupons = async (req, res) => {
   try {
-    const { code, min_order_price, discount_percent, start_date, end_date, description, usage_limit } = req.body;
-    console.log(req.body); // Log the request body to ensure data is being received
+    // Log incoming request data
+    console.log("Request body:", req.body);
+
+    const { code, min_order_price, discount_rs, start_date, end_date, description, usage_limit } = req.body;
 
     // Basic server-side validation
     if (!code.trim()) {
       return res.status(400).json({ message: 'Coupon code cannot be empty or spaces only' });
     }
-    if (min_order_price <= 0 || discount_percent <= 0 || usage_limit <= 0) {
+    if (min_order_price <= 0 || discount_rs <= 0 || usage_limit <= 0) {
       return res.status(400).json({ message: 'Price, discount, and usage limit must be positive values' });
     }
 
@@ -100,17 +102,12 @@ const addCoupons = async (req, res) => {
     endDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
 
-    // Check that startDate is not before today
+    // Date validation
     if (startDate < today) {
       return res.status(400).json({ message: 'Start date should not be before today' });
     }
-    // Check that endDate is not before today
-    if (endDate < today) {
-      return res.status(400).json({ message: 'End date should not be before today' });
-    }
-    // Check that endDate is not before startDate
-    if (endDate < startDate) {
-      return res.status(400).json({ message: 'End date cannot be before the start date' });
+    if (endDate < today || endDate < startDate) {
+      return res.status(400).json({ message: 'End date should not be before today or the start date' });
     }
 
     // Check if the coupon code already exists
@@ -119,11 +116,11 @@ const addCoupons = async (req, res) => {
       return res.status(400).json({ message: 'Coupon code already exists' });
     }
 
-    // Create new coupon
+    // Create new coupon object
     const newCoupon = new Coupon({
       code,
       min_order_price,
-      discount_percent,
+      discount_rs,  // Make sure this matches the schema
       start_date: startDate,
       end_date: endDate,
       description,
@@ -131,13 +128,16 @@ const addCoupons = async (req, res) => {
       status: startDate <= today ? "active" : "inactive"  // Set status based on start date
     });
 
+    // Log coupon data before saving
+    console.log("New coupon to be saved:", newCoupon);
+
     // Save coupon to the database
     await newCoupon.save();
 
     res.json({ success: true, message: 'Coupon added successfully', coupon: newCoupon });
   } catch (error) {
-    console.error("Error adding coupon:", error);  // Log the error in detail
-    res.status(500).json({ success: false, message: 'Failed to add coupon', error: error.message });  // Send detailed error message
+    console.error("Error adding coupon:", error);
+    res.status(500).json({ success: false, message: 'Failed to add coupon', error: error.message });
   }
 };
 

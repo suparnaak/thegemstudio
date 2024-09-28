@@ -1,198 +1,202 @@
 <%- include("../../views/partials/admin/header") %>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h2 class="text-center mb-4">Add Coupon</h2>
-            <form id="addCouponForm" action="/admin/coupons/add" method="post">
-                <!-- Coupon Code (Readonly) -->
-                <div class="mb-3">
-                    <label for="code" class="form-label">Coupon Code</label>
-                    <input type="text" class="form-control" id="code" name="code" value="<%= couponCode %>" required>
-                    <div class="invalid-feedback">Please provide a valid coupon code (no spaces allowed).</div>
-                </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+                <h2 class="text-center mb-4">Add Coupon</h2>
+                <form id="addCouponForm" action="/admin/coupons/add" method="post">
+                    <!-- Coupon Code (Readonly) -->
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Coupon Code</label>
+                        <input type="text" class="form-control" id="code" name="code" value="<%= couponCode %>"
+                            required>
+                        <div class="invalid-feedback">Please provide a valid coupon code (no spaces allowed).</div>
+                    </div>
 
-                <!-- Minimum Order Price -->
-                <div class="mb-3">
-                    <label for="minOrderPrice" class="form-label">Minimum Order Price</label>
-                    <input type="number" class="form-control" id="minOrderPrice" name="min_order_price"
-                        placeholder="Enter minimum order price" required>
-                    <div class="invalid-feedback">Please enter a valid price (greater than 0).</div>
-                </div>
+                    <!-- Minimum Order Price -->
+                    <div class="mb-3">
+                        <label for="minOrderPrice" class="form-label">Minimum Order Price</label>
+                        <input type="number" class="form-control" id="minOrderPrice" name="min_order_price"
+                            placeholder="Enter minimum order price" required>
+                        <div class="invalid-feedback">Please enter a valid price (greater than 0).</div>
+                    </div>
 
-                <!-- Discount Percent -->
-                <div class="mb-3">
-                    <label for="discountPercent" class="form-label">Discount Percent</label>
-                    <input type="number" class="form-control" id="discountPercent" name="discount_percent"
-                        placeholder="Enter discount percentage" required>
-                    <div class="invalid-feedback">Please enter a valid discount percentage (greater than 0).</div>
-                </div>
-
-                <!-- Start Date -->
-                <div class="mb-3">
-                    <label for="startDate" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="startDate" name="start_date" required>
-                    <div class="invalid-feedback">Start date should not be before today.</div>
-                </div>
-
-                <!-- End Date -->
-                <div class="mb-3">
-                    <label for="endDate" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="endDate" name="end_date" required>
-                    <div class="invalid-feedback">End date should not be before start date or today.</div>
-                </div>
-
-                <!-- Description -->
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description"
-                        placeholder="Enter coupon description"></textarea>
-                    <div class="invalid-feedback">Please provide a valid description (no spaces allowed).</div>
-                </div>
-
-                <!-- Usage Limit -->
-                <div class="mb-3">
-                    <label for="usageLimit" class="form-label">Usage Limit</label>
-                    <input type="number" class="form-control" id="usageLimit" name="usage_limit"
-                        placeholder="Enter usage limit" required>
-                    <div class="invalid-feedback">Please enter a valid usage limit (greater than 0).</div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary">Add Coupon</button>
-            </form>
-        </div>
-    </div>
+                    <!-- Discount Rs -->
+                    <!-- Discount Rs -->
+<div class="mb-3">
+    <label for="discountRs" class="form-label">Discount Rs</label>
+    <input type="number" class="form-control" id="discountRs" name="discount_rs"
+        placeholder="Enter discount rs" required>
+    <div class="invalid-feedback">Please enter a valid discount rs (greater than 0).</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('addCouponForm');
 
-        form.addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent the default form submission
 
-            // Get form elements
-            const code = document.getElementById('code');
-            const minOrderPrice = document.getElementById('minOrderPrice');
-            const discountPercent = document.getElementById('discountPercent');
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-            const description = document.getElementById('description');
-            const usageLimit = document.getElementById('usageLimit');
+                    <!-- Start Date -->
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        <div class="invalid-feedback">Start date should not be before today.</div>
+                    </div>
 
-            // Validation flags
-            let isValid = true;
+                    <!-- End Date -->
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        <div class="invalid-feedback">End date should not be before start date or today.</div>
+                    </div>
 
-            // Helper functions
-            const isNotEmptyOrSpaces = (str) => str.trim().length > 0;
-            const isPositiveNumber = (num) => num > 0;
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description"
+                            placeholder="Enter coupon description"></textarea>
+                        <div class="invalid-feedback">Please provide a valid description (no spaces allowed).</div>
+                    </div>
 
-            // Current date for date validation
-            const today = new Date().toISOString().split('T')[0];
-            const startValue = startDate.value;
-            const endValue = endDate.value;
+                    <!-- Usage Limit -->
+                    <div class="mb-3">
+                        <label for="usageLimit" class="form-label">Usage Limit</label>
+                        <input type="number" class="form-control" id="usageLimit" name="usage_limit"
+                            placeholder="Enter usage limit" required>
+                        <div class="invalid-feedback">Please enter a valid usage limit (greater than 0).</div>
+                    </div>
 
-            // Coupon Code validation
-            if (!isNotEmptyOrSpaces(code.value)) {
-                code.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                code.classList.remove('is-invalid');
-            }
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary">Add Coupon</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            // Minimum Order Price validation
-            if (!isPositiveNumber(minOrderPrice.value)) {
-                minOrderPrice.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                minOrderPrice.classList.remove('is-invalid');
-            }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('addCouponForm');
 
-            // Discount Percent validation
-            if (!isPositiveNumber(discountPercent.value)) {
-                discountPercent.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                discountPercent.classList.remove('is-invalid');
-            }
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission
 
-            // Start Date validation
-            if (startValue < today) {
-                startDate.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                startDate.classList.remove('is-invalid');
-            }
+                // Get form elements
+                const code = document.getElementById('code');
+                const minOrderPrice = document.getElementById('minOrderPrice');
+                const discountRs = document.getElementById('discountRs');
+                const startDate = document.getElementById('startDate');
+                const endDate = document.getElementById('endDate');
+                const description = document.getElementById('description');
+                const usageLimit = document.getElementById('usageLimit');
 
-            // End Date validation
-            if (endValue < startValue || endValue < today) {
-                endDate.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                endDate.classList.remove('is-invalid');
-            }
+                // Validation flags
+                let isValid = true;
 
-            // Description validation
-            if (!isNotEmptyOrSpaces(description.value)) {
-                description.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                description.classList.remove('is-invalid');
-            }
+                // Helper functions
+                const isNotEmptyOrSpaces = (str) => str.trim().length > 0;
+                const isPositiveNumber = (num) => num > 0;
 
-            // Usage Limit validation
-            if (!isPositiveNumber(usageLimit.value)) {
-                usageLimit.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                usageLimit.classList.remove('is-invalid');
-            }
+                // Current date for date validation
+                const today = new Date().toISOString().split('T')[0];
+                const startValue = startDate.value;
+                const endValue = endDate.value;
 
-            // If form is valid, submit via AJAX
-            if (isValid) {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+                // Coupon Code validation
+                if (!isNotEmptyOrSpaces(code.value)) {
+                    code.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    code.classList.remove('is-invalid');
+                }
 
-                fetch('/admin/coupons/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data) // Send form data as JSON
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        // Show success message using SweetAlert2
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Coupon Added',
-                            text: 'Coupon has been added successfully!',
-                        }).then(() => {
-                            // Redirect to the coupons list page
-                            window.location.href = '/admin/coupons'; // Redirect to your desired route
+                // Minimum Order Price validation
+                if (!isPositiveNumber(minOrderPrice.value)) {
+                    minOrderPrice.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    minOrderPrice.classList.remove('is-invalid');
+                }
+
+                // Discount Percent validation
+                if (!isPositiveNumber(discountRs.value)) {
+                    discountRs.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    discountRs.classList.remove('is-invalid');
+                }
+
+                // Start Date validation
+                if (startValue < today) {
+                    startDate.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    startDate.classList.remove('is-invalid');
+                }
+
+                // End Date validation
+                if (endValue < startValue || endValue < today) {
+                    endDate.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    endDate.classList.remove('is-invalid');
+                }
+
+                // Description validation
+                if (!isNotEmptyOrSpaces(description.value)) {
+                    description.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    description.classList.remove('is-invalid');
+                }
+
+                // Usage Limit validation
+                if (!isPositiveNumber(usageLimit.value)) {
+                    usageLimit.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    usageLimit.classList.remove('is-invalid');
+                }
+
+                // If form is valid, submit via AJAX
+                if (isValid) {
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+
+                    fetch('/admin/coupons/add', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data) // Send form data as JSON
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                // Show success message using SweetAlert2
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Coupon Added',
+                                    text: 'Coupon has been added successfully!',
+                                }).then(() => {
+                                    // Redirect to the coupons list page
+                                    window.location.href = '/admin/coupons'; // Redirect to your desired route
+                                });
+                            } else {
+                                // Show backend error message using SweetAlert2
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: result.message || 'An error occurred while adding the coupon.',
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong, please try again later.',
+                            });
                         });
-                    } else {
-                        // Show backend error message using SweetAlert2
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: result.message || 'An error occurred while adding the coupon.',
-                        });
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Something went wrong, please try again later.',
-                    });
-                });
-            }
+                }
+            });
         });
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<%- include("../../views/partials/admin/footer") %>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <%- include("../../views/partials/admin/footer") %>

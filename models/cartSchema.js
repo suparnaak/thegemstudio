@@ -24,8 +24,16 @@ const cartSchema = new Schema(
           type: Number,
           required: true,
         },
+        finalPrice: {
+          type: Number,
+          required: true,
+        },
       },
     ],
+    grandTotal: {
+      type: Number,
+      default: 0, // This should be calculated based on items and discount
+    },
     createdAt: {
       type: Date,
       default: Date.now,

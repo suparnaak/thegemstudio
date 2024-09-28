@@ -22,6 +22,7 @@
               <th class="name" style="text-align: left;">Product Name</th>
               <th class="price" style="text-align: left;">Unit Price</th>
               <th class="discount" style="text-align: left;">Discount</th>
+              <th class="discount" style="text-align: left;">Category Discount</th>
               <th class="qty" style="text-align: left;">Qty</th>
               <th class="subtotal" style="text-align: left;">Subtotal</th>
               <th class="close" style="text-align: left;"> </th>
@@ -43,6 +44,9 @@
                   <td class="discount" style="text-align: left;">
                     <%= item.product.discount %> %
                   </td>
+                  <td class="discount" style="text-align: left;">
+                    <%= item.product.category.offer %> %
+                  </td>
                   <td class="qty" style="text-align: left;">
                     <span style="margin-bottom: 5px;">
                       <%= item.quantity %>
@@ -55,8 +59,7 @@
                     </div>
                   </td>
                   <td class="subtotal" style="text-align: left;">
-                    ₹<%= ((item.product.price - (item.product.price * item.product.discount / 100)) *
-                      item.quantity).toFixed(2) %>
+                    ₹<%= item.finalPrice * item.quantity %>
                   </td>
                   <td class="close" style="text-align: center;">
                     <button class="close" data-product-id="<%= item.product._id %>" style="opacity: 1;display: inline-block;">X</button>
@@ -79,33 +82,7 @@
         </div>
         <div id="cart_forms" class="negative-grid">
           <div class="grid_4">
-            <div class="bottom_block discount">
-              <h3>Discount Codes</h3>
-              <p>Enter your coupon code if you have one.</p>
-                            <!-- Coupon application form -->
-                            <form id="apply_coupon_form">
-                              <p>
-                                <input type="text" name="coupon_code" placeholder="Enter your coupon code" required>
-                              </p>
-                              <input type="submit" id="apply_coupon" value="Apply Coupon">
-                            </form>
-              <!-- Display available coupons -->
-              <% if (availableCoupons && availableCoupons.length > 0) { %>
-                <h4>Available Coupons</h4>
-                <ul style="list-style-type: none;">
-                  <% availableCoupons.forEach(coupon => { %>
-                    <li>
-                      <strong style="color: #d03f3f; font-size: 1em;"><%= coupon.code %></strong>: <br>
-                      <span style="font-size: 0.8em;">Discount: <%= coupon.discount_percent %>%, Minimum Order: <%= coupon.min_order_price %></span>
-                    </li>
-                  <% }) %>
-                </ul>
-              <% } else { %>
-                <p>No active coupons available.</p>
-              <% } %>
-            
-
-            </div><!-- .discount -->
+           
             
           </div><!-- .grid_4 -->
           <div class="grid_4">
@@ -113,7 +90,7 @@
               <table class="subtotal">
                 <tr class="grand_total">
                   <td>Grand Total</td>
-                  <td class="price">₹<%= totalPrice %></td>
+                  <td class="price">₹<span id="grand_total"><%= grandTotal %></span></td>
                 </tr>
               </table>
               <form action="/checkout" method="POST">
@@ -135,177 +112,215 @@
 
   const plusButtons = document.querySelectorAll('.plus');
   const minusButtons = document.querySelectorAll('.minus');
-  //const checkoutButton = document.getElementById('checkout-button'); // Reference to the checkout button
-
-  // Function to update the checkout button status based on the cart state
-  /* function updateCheckoutButton(cart) {
-    if (!cart || cart.length === 0) {
-      checkoutButton.disabled = true; // Disable the button if cart is empty
-    } else {
-      checkoutButton.disabled = false; // Enable the button if cart has items
-    }
-  } */
-
-  // Initial check to update the checkout button status
-  //const cart = <%- JSON.stringify(cart) %>;
-
+  
   plusButtons.forEach(button => {
-    button.addEventListener('click', function () {
-      const productId = this.getAttribute('data-product-id');
-      const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
-      const previousQuantity = parseInt(quantityElement.textContent);
-      const quantity = previousQuantity + 1;
+  button.addEventListener('click', function () {
+    const productId = this.getAttribute('data-product-id');
+    const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
+    const previousQuantity = parseInt(quantityElement.textContent);
+    const quantity = previousQuantity + 1;
+
+    if (quantity <= 5) { // Enforce max limit of 5
       quantityElement.textContent = quantity;
       updateQuantity(productId, quantity);
-    });
-  });
-
-  minusButtons.forEach(button => {
-    button.addEventListener('click', function () {
-      const productId = this.getAttribute('data-product-id');
-      const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
-      const previousQuantity = parseInt(quantityElement.textContent);
-      const quantity = Math.max(previousQuantity - 1, 1); // Ensure quantity is at least 1
-      quantityElement.textContent = quantity;
-      updateQuantity(productId, quantity);
-    });
-  });
-
-  function updateQuantity(productId, quantity) {
-    fetch('/cart/update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ productId, quantity }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Cart updated successfully',
-            text: 'Your cart has been updated successfully.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          updateCartTotals(data.cart);
-          updateCheckoutButton(data.cart); // Update checkout button state
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Failed to update cart',
-            text: data.error || 'Failed to update cart',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      })
-      .catch(error => console.error('Error updating cart:', error));
-  }
-
-  function updateCartTotals(cart) {
-    const subtotalElement = document.querySelector('.subtotal .price');
-    const grandTotalElement = document.querySelector('.grand_total .price');
-
-    if (!cart || cart.length === 0) {
-      subtotalElement.textContent = `₹0.00`;
-      grandTotalElement.textContent = `₹0.00`;
-      updateCheckoutButton(cart); // Update checkout button state
-      return;
-    }
-
-    let total = 0;
-
-    cart.forEach(item => {
-      const price = parseFloat(item.product.price) || 0;
-      const discount = parseFloat(item.product.discount) || 0;
-      const quantity = parseInt(item.quantity) || 1;
-
-      const itemTotal = (price - (price * discount / 100)) * quantity;
-      total += itemTotal;
-
-      const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product._id}"] .subtotal`);
-      if (itemSubtotalElement) {
-        itemSubtotalElement.textContent = `₹${itemTotal.toFixed(2)}`;
-      }
-    });
-
-    subtotalElement.textContent = `₹${total.toFixed(2)}`;
-    grandTotalElement.textContent = `₹${total.toFixed(2)}`;
-    updateCheckoutButton(cart); // Update checkout button state
-  }
-
-  const removeButtons = document.querySelectorAll('.close');
-
-  removeButtons.forEach(button => {
-    button.addEventListener('click', function (event) {
-      const productId = this.getAttribute('data-product-id');
-      if (productId) {
-        Swal.fire({
-          title: 'Are you sure?',
-          text: "You won't be able to revert this!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, remove it!'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            fetch('/cart/remove', {
-              method: 'POST',  // Changed to POST
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ productId })  // Send productId in the body
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  Swal.fire({
-                    icon: 'success',
-                    title: 'Removed!',
-                    text: 'The item has been removed from your cart.',
-                    timer: 2000,
-                    showConfirmButton: false
-                  });
-
-                  const itemRow = document.querySelector(`tr[data-product-id="${productId}"]`);
-                  if (itemRow) {
-                    itemRow.remove();
-                    updateCartTotals(data.cart);  // Update cart totals
-                  }
-                } else {
-                  Swal.fire({
-                    icon: 'error',
-                    title: 'Failed to remove',
-                    text: data.error || 'Failed to remove the item from your cart',
-                    timer: 2000,
-                    showConfirmButton: false
-                  });
-                }
-              })
-              .catch(error => console.error('Error removing item:', error));
-          }
-        });
-      }
-    });
-  });
-
-  // Prevent proceeding if cart is empty and show alert
-/*   checkoutButton.addEventListener('click', function (event) {
-    if (checkoutButton.disabled) {
-      event.preventDefault(); // Prevent form submission
+    } else {
       Swal.fire({
         icon: 'warning',
-        title: 'Cart is empty',
-        text: 'Please add items to your cart before proceeding to checkout.',
+        title: 'Max Quantity Reached',
+        text: 'You can only add up to 5 items.',
+        timer: 2000,
+        showConfirmButton: false
       });
     }
-  }); */
+  });
+});
+
+minusButtons.forEach(button => {
+  button.addEventListener('click', function () {
+    const productId = this.getAttribute('data-product-id');
+    const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
+    const previousQuantity = parseInt(quantityElement.textContent);
+    const quantity = Math.max(previousQuantity - 1, 1); // Ensure quantity doesn't go below 1
+
+    if (quantity >= 1) {
+      quantityElement.textContent = quantity;
+      updateQuantity(productId, quantity);
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Min Quantity Reached',
+        text: 'You must add at least 1 item.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  });
+});
+
+function updateQuantity(productId, quantity) {
+  fetch('/cart/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ productId, quantity }),
+  })
+    .then(response => {
+      // Check if the response status is OK (2xx)
+      if (!response.ok) {
+        throw new Error(`Network response was not OK. Status: ${response.status}`);
+      }
+      return response.json(); // Parse response as JSON
+    })
+    .then(data => {
+      if (data.success) {
+        // Successfully updated the cart
+        Swal.fire({
+          icon: 'success',
+          title: 'Cart updated successfully',
+          text: 'Your cart has been updated successfully.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        // Update the cart and grand total separately
+        updateCartTotals(data.cart, data.grandTotal);
+      } else {
+        // The response was OK, but the update failed on the backend
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to update cart',
+          text: data.error || 'Cart update failed.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    })
+    .catch(error => {
+      // Log the error to understand what went wrong
+      console.error('Error updating cart:', error);
+
+      // Show a network error message if the fetch fails
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: `There was a problem updating the cart: ${error.message}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+    });
+}
+
+function updateCartTotals(cart, grandTotal) {
+  const subtotalElement = document.querySelector('.subtotal .price');
+  const grandTotalElement = document.querySelector('.grand_total .price');
+
+  // If the cart is empty or not defined
+  if (!cart || cart.length === 0) {
+    subtotalElement.textContent = `₹0.00`;
+    grandTotalElement.textContent = `₹0.00`;
+    // Optionally disable the checkout button here
+    return;
+  }
+
+  // Calculate the subtotal for the cart (sum of finalPrice * quantity for each item)
+  let subtotal = 0;
+
+  cart.forEach(item => {
+    const itemTotal = item.finalPrice * item.quantity; // Use finalPrice from the item directly
+    subtotal += itemTotal; // Accumulate subtotal
+
+    // Update item subtotal in the DOM
+    const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product._id}"] .subtotal`);
+    if (itemSubtotalElement) {
+      itemSubtotalElement.textContent = `₹${itemTotal.toFixed(2)}`; // Update item subtotal
+    }
+  });
+
+  // Update the subtotal in the DOM
+  subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
+
+  // Update the grand total in the DOM using the grandTotal from the server
+  if (grandTotal !== undefined) {
+    grandTotalElement.textContent = `₹${grandTotal.toFixed(2)}`;
+  }
+}
+
+
+const removeButtons = document.querySelectorAll('.close');
+
+removeButtons.forEach(button => {
+  button.addEventListener('click', function (event) {
+    const productId = this.getAttribute('data-product-id');
+    if (productId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, remove it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Send request to remove item from cart
+          fetch('/cart/remove', {
+            method: 'POST',  // Use POST method
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId })  // Send productId in the body
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                // Show success message
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Removed!',
+                  text: 'The item has been removed from your cart.',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+
+                // Remove the item row from the DOM
+                const itemRow = document.querySelector(`tr[data-product-id="${productId}"]`);
+                if (itemRow) {
+                  itemRow.remove();
+                }
+
+                // Update the cart totals with the new cart and grand total
+                updateCartTotals(data.cart, data.grandTotal);  // Pass both cart and grandTotal
+              } else {
+                // Handle error if item removal failed
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Failed to remove',
+                  text: data.error || 'Failed to remove the item from your cart',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              }
+            })
+            .catch(error => {
+              // Log and display network error
+              console.error('Error removing item:', error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'There was an issue removing the item from your cart.',
+                timer: 2000,
+                showConfirmButton: false
+              });
+            });
+        }
+      });
+    }
+  });
+});
 
 </script>
-
+<
+  
 <!--footer begins-->
 <%- include("../../views/partials/user/footer") %>
 <!--footer ends-->

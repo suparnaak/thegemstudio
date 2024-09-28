@@ -11,7 +11,7 @@ const couponSchema = new Schema({
     type: Number,
     required: true
   },
-  discount_percent: {
+  discount_rs: {
     type: Number,
     required: true
   },
