@@ -1,0 +1,48 @@
+<%- include("../../views/partials/admin/header") %>
+    <!-- Main Content -->
+    <div class="main-content p-4 flex-fill">
+        <h5>Dashboard</h5>
+        <p>Welcome to the admin dashboard. Here you can manage users, products, categories, and coupons.</p>
+        <!-- Your content here -->
+        <div class="sales-report-filters">
+            <label for="reportType">Select Report Type:</label>
+            <select id="reportType">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="custom">Custom Date Range</option>
+            </select>
+          
+            <div id="customDateRange" style="display: none;">
+              <label for="startDate">Start Date:</label>
+              <input type="date" id="startDate">
+              
+              <label for="endDate">End Date:</label>
+              <input type="date" id="endDate">
+            </div>
+          
+            <button id="generateReportBtn">Generate Report</button>
+          </div>
+          
+          <!-- Table to display sales report -->
+          <table id="salesReportTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Total Amount</th>
+                <th>Discount</th>
+                <th>Coupon Deduction</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          
+          <!-- Export options -->
+          <button id="downloadPdfBtn">Download PDF</button>
+          <button id="downloadExcelBtn">Download Excel</button>
+          
+    </div>
+    </div>
+<%- include("../../views/partials/admin/footer") %>

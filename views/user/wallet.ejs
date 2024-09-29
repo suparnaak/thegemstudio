@@ -1,0 +1,68 @@
+<!-- Header -->
+<%- include("../../views/partials/user/header") %>
+    <!-- End Header -->
+
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">Wallet</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="address-page">
+        <div class="container mt-5">
+            <div class="row">
+                <!-- Sidebar -->
+                <%- include("../../views/partials/user/sidebar") %>
+
+                    <!-- Main Content -->
+                    <!-- Display Wallet Balance -->
+                    <div class="col-md-9">
+                        <h2 class="mb-4">Wallet</h2>
+
+                        <!-- Display the Balance -->
+                        <div class="wallet-balance mb-4">
+                            <h4>Your Balance: ₹<%= balance.toFixed(2) %>
+                            </h4>
+                        </div>
+
+                        <!-- Display Transactions -->
+                        <h4>Transactions</h4>
+                        <% if (transactions.length===0) { %>
+                            <p>No transactions yet.</p>
+                            <% } else { %>
+                                <table class="table table-bordered" style="text-align: left;">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% transactions.forEach(transaction=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= new Date(transaction.date).toLocaleDateString() %>
+                                                </td>
+                                                <td>
+                                                    <%= transaction.type==='credit' ? 'Credit' : 'Debit' %>
+                                                </td>
+                                                <td>₹<%= transaction.amount.toFixed(2) %>
+                                                </td>
+                                                <td>
+                                                    <%= transaction.description %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                                <% } %>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+    <%- include("../../views/partials/user/footer") %>

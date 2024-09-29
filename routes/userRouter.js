@@ -6,6 +6,7 @@ const userProfileController = require('../controllers/user/userProfileController
 const addressController = require('../controllers/user/addressController');
 const orderController = require('../controllers/user/orderController');
 const wishlistController = require('../controllers/user/wishlistController');
+const walletController = require('../controllers/user/walletController');
 const passport = require('../config/passport');
 const { userAuth,isLoggedIn } = require("../middlewares/auth");
 const { fetchCartData } = require("../middlewares/fetchCartData");
@@ -82,4 +83,8 @@ router.post('/wishlist/add', userAuth,fetchCartData, wishlistController.addToWis
 router.get('/wishlist',userAuth,fetchCartData,wishlistController.loadWishlist);
 router.post('/wishlist/remove', userAuth,fetchCartData, wishlistController.removeFromWishlist);
 router.post('/wishlist/add-to-cart', userAuth,fetchCartData, wishlistController.addToCart);
+
+//wallet
+router.get('/wallet',userAuth,fetchCartData,walletController.loadWallet);
+
 module.exports = router;

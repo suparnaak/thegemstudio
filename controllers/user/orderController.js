@@ -3,6 +3,7 @@ const Address = require("../../models/addressSchema");
 const Product = require("../../models/productsSchema");
 const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
+const Wallet = require("../../models/walletSchema");
 const Coupon = require("../../models/couponSchema");
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
@@ -442,13 +443,51 @@ const cancelOrder = async (req, res) => {
         },
       }
     );
+    if (order.paymentMethod !== "Cash on Delivery") {
+      let wallet = await Wallet.findOne({ userId: req.session.user._id });
 
+      if (!wallet) {
+        wallet = new Wallet({
+          userId: req.session.user._id,
+          balance: 0,
+          transactions: [],
+        });
+      }
+
+      const refundAmount = Number(order.grandTotal);
+
+      // Ensure refundAmount is a valid number
+      if (isNaN(refundAmount)) {
+        throw new Error(`Invalid refund amount: ${itemToCancel.grandTotal}`);
+      }
+
+      // Update the wallet balance using toFixed(2) to avoid floating-point issues
+      wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
+
+      const transactionId = generateTransactionId();
+      const transaction = {
+        type: "credit",
+        amount: refundAmount,
+        description: `Refund for canceled order ${order.orderId}, product ${product.name}`,
+        date: new Date(),
+        transactionId,
+      };
+
+      wallet.transactions.push(transaction);
+
+      // Save the updated wallet
+      await wallet.save();
+    }
     res.redirect(`/my-orders/cancel-confirmation/${orderId}/${productId}`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+function generateTransactionId() {
+  return Math.floor(100000000000 + Math.random() * 900000000000).toString(); // 12-digit random number
+}
+
 //canccellation confirmation
 const loadCancelConfirmation = async (req, res) => {
   const { orderId, productId } = req.params;
