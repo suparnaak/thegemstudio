@@ -2,58 +2,61 @@ const Product = require("../../models/productsSchema");
 const Order = require("../../models/orderSchema");
 
 const listOrders = async (req, res) => {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = 5; // Number of orders per page
-      const skip = (page - 1) * limit;
-  
-      // Fetch orders with pagination
-      const orders = await Order.find({})
-        .populate('userId', 'name email')
-        .populate('items.productId', 'name price discount')
-        .populate('addressId', 'houseName street city country zipcode mobile')
-        .skip(skip)
-        .limit(limit)
-        .sort({ orderDate: -1 });
-  
-      const totalOrders = await Order.countDocuments();
-      const totalPages = Math.ceil(totalOrders / limit);
-  
-      // Render the view and pass the orders and pagination data
-      res.render('orders-list', {
-        orders: orders || [], // Ensure orders is always an array
-        currentPage: page,
-        totalPages,
-      });
-    } catch (error) {
-      console.log('Error listing orders:', error);
-      // Render the view with an empty orders array in case of an error
-      res.render('orders-list', {
-        orders: [],
-        currentPage: 1,
-        totalPages: 1,
-        error: 'An error occurred while fetching orders.'
-      });
-    }
-  };
-  const listOrderDetails = async (req, res) => {
-    try {
-        const orderId = req.params.id;
-        const order = await Order.findById(orderId)
-            .populate('userId', 'name email')
-            .populate('items.productId', 'name price discount')
-            .populate('addressId', 'houseName street city country zipcode mobile');
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5; // Number of orders per page
+    const skip = (page - 1) * limit;
 
-        if (!order) {
-            return res.status(404).send('Order not found');
-        }
+    // Fetch orders with pagination and populate necessary fields (excluding addressId)
+    const orders = await Order.find({})
+      .populate('userId', 'name email') // Populate user details (name, email)
+      .populate('items.productId', 'name price discount') // Populate product details for items
+      .skip(skip)
+      .limit(limit)
+      .sort({ orderDate: -1 });
 
-        res.render('order-details', { order });
-    } catch (error) {
-        console.error('Error fetching order details:', error);
-        res.status(500).send('An error occurred while fetching order details');
+    const totalOrders = await Order.countDocuments();
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    // Render the view and pass the orders and pagination data
+    res.render('orders-list', {
+      orders: orders || [], // Ensure orders is always an array
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    console.log('Error listing orders:', error);
+    // Render the view with an empty orders array in case of an error
+    res.render('orders-list', {
+      orders: [],
+      currentPage: 1,
+      totalPages: 1,
+      error: 'An error occurred while fetching orders.',
+    });
+  }
+};
+
+const listOrderDetails = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    // Fetch the order details with user and product information, but not addressId
+    const order = await Order.findById(orderId)
+      .populate('userId', 'name email') // Populate user details
+      .populate('items.productId', 'name price discount'); // Populate product details
+
+    if (!order) {
+      return res.status(404).send('Order not found');
     }
-  };
+
+    // Render the order-details page, passing the order object
+    res.render('order-details', { order });
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    res.status(500).send('An error occurred while fetching order details');
+  }
+};
+
   const updateOrderStatus = async (req, res) => {
     try {
         const { orderId, paymentStatus, productId, newStatus } = req.body;

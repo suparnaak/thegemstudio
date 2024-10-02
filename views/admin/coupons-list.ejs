@@ -13,6 +13,8 @@
                         <th>Min Order Price</th>
                         <th>Start Date</th>
                         <th>End Date</th>
+                        <th>Limit</th>
+                        <th>Count</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -25,6 +27,8 @@
                             <td><%= coupon.min_order_price %></td>
                             <td><%= coupon.start_date.toLocaleDateString() %></td>
                             <td><%= coupon.end_date.toLocaleDateString() %></td>
+                            <td><%= coupon.usage_limit %></td>
+                            <td><%= coupon.used_count %></td>
                             <td><%= coupon.status %></td>
                             <td>
                                 <% if (coupon.is_deleted) { %>

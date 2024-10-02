@@ -226,7 +226,6 @@ const loadMyOrders = async (req, res) => {
     const user = req.session.user;
     if (user) {
       const orders = await Order.find({ userId: user._id })
-        .populate("addressId")
         .populate("items.productId")
         .sort({ createdAt: -1 });
 

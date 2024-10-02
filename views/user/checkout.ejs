@@ -25,7 +25,7 @@
                             <option value="" disabled selected>Select a coupon</option>
                             <% coupons.forEach(function(coupon) { %>
                                 <option value="<%= coupon.code %>" data-discount="<%= coupon.discount_rs %>">
-                                    <%= coupon.code %> - ₹<%= coupon.discount_rs %> Off
+                                    <%= coupon.code %> : ₹<%= coupon.discount_rs %> Off
                                 </option>
                                 <% }) %>
                         </select>
@@ -44,6 +44,8 @@
                             <th style="text-align: left;">Product Name</th>
                             <th style="text-align: left;">Quantity</th>
                             <th style="text-align: left;">Unit Price</th>
+                            <th style="text-align: left;">Discount %</th>
+                            <th style="text-align: left;">Discounted Price</th>
                             <th style="text-align: left;">Status</th>
                         </tr>
                     </thead>
@@ -57,6 +59,8 @@
                                     <%= product.quantity %>
                                 </td>
                                 <td style="text-align: left;">₹<%= product.price %></td>
+                                <td style="text-align: left;"><%= product.appliedDiscountPercent %></td>
+                                <td style="text-align: left;">₹<%= product.finalPrice %></td>
                                 <td style="text-align: left;">Available</td>
                             </tr>
                         <% }) %>

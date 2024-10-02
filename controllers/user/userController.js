@@ -1,5 +1,6 @@
 const User = require('../../models/userSchema');
 const Product = require('../../models/productsSchema');
+const Category = require('../../models/categorySchema');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config();
@@ -208,62 +209,101 @@ const login = async (req,res)=>{
 }
 
 //logout
-const logout = async (req,res)=>{
+const logout = async (req, res) => {
     try {
-         req.session.destroy((err)=>{
-            if(err){
-                console.log("Error in destroying session");
-                return res.redirect("/pageNotFound");
-            }
-            return res.redirect('/login')
-         })
+      // Clear any additional data you might have set
+      req.user = null;
+  
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error in destroying session:", err);
+          return res.status(500).send("Error logging out. Please try again.");
+        }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        
+        // Redirect to login page
+        res.redirect('/login');
+      });
     } catch (error) {
-        console.error("Logout error",error);
-        res.redirect("/pageNotFound")
+      console.error("Logout error:", error);
+      res.status(500).send("An unexpected error occurred. Please try again.");
     }
-}
-// Load products with pagination
+  };
+// Load products with pagination and category filtering
 const loadProducts = async (req, res) => {
     try {
         const user = req.session.user;
-
-        // Get the current page and sort option from query params
         const page = parseInt(req.query.page) || 1;
-        const sortOption = req.query.sort || 'newest'; // Default to newest
-        const itemsPerPage = 9; // Number of products per page
+        const sortOption = req.query.sort || 'newest'; 
+        const selectedCategory = req.query.category || null; 
+        const itemsPerPage = 9;
 
-        // Count total products to calculate pagination
-        const totalProducts = await Product.countDocuments({ isListed: true });
+        // Fetch categories that are listed
+        const categories = await Category.find({ isListed: true });
 
-        // Define sorting criteria based on the selected option
+        // Build the product query
+        const productQuery = { isListed: true };
+        if (selectedCategory) {
+            productQuery.category = selectedCategory;
+        }
+
+        // Count total products
+        const totalProducts = await Product.countDocuments(productQuery);
+
+        // Define sorting criteria based on the user's selection
         let sortCriteria;
         switch (sortOption) {
             case 'price-asc':
-                sortCriteria = { price: 1 }; // Ascending order by price
+                sortCriteria = { price: 1 }; 
                 break;
             case 'price-desc':
-                sortCriteria = { price: -1 }; // Descending order by price
+                sortCriteria = { price: -1 }; 
                 break;
             case 'newest':
-                sortCriteria = { createdAt: -1 }; // Descending order by created date
+                sortCriteria = { createdAt: -1 }; 
                 break;
             default:
-                sortCriteria = { createdAt: -1 }; // Default to newest
+                sortCriteria = { createdAt: -1 }; 
                 break;
         }
 
-        // Retrieve products for the current page with pagination and sorting
-        const products = await Product.find({ isListed: true })
-            .sort(sortCriteria) // Apply sorting
+        // Fetch products with the current sorting and pagination
+        const products = await Product.find(productQuery)
+            .sort(sortCriteria)
             .skip((page - 1) * itemsPerPage)
-            .limit(itemsPerPage);
+            .limit(itemsPerPage)
+            .populate('category'); // Ensure categories are populated for each product
 
+        // Calculate the final price for each product
+        const productsWithFinalPrice = products.map(product => {
+            const productDiscount = product.discount || 0; // Product discount in percentage
+            const categoryOffer = product.category.offer || 0; // Category offer in percentage
+            
+            // Use the higher discount between the product's discount and the category's offer
+            const maxDiscount = Math.max(productDiscount, categoryOffer);
+
+            // Calculate the final price by applying the discount
+            const finalPrice = product.price - (product.price * (maxDiscount / 100));
+
+            // Add the final price to the product object
+            return {
+                ...product._doc, // Spread product data
+                finalPrice: finalPrice.toFixed(2), // Format finalPrice to 2 decimal places
+                maxDiscount // You can also pass maxDiscount if needed
+            };
+        });
+
+        // Render the product page
         res.render("products", {
             user: user || null,
-            products: products,
+            products: productsWithFinalPrice,
+            categories: categories,
             currentPage: page,
             totalPages: Math.ceil(totalProducts / itemsPerPage),
-            sortOption: sortOption // Pass the selected sort option to the view
+            sortOption: sortOption,
+            selectedCategory: selectedCategory
         });
     } catch (error) {
         console.log("Products page not found:", error);
@@ -276,18 +316,44 @@ const loadProductPage = async (req, res) => {
     try {
         const user = req.session.user;
         const productId = req.params.id;
-        const product = await Product.findById(productId)
+
+        // Fetch the product by ID and populate the category to access the category offer
+        const product = await Product.findById(productId).populate('category');
+        
         if (!product) {
             return res.status(404).send('Product not found');
         }
-        const relatedProducts = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(4);
-        if (user) {
-            // Directly use the user data from the session to render the product page
-            res.render("product-page", { user: user,product,relatedProducts });
-        } else {
-            // If no user is in the session, render the product page without user data
-            res.render("product-page", { user: null,product,relatedProducts });
-        }
+
+        // Calculate the finalPrice based on the higher of the product discount or the category offer
+        const productDiscount = product.discount || 0; // Product discount in percentage
+        const categoryOffer = product.category.offer || 0; // Category offer in percentage
+        
+        // Use the higher discount between the product's discount and the category's offer
+        const maxDiscount = Math.max(productDiscount, categoryOffer);
+
+        // Calculate the final price by applying the higher discount
+        const finalPrice = product.price - (product.price * (maxDiscount / 100));
+
+        // Add the finalPrice to the product object
+        const productWithFinalPrice = {
+            ...product._doc, // Spread the product's data
+            finalPrice: finalPrice.toFixed(2), // Format finalPrice to 2 decimal places
+            maxDiscount // Optional: You can pass maxDiscount to the front-end as well
+        };
+
+        // Fetch related products from the same category (excluding the current product)
+        const relatedProducts = await Product.find({ 
+            category: product.category._id, 
+            _id: { $ne: product._id } 
+        }).limit(4);
+
+        // Render the product page with or without user data
+        res.render("product-page", {
+            user: user || null, // User data if logged in, otherwise null
+            product: productWithFinalPrice, // Send the product with the calculated finalPrice
+            relatedProducts // Send related products
+        });
+
     } catch (error) {
         console.log("Product page not found:", error);
         res.status(500).send('Server Error');

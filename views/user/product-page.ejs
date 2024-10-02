@@ -59,11 +59,15 @@
 
                             <div class="ava_price">
                                 <div class="price">
-                                    <% if (product.discount> 0) { %>
-                                        <div class="price_old">₹<%= product.price + product.discount %>
-                                        </div>
-                                        <% } %>
-                                            ₹<%= product.price %>
+                                    <% if (product.discount > 0 || product.category.offer > 0) { %>
+                                        <!-- Display the original price (strikethrough) -->
+                                        <div class="price_old">₹<%= product.price %></div>
+                                        <!-- Display the final discounted price -->
+                                        ₹<%= product.finalPrice %>
+                                    <% } else { %>
+                                        <!-- If no discount or offer, just show the original price -->
+                                        ₹<%= product.price %>
+                                    <% } %>
                                 </div><!-- .price -->
 
                                 <div class="availability_sku">

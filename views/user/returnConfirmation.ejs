@@ -1,0 +1,45 @@
+<!--header begins-->
+<%- include("../../views/partials/user/header") %>
+    <!--header ends-->
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><a href="">My Orders</a><span></span><span class="current">Return
+                    Confirm</span>
+            </div><!-- .grid_12 -->
+        </div><!-- .container_12 -->
+    </div><!-- .breadcrumbs -->
+    <div class="container profile-page mt-5">
+        <div class="row">
+            <!-- Sidebar -->
+
+            <%- include("../../views/partials/user/sidebar") %>
+
+                <!-- Profile Content -->
+                <div class="col-md-9 profile-content">
+
+
+
+                    <h1>Order Return Confirmation</h1>
+
+                    <p>Return Initiated.</p>
+                    <p>If you are paid, the amount will be added to your wallet.</p>
+
+                    <p><strong>Order ID:</strong>
+                        <%= order._id %>
+                    </p>
+                    <p><strong>Product:</strong>
+                        <%= product.name %>
+                    </p>
+                    <p><strong>Quantity:</strong>
+                        <%= order.items.find(item=> item.productId.equals(product._id)).quantity %>
+                    </p>
+                    
+
+                    <a href="/my-orders">Back to My Orders</a>
+                </div>
+        </div>
+    </div>
+
+    <!--footer begins-->
+    <%- include("../../views/partials/user/footer") %>

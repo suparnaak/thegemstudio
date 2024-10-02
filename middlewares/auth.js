@@ -5,6 +5,7 @@ const userAuth = (req, res, next) => {
     User.findById(req.session.user)
       .then((data) => {
         if (data && !data.isBlocked) {
+          req.user = data; // Attach the user data to the request object
           next();
         } else {
           // Destroy the session if the user is blocked
@@ -19,14 +20,13 @@ const userAuth = (req, res, next) => {
         }
       })
       .catch((error) => {
-        console.log("Error in user auth middleware");
+        console.log("Error in user auth middleware:", error);
         res.status(500).send("Internal server Error");
       });
   } else {
     res.redirect("/login");
   }
 };
-
 const isLoggedIn = (req, res, next) => {
   if (req.session.user) {
     // If user is logged in, redirect to home page

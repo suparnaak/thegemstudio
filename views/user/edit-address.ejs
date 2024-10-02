@@ -19,7 +19,7 @@
                     <!-- Main Content -->
                     <div class="col-md-9">
                         <h2 class="mb-4">Edit Address</h2>
-
+                        <% if (address) { %>
                         <form id="addressForm" action="/manage-addresses/edit-address/<%= address._id %>" method="POST" onsubmit="return validateForm()">
                             <div class="form-group">
                                 <label for="name">Name</label>
@@ -60,6 +60,9 @@
                             <button type="submit" class="btn btn-primary">Update Address</button>
                             <a href="/manage-addresses" class="btn btn-secondary">Cancel</a>
                         </form>
+                        <% } else { %>
+                            <p><%= message %></p>
+                          <% } %>
                     </div>
             </div>
         </div>

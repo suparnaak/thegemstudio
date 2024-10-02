@@ -37,7 +37,8 @@ router.get("/products/add", adminAuth, productController.loadAddProducts);
 router.post("/products/add",  multer.array('images', 10),adminAuth, productController.addProduct); 
 router.get("/products/edit/:id", adminAuth,productController.loadEditProduct); 
 router.post("/products/edit/:id", multer.array('images', 10),adminAuth, productController.editProduct);
-router.post("/products/delete/:id", adminAuth,productController.deleteProduct);
+router.post("/products/block/:id", adminAuth,productController.blockProduct);
+router.post('/products/unblock/:id', adminAuth,productController.unblockProduct);
 
 //order management routes
 router.get("/orders", adminAuth, userOrderController.listOrders);

@@ -1,113 +1,106 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-  <!--header ends-->
+<!--header ends-->
 
-  <div class="breadcrumbs">
-    <div class="container_12">
-      <div class="grid_12">
-        <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
-      </div>
+<div class="breadcrumbs">
+  <div class="container_12">
+    <div class="grid_12">
+      <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
     </div>
   </div>
+</div>
 
-  <section id="main">
-    <div class="container_12">
-      <div id="content" class="grid_12">
-        <header>
-          <h1 class="page_title">Confirm Your Order</h1>
-        </header>
+<section id="main">
+  <div class="container_12">
+    <div id="content" class="grid_12">
+      <header>
+        <h1 class="page_title">Confirm Your Order</h1>
+      </header>
 
-        <h3>Shipping to:</h3>
-        <p>
-          <%= addressFull.name %>,<br>
-            <%= addressFull.houseName %>,<br>
-              <%= addressFull.street %>,<br>
-                <%= addressFull.city %>,<br>
-                  <%= addressFull.country %>,<br>
-                    <%= addressFull.zipcode %>
-        </p>
+      <h3>Shipping to:</h3>
+      <p>
+        <%= address.name %>,<br>
+        <%= address.houseName %>,<br>
+        <%= address.street %>,<br>
+        <%= address.city %>,<br>
+        <%= address.country %>,<br>
+        <%= address.zipcode %>,<br>
+        <%= address.mobile %>,<br>
+      </p>
 
-        <h3>Products in Your Order:</h3>
-        <table class="order-table">
-          <thead>
+      <h3>Products in Your Order:</h3>
+      <table class="order-table">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Product Name</th>
+            <th style="text-align: left;">Unit Price</th>
+            <th style="text-align: left;">Discounted Price</th>
+            <th style="text-align: left;">Quantity</th>
+            <th style="text-align: left;">Sub Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% cartItems.forEach(function(item) { %>
             <tr>
-              <th style="text-align: left;">Product Name</th>
-              <th style="text-align: left;">Quantity</th>
-              <th style="text-align: left;">Price</th>
-              <th style="text-align: left;">Status</th>
+             
+              <td style="text-align: left;"><%= item.product.name %></td>
+              <td style="text-align: left;">₹<%= item.product.price %></td>
+              <td style="text-align: left;">₹<%= item.finalPrice %></td>
+              <td style="text-align: left;"><%= item.quantity %></td>
+              <td style="text-align: left;">₹<%= item.quantity * item.finalPrice %></td>
             </tr>
-          </thead>
-          <tbody>
-            <% availableProducts.forEach(function(product) { %>
-              <tr>
-                <td style="text-align: left;">
-                  <%= product.name %>
-                </td>
-                <td style="text-align: left;">
-                  <%= product.quantity %>
-                </td>
-                <td style="text-align: left;">₹<%= product.price %>
-                </td>
-                <td style="text-align: left;">Available</td>
-              </tr>
-              <% }) %>
-
-          </tbody>
-          <tfoot>
-            <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
-                <tr>
-                    <td colspan="3">
-                        <h5>Coupon Discount:Discount: ₹<%= appliedCoupon.discount_rs %></h5>
-                    </td>
-                </tr>
-            <% } %>
+          <% }) %>
+        </tbody>
+        <tfoot>
+          <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
             <tr>
-                <td colspan="3">
-                    <h3>Grand Total: ₹<%= grandTotal %></h3>
-                </td>
+              <td colspan="3">
+                <h5>Coupon Discount: ₹<%= appliedCoupon.discount_rs %></h5>
+              </td>
             </tr>
+          <% } %>
+          <tr>
+            <td colspan="3">
+              <h3>Grand Total: ₹<%= grandTotal %></h3>
+            </td>
+          </tr>
         </tfoot>
-        </table>
+      </table>
 
-        <% if (availableProducts.length > 0) { %>
-          <form action="/checkout/confirmOrder" method="post">
-            <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
-            <input type="hidden" name="addressId" value="<%= address %>">
-            <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
-            <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
-              <input type="hidden" name="appliedCoupon" value='<%= JSON.stringify(appliedCoupon) %>'>
-            <% } %>
-            <input type="hidden" name="grandTotal" value="<%= grandTotal %>">
-            <button type="submit" class="btn-confirm-order">Confirm Order</button>
-          </form>
-        <% } else { %>
-          <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
+      <form action="/checkout/confirmOrder" method="post">
+       
+        <input type="hidden" name="addressId" value='<%= JSON.stringify(address) %>'>
+        <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
+        <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
+          <input type="hidden" name="appliedCoupon" value='<%= JSON.stringify(appliedCoupon) %>'>
         <% } %>
-      </div><!-- #content -->
-    </div><!-- .container_12 -->
-  </section><!-- #main -->
-  <div class="clear"></div>
-  <!--footer begins-->
-  <script>
-    const paymentMethod = '<%= paymentMethod %>'; // Get the payment method from the server-side variable
-    const form = document.querySelector('form[action="/checkout/confirmOrder"]'); // Get the form element
+        <input type="hidden" name="grandTotal" value="<%= grandTotal %>">
+        <button type="submit" class="btn-confirm-order">Confirm Order</button>
+      </form>
+    </div><!-- #content -->
+  </div><!-- .container_12 -->
+</section><!-- #main -->
+<div class="clear"></div>
+<!--footer begins-->
+<script>
+  const paymentMethod = '<%= paymentMethod %>'; // Get the payment method from the server-side variable
+  const form = document.querySelector('form[action="/checkout/confirmOrder"]'); // Get the form element
 
-    form.addEventListener('submit', function (event) {
-      if (paymentMethod === 'Cash on Delivery') {
-        event.preventDefault(); // Prevent the form from submitting immediately
-        Swal.fire({
-          title: 'Your order is being placed...',
-          text: '',
-          icon: 'info',
-          showConfirmButton: false, // Hide the OK button
-          timer: 3000 // Display the alert for 3 seconds
-        }).then(() => {
-          form.submit(); // Submit the form after the alert is closed
-        });
-      }
-    });
-  </script>
+  form.addEventListener('submit', function (event) {
+    if (paymentMethod === 'Cash on Delivery') {
+      event.preventDefault(); // Prevent the form from submitting immediately
+      Swal.fire({
+        title: 'Your order is being placed...',
+        text: '',
+        icon: 'info',
+        showConfirmButton: false, // Hide the OK button
+        timer: 3000 // Display the alert for 3 seconds
+      }).then(() => {
+        form.submit(); // Submit the form after the alert is closed
+      });
+    }
+  });
+</script>
 
-
-  <%- include("../../views/partials/user/footer") %>
-    <!--footer ends-->
+<%- include("../../views/partials/user/footer") %>
+<!--footer ends-->

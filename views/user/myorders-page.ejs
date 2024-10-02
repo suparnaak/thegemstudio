@@ -33,10 +33,10 @@
                                                     <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %>
                                                     </li>
                                                     <li><strong>SHIP TO:</strong>
-                                                        <%= order.addressId.name %>, <%= order.addressId.houseName %>,
-                                                                <%= order.addressId.street %>, <%= order.addressId.city
-                                                                        %>, <%= order.addressId.country %>,<%=
-                                                                                order.addressId.zipcode %>
+                                                        <%= order.address.name %>, <%= order.address.houseName %>,
+                                                                <%= order.address.street %>, <%= order.address.city
+                                                                        %>, <%= order.address.country %>,<%=
+                                                                                order.address.zipcode %>
                                                     </li>
                                                     <li><strong>Payment:</strong> <%= order.paymentStatus %>
                                                 </ul>
@@ -74,14 +74,18 @@
                                                 <!-- Action Buttons -->
                                                 <div class="d-flex justify-content-start">
 
-                                                    <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>
-                                        <button class="btn btn-outline-warning btn-sm mr-2">Return or Replace</button> -->
-                                                    <% if (item.deliveryStatus !=='Cancelled' && item.deliveryStatus
-                                                        !=='Delivered' && item.deliveryStatus
-                                                        !=='Admin Cancelled' ) { %>
+                                                    <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>-->
+                                        
+                                                    <% if (item.deliveryStatus ==='Pending') { %>
                                                         <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
                                                             class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
+                                                            
                                                         <%}%>
+
+                                                        <% if (item.deliveryStatus ==='Delivered') { %>
+                                                        <a href="/my-orders/return-order/<%= order._id %>/<%= item.productId._id %>"
+                                                            class="btn btn-outline-danger btn-sm mr-2">Return</a>
+                                                            <%}%>
                                                 </div>
                                             </div>
                                             <% }); %>

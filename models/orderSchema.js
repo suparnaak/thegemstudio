@@ -16,10 +16,16 @@ const orderSchema = new Schema(
         return `OD${Date.now()}${Math.floor(100000 + Math.random() * 900000)}`;
       },
     },
-    addressId: {
-      type: Schema.Types.ObjectId,
-      ref: "Address",
-      required: true,
+    address: {
+
+      // Snapshot of the address details at the time of the order
+      name: { type: String, required: true },
+      houseName: { type: String, required: true },
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      country: { type: String, required: true },
+      zipcode: { type: String, required: true },
+      mobile: { type: String, required: true },
     },
     orderDate: {
       type: Date,
@@ -54,7 +60,7 @@ const orderSchema = new Schema(
         }, */
         deliveryStatus: {
           type: String, // Added type property
-          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled"],
+          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled","Returned"],
           default: "Pending",
         },
         cancelReason: {

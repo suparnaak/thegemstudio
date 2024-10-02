@@ -75,17 +75,18 @@ const addAddress = async (req, res) => {
 const loadEditAddress = async (req, res) => {
   try {
     const user = req.session.user;
+    const userId = user._id;
     const addressId = req.params.addressId;
 
     if (user) {
     
-      const address = await Address.findById(addressId);
+      const address = await Address.findOne({ _id: addressId, userId: userId });
 
       if (address) {
         
         res.render("edit-address", { user: user, address: address });
       } else {
-        res.status(404).send("Address not found");
+        res.render("edit-address", { user: user, address: null, message: "No address found" });
       }
     } else {
       res.redirect("/login");
@@ -97,31 +98,30 @@ const loadEditAddress = async (req, res) => {
 };
 const editAddress = async (req, res) => {
   try {
-    const user = req.session.user;
-    const addressId = req.params.addressId;
+    const userId = req.params.userId;
+    const address = await Address.findOne({ _id: addressId, userId: userId });
 
-    if (user) {
-      
-      await Address.findByIdAndUpdate(addressId, {
-        name: req.body.name,
-        houseName: req.body.houseName,
-        street: req.body.street,
-        city: req.body.city,
-        zipcode: req.body.zipCode,
-        country: req.body.country,
-        mobile: req.body.mobile,
-      });
-
-      res.redirect("/manage-addresses");
-    } else {
-      res.redirect("/login");
+    if (!address) {
+      return res.status(403).send("You do not have permission to edit this address");
     }
+
+    // Update the address
+    await Address.findByIdAndUpdate(addressId, {
+      name: req.body.name,
+      houseName: req.body.houseName,
+      street: req.body.street,
+      city: req.body.city,
+      zipcode: req.body.zipCode,
+      country: req.body.country,
+      mobile: req.body.mobile,
+    });
+
+    res.redirect("/manage-addresses");
   } catch (error) {
     console.error("Error updating address:", error);
     res.status(500).send("Server Error");
   }
 };
-
 //delete address
 const deleteAddress = async (req, res) => {
   try {

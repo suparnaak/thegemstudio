@@ -32,7 +32,7 @@ router.get('/auth/google/callback',
 // login and logout
 router.get('/login',  isLoggedIn,userController.loadLogin);
 router.post('/login', isLoggedIn, userController.login);
-router.get('/logout', userAuth, userController.logout); 
+router.get('/logout', /* userAuth, */ userController.logout); 
 
 //forgot and reset password
 router.get('/forgot-password',userProfileController.loadForgotPassword);
@@ -69,7 +69,8 @@ router.post('/update-profile',userAuth,fetchCartData, userProfileController.upda
 router.get('/manage-addresses',userAuth,fetchCartData,addressController.loadManageAddresses);
 router.get('/manage-addresses/add-address',userAuth,fetchCartData,addressController.loadAddAddress);
 router.post('/manage-addresses/add-address',userAuth,fetchCartData,addressController.addAddress);
-router.get('/manage-addresses/edit-address/:addressId',userAuth,fetchCartData,addressController.loadEditAddress);
+router.get('/manage-addresses/edit-address/:addressId/',userAuth,fetchCartData,addressController.loadEditAddress);
+
 router.post('/manage-addresses/edit-address/:addressId',userAuth,fetchCartData,addressController.editAddress);
 router.delete('/manage-addresses/delete-address/:addressId',fetchCartData, addressController.deleteAddress);
 
@@ -77,6 +78,11 @@ router.get('/my-orders',userAuth,fetchCartData,userProfileController.loadMyOrder
 router.get('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.loadCancelOrder);
 router.post('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.cancelOrder);
 router.get('/my-orders/cancel-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadCancelConfirmation);
+
+//return order
+router.get('/my-orders/return-order/:orderId/:productId',userAuth,fetchCartData,orderController.loadReturnOrder);
+router.post('/my-orders/return-order/:orderId/:productId',userAuth,fetchCartData,orderController.returnOrder);
+router.get('/my-orders/return-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadReturnConfirmation);
 
 //wishlist management
 router.post('/wishlist/add', userAuth,fetchCartData, wishlistController.addToWishlist);

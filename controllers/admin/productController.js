@@ -18,8 +18,7 @@ const listProducts = async (req, res) => {
         { name: regex },
         { brand: regex },
         // Add more fields to search if needed
-      ],
-      isListed: true,
+      ]
     })
       .populate({ path: "category", match: { name: regex, isListed: true } }) // Update this line
       .skip(skip)
@@ -30,8 +29,7 @@ const listProducts = async (req, res) => {
         { name: regex },
         { brand: regex },
         // Add more fields to search if needed
-      ],
-      isListed: true,
+      ]
     });
     const totalPages = Math.ceil(totalProducts / limit);
     res.render("products-list", { products, currentPage: page, totalPages, search });
@@ -192,7 +190,7 @@ const editProduct = async (req, res) => {
   }
 };
 // Soft delete a product
-const deleteProduct = async (req, res) => {
+const blockProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await Product.findByIdAndUpdate(id, { isListed: false });
@@ -202,13 +200,22 @@ const deleteProduct = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
-
+const unblockProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Product.findByIdAndUpdate(id, { isListed: true });
+    res.redirect("/admin/products");
+  } catch (error) {
+    console.log("Error unblocking product:", error);
+    res.redirect("/admin/pageerror");
+  }
+};
 module.exports = {
   listProducts,
   loadAddProducts,
   addProduct,
   loadEditProduct,
   editProduct,
-  deleteProduct,
-  //uploadCroppedImage
+  blockProduct,
+  unblockProduct
 };
