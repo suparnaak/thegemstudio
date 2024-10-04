@@ -60,7 +60,7 @@ const orderSchema = new Schema(
         }, */
         deliveryStatus: {
           type: String, // Added type property
-          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled","Returned"],
+          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled","Return Pending","Returned"],
           default: "Pending",
         },
         cancelReason: {

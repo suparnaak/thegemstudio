@@ -115,13 +115,19 @@ const loadEditProduct = async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id).populate("category");
     const categories = await loadCategories();
-    res.render("product-edit", { product, categories });
+    res.render("product-edit", { 
+      product, 
+      categories,
+      // Adding these to match your existing setup
+      admin: true,
+      pageTitle: 'Edit Product'
+    });
   } catch (error) {
     console.log("Error rendering edit product page:", error);
     res.redirect("/admin/pageerror");
   }
 };
-//edit product
+
 const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -135,39 +141,44 @@ const editProduct = async (req, res) => {
       quantity,
       color,
       material,
-      // status  // Remove this line if it exists
     } = req.body;
-    
+
+    // Find the product by ID
     const product = await Product.findById(id);
-    
-    // Handle image deletion
-    if (product.images && product.images.length > 0) {
-      product.images.forEach((image) => {
-        const imagePath = path.join(
-          __dirname,
-          "../../public/uploads/products/",
-          image
-        );
+
+    // Handle image removal
+    let imagesToKeep = product.images; // Initially keep all images
+    if (req.body.removeImages) {
+      const imagesToRemove = Array.isArray(req.body.removeImages) ? req.body.removeImages : [req.body.removeImages];
+      imagesToKeep = product.images.filter(image => !imagesToRemove.includes(image));
+      
+      // Delete removed images from the filesystem
+      imagesToRemove.forEach(image => {
+        const imagePath = path.join(__dirname, "../../public/uploads/products/", image);
         try {
           if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
+            fs.unlinkSync(imagePath); // Delete file from disk
           }
         } catch (err) {
           console.error(`Error deleting image: ${imagePath}. Error: ${err}`);
         }
       });
     }
-    
-    // Handle new images
+
+    // Handle new images upload
     let newImages = [];
     if (req.files && req.files.length > 0) {
-      newImages = req.files.map((file) => file.filename);
+      newImages = req.files.map(file => file.filename);
     }
-    
-    // Determine status based on quantity
+
+    // Merge new images with existing images (after removal)
+    const updatedImages = [...imagesToKeep, ...newImages];
+
+    // Determine stock status based on quantity
     const status = parseInt(quantity) === 0 ? 'Out of Stock' : 'Available';
-    
-    const updateProduct = {
+
+    // Update the product with the new information
+    const updatedProduct = {
       name,
       description,
       brand,
@@ -177,18 +188,20 @@ const editProduct = async (req, res) => {
       quantity,
       color,
       material,
-      images: newImages,
-      status  // This will override any status from the form
+      images: updatedImages,
+      status
     };
-    
-    await Product.findByIdAndUpdate(id, { $set: updateProduct });
 
+    await Product.findByIdAndUpdate(id, { $set: updatedProduct });
+
+    // Redirect back to the products page
     res.redirect("/admin/products");
   } catch (error) {
-    console.log("Error editing product:", error);
+    console.error("Error editing product:", error);
     res.redirect("/admin/pageerror");
   }
 };
+
 // Soft delete a product
 const blockProduct = async (req, res) => {
   try {

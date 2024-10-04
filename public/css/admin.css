@@ -101,3 +101,23 @@
     max-width: 100%;
     max-height: 500px; /* Limit the max height of the image */
   }
+  /* report secion */
+  .report-section {
+    margin-top: 20px;
+  }
+  .filter-section {
+    margin-bottom: 20px;
+  }
+  .stats-box {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+  }
+  .table-section {
+    margin-top: 20px;
+  }
+  .btn-download {
+    margin-top: 15px;
+  }

@@ -635,14 +635,14 @@ const returnOrder = async (req, res) => {
 
     await product.save();
 
-    itemToReturn.deliveryStatus = "Returned";
+    itemToReturn.deliveryStatus = "Return Pending";
     itemToReturn.returnReason = returnReason;
 
     await Order.updateOne(
       { _id: orderId, "items.productId": productId },
       {
         $set: {
-          "items.$.deliveryStatus": "Returned",
+          "items.$.deliveryStatus": "Return Pending",
           "items.$.returnReason": returnReason,
         },
       }
