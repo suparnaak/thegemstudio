@@ -68,7 +68,6 @@
       </table>
 
       <form action="/checkout/confirmOrder" method="post">
-       
         <input type="hidden" name="addressId" value='<%= JSON.stringify(address) %>'>
         <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
         <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
@@ -83,24 +82,37 @@
 <div class="clear"></div>
 <!--footer begins-->
 <script>
-  const paymentMethod = '<%= paymentMethod %>'; // Get the payment method from the server-side variable
-  const form = document.querySelector('form[action="/checkout/confirmOrder"]'); // Get the form element
+  const paymentMethod = '<%= paymentMethod %>'; 
+const form = document.querySelector('form[action="/checkout/confirmOrder"]');
 
-  form.addEventListener('submit', function (event) {
-    if (paymentMethod === 'Cash on Delivery') {
-      event.preventDefault(); // Prevent the form from submitting immediately
-      Swal.fire({
-        title: 'Your order is being placed...',
-        text: '',
-        icon: 'info',
-        showConfirmButton: false, // Hide the OK button
-        timer: 3000 // Display the alert for 3 seconds
-      }).then(() => {
-        form.submit(); // Submit the form after the alert is closed
-      });
-    }
-  });
-</script>
+form.addEventListener('submit', async function (event) {
+  event.preventDefault();
+
+  if (paymentMethod === 'Wallet') {
+    Swal.fire({
+      title: 'Your order is being placed...',
+      text: 'Please wait while we confirm your order.',
+      icon: 'info',
+      showConfirmButton: false,
+      timer: 2000
+    }).then(() => {
+      form.submit(); // Submit the form normally after showing the alert
+    });
+  } else if (paymentMethod === 'Cash on Delivery') {
+    Swal.fire({
+      title: 'Your order is being placed...',
+      text: 'Please wait while we confirm your order.',
+      icon: 'info',
+      showConfirmButton: false,
+      timer: 2000
+    }).then(() => {
+      form.submit();
+    });
+  } else {
+    form.submit(); // For other payment methods
+  }
+});
+  </script>
 
 <%- include("../../views/partials/user/footer") %>
 <!--footer ends-->

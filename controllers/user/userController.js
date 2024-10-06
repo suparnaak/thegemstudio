@@ -236,8 +236,9 @@ const loadProducts = async (req, res) => {
     try {
         const user = req.session.user;
         const page = parseInt(req.query.page) || 1;
-        const sortOption = req.query.sort || 'newest'; 
-        const selectedCategory = req.query.category || null; 
+        const sortOption = req.query.sort || 'newest';
+        const selectedCategory = req.query.category || null;
+        const searchQuery = req.query.search || ''; // Get search query
         const itemsPerPage = 9;
 
         // Fetch categories that are listed
@@ -245,27 +246,34 @@ const loadProducts = async (req, res) => {
 
         // Build the product query
         const productQuery = { isListed: true };
+
+        // Search products by name only (case-insensitive)
+        if (searchQuery) {
+            productQuery.name = { $regex: new RegExp(searchQuery, 'i') };
+        }
+
+        // Filter by category if selected
         if (selectedCategory) {
             productQuery.category = selectedCategory;
         }
 
-        // Count total products
+        // Count total products that match the query
         const totalProducts = await Product.countDocuments(productQuery);
 
         // Define sorting criteria based on the user's selection
         let sortCriteria;
         switch (sortOption) {
             case 'price-asc':
-                sortCriteria = { price: 1 }; 
+                sortCriteria = { price: 1 };
                 break;
             case 'price-desc':
-                sortCriteria = { price: -1 }; 
+                sortCriteria = { price: -1 };
                 break;
             case 'newest':
-                sortCriteria = { createdAt: -1 }; 
+                sortCriteria = { createdAt: -1 };
                 break;
             default:
-                sortCriteria = { createdAt: -1 }; 
+                sortCriteria = { createdAt: -1 };
                 break;
         }
 
@@ -303,7 +311,8 @@ const loadProducts = async (req, res) => {
             currentPage: page,
             totalPages: Math.ceil(totalProducts / itemsPerPage),
             sortOption: sortOption,
-            selectedCategory: selectedCategory
+            selectedCategory: selectedCategory,
+            searchQuery: searchQuery // Pass the search query back to the page
         });
     } catch (error) {
         console.log("Products page not found:", error);

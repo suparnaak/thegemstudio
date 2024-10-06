@@ -133,12 +133,17 @@
                                     <ul class="payment-list">
                                         <li>
                                             <input type="radio" id="cod" name="payment_method" value="Cash on Delivery">
-                                            <label for="cod">Cash on Delivery (COD)</label>
+                                            <label for="cod">Cash on Delivery</label>
                                         </li>
                                         <li>
                                             <input type="radio" id="netbanking" name="payment_method" value="Online">
-                                            <label for="netbanking">Pay Now</label>
+                                            <label for="netbanking">Pay Online</label>
                                         </li>
+                                        <li>
+                                            <input type="radio" id="wallet" name="payment_method" value="Wallet">
+                                            <label for="wallet">Pay From Wallet</label>
+                                        </li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -160,7 +165,7 @@
     <div class="clear"></div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-   let originalGrandTotal = parseFloat('<%= grandTotal %>');
+let originalGrandTotal = parseFloat('<%= grandTotal %>');
 let discountedTotal = originalGrandTotal;
 
 const applyCouponBtn = document.getElementById('apply-coupon-btn');
@@ -171,6 +176,7 @@ const grandTotalInput = document.getElementById('grandTotal');
 const placeOrderButton = document.querySelector('.place-order-button');
 const addressRadios = document.querySelectorAll('input[name="delivery_address"]');
 const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+const checkoutForm = document.getElementById('checkout-form');
 
 function updateDisplayedTotal(total) {
     const displayedTotal = document.getElementById('displayed-total');
@@ -258,28 +264,76 @@ paymentRadios.forEach(radio => {
     radio.addEventListener('change', updatePlaceOrderButton);
 });
 
-placeOrderButton.addEventListener('click', function (event) {
+placeOrderButton.addEventListener('click', async function (event) {
+    event.preventDefault(); // Prevent default form submission
+    
     const requirements = checkOrderRequirements();
 
     if (!requirements.isValid) {
-        event.preventDefault(); // Prevent form submission
-
         let errorMessage = 'Please ';
         if (!requirements.addressSelected) errorMessage += 'select a delivery address';
         if (!requirements.addressSelected && !requirements.paymentSelected) errorMessage += ' and ';
         if (!requirements.paymentSelected) errorMessage += 'select a payment method';
         errorMessage += ' before placing the order.';
 
-        // Use SweetAlert2 to show the alert
         Swal.fire({
             icon: 'warning',
             title: 'Incomplete Order',
             text: errorMessage,
             confirmButtonText: 'OK'
         });
+        return;
+    }
+
+    const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+    if (selectedPaymentMethod === 'Wallet') {
+        try {
+            const formData = new FormData(checkoutForm);
+            const formDataObject = {};
+            formData.forEach((value, key) => {
+                formDataObject[key] = value;
+            });
+
+            const response = await fetch('/checkout/placeOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formDataObject)
+            });
+
+            if (!response.ok) {
+                const result = await response.json();
+                if (result.error === 'insufficient_balance') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Insufficient Wallet Balance',
+                        text: `Your wallet balance (₹${result.currentBalance}) is insufficient for this purchase (₹${result.requiredAmount}). Please try another payment method.`,
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+                throw new Error('Something went wrong');
+            }
+
+            // If wallet payment is successful, submit the form
+            checkoutForm.submit();
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while processing your order. Please try again.',
+                confirmButtonText: 'OK'
+            });
+        }
+    } else {
+        // For other payment methods, submit the form normally
+        checkoutForm.submit();
     }
 });
-
 
 updateDisplayedTotal(originalGrandTotal);
 updatePlaceOrderButton();

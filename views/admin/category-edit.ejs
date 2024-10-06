@@ -15,7 +15,6 @@
             value="<%= category.name %>"
             required
           />
-          
         </div>
         <div class="form-group">
           <label for="description">Description</label>
@@ -36,7 +35,8 @@
             name="offer"
             value="<%= category.offer %>"
             min="0"
-            max="100" required
+            max="90"
+            required
           />
         </div>
         <button type="submit" class="btn btn-success">Save Changes</button>
@@ -46,20 +46,42 @@
   </div>
 </div>
 
-
-
 <script>
   // Get the category ID from the EJS template and store it in a JavaScript variable
   const categoryId = "<%= category._id %>";
 
   const form = document.querySelector("form");
+
+  // Function to check if a field is empty or only contains spaces
+  const isEmptyOrSpaces = (str) => {
+    return !str || str.trim().length === 0;
+  };
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     // Get form field values
-    const name = document.querySelector("#name").value.trim();
-    const description = document.querySelector("#description").value.trim();
+    const name = document.querySelector("#name").value;
+    const description = document.querySelector("#description").value;
     const offer = document.querySelector("#offer").value;
+    const errorMessage = document.querySelector(".error-message");
+
+    // Reset error message
+    errorMessage.innerHTML = "";
+
+    // Validation: check if the fields are empty or contain only spaces
+    if (isEmptyOrSpaces(name)) {
+      errorMessage.innerHTML = "Category name cannot be empty or only spaces.";
+      return;
+    }
+    if (isEmptyOrSpaces(description)) {
+      errorMessage.innerHTML = "Description cannot be empty or only spaces.";
+      return;
+    }
+    if (offer < 0 || offer > 90 || isEmptyOrSpaces(offer)) {
+      errorMessage.innerHTML = "Offer must be between 0 and 90 percent.";
+      return;
+    }
 
     // Submit form data via fetch
     try {
@@ -73,7 +95,7 @@
 
       // Handle errors or success
       if (data.error) {
-        document.querySelector(".error-message").innerHTML = data.error;
+        errorMessage.innerHTML = data.error;
       } else if (data.success) {
         // Redirect to the category list page upon success
         window.location.href = "/admin/categories";

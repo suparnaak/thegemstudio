@@ -36,6 +36,8 @@
                 <div class="form-group">
                   <label for="name">Product Name</label>
                   <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
+                  <small id="nameError" class="text-danger" style="display:none;">Product name cannot contain only
+                    spaces.</small>
                 </div>
 
                 <!-- Description -->
@@ -43,143 +45,205 @@
                   <label for="description">Description</label>
                   <textarea class="form-control" id="description" name="description"
                     required><%= product.description %></textarea>
+                  <small id="descriptionError" class="text-danger" style="display:none;">Description cannot contain only
+                    spaces.</small>
                 </div>
 
                 <!-- Brand -->
                 <div class="form-group">
                   <label for="brand">Brand</label>
                   <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand %>" required>
-                </div>
-                <!-- Category -->
-                <div class="form-group">
-                  <label for="brand">Category</label>
-                 <!--  <button type="button" class="btn btn-success ml-2" id="addCategoryBtn"
-                    onclick="openCategoryModal()">+</button> -->
-                  <select class="form-control same-width" id="category" name="category" required>
-                    <% categories.forEach(category=> { %>
-                      <option value="<%= category._id %>" <%=product.category._id.equals(category._id) ? 'selected' : ''%>><%= category.name %>
-                      </option>
-                      <% }) %>
-                  </select>
-                </div>
-                <!-- Color -->
-                <div class="form-group">
-                  <label for="color">Color</label>
-                  <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
-                </div>
-
-                <!-- Material -->
-                <div class="form-group">
-                  <label for="material">Material</label>
-                  <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>"
-                    required>
+                  <small id="brandError" class="text-danger" style="display:none;">Brand cannot contain only
+                    spaces.</small>
                 </div>
               </div>
+              <!-- Category -->
+              <div class="form-group">
+                <label for="brand">Category</label>
 
-              <div class="col-md-6">
-                <!-- Price -->
-                <div class="form-group">
-                  <label for="price">Price</label>
-                  <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>"
-                    required min="0">
-                </div>
+                <select class="form-control same-width" id="category" name="category" required>
+                  <% categories.forEach(category=> { %>
+                    <option value="<%= category._id %>" <%=product.category._id.equals(category._id) ? 'selected' : ''
+                      %>><%= category.name %>
+                    </option>
+                    <% }) %>
+                </select>
+              </div>
+              <!-- Color -->
+              <div class="form-group">
+                <label for="color">Color</label>
+                <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
+                <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only spaces.</small>
+              </div>
 
-                <!-- Discount -->
-                <div class="form-group">
-                  <label for="discount">Discount (%)</label>
-                  <input type="number" class="form-control" id="discount" name="discount"
-                    value="<%= product.discount %>" min="0">
-                </div>
-
-                <!-- Quantity -->
-                <div class="form-group">
-                  <label for="quantity">Quantity</label>
-                  <input type="number" class="form-control" id="quantity" name="quantity"
-                    value="<%= product.quantity %>" required min="0">
-                </div>
-
-                <!-- Stock Status -->
-                <div class="form-group">
-                  <label for="status">Stock Status</label>
-                  <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>"
-                    required readonly>
-                </div>
+              <!-- Material -->
+              <div class="form-group">
+                <label for="material">Material</label>
+                <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>"
+                  required>
+                  <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only spaces.</small>
               </div>
             </div>
-<!-- Image Preview and Upload Section -->
-<div class="form-group">
-  <label for="existingImages">Current Product Images</label>
-  <div class="d-flex flex-wrap">
-    <% if (product.images && product.images.length > 0) { %>
-      <% product.images.forEach(function(image, index) { %>
-        <div class="me-2">
-          <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
-          <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
+
+            <div class="col-md-6">
+              <!-- Price -->
+              <div class="form-group">
+                <label for="price">Price</label>
+                <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>" required
+                  min="0">
+              </div>
+
+              <!-- Discount -->
+              <div class="form-group">
+                <label for="discount">Discount (%)</label>
+                <input type="number" class="form-control" id="discount" name="discount" value="<%= product.discount %>"
+                  min="0" max="90">
+              </div>
+
+              <!-- Quantity -->
+              <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product.quantity %>"
+                  required min="0">
+              </div>
+
+              <!-- Stock Status -->
+              <div class="form-group">
+                <label for="status">Stock Status</label>
+                <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" required
+                  readonly>
+              </div>
+            </div>
         </div>
-      <% }); %>
-    <% } else { %>
-      <p>No images available for this product.</p>
-    <% } %>
-  </div>
-</div>
-
-<!-- Upload New Images -->
-<div class="form-group">
-  <label for="images">Upload New Images (min 3)</label>
-  <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
-</div>
-
-<!-- Preview New Images -->
-<div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
-
-    
-
-
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-success">Update Product</button><br><br>
-          </form>
+        <!-- Image Preview and Upload Section -->
+        <div class="form-group">
+          <label for="existingImages">Current Product Images</label>
+          <div class="d-flex flex-wrap">
+            <% if (product.images && product.images.length> 0) { %>
+              <% product.images.forEach(function(image, index) { %>
+                <div class="me-2">
+                  <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image"
+                    style="max-width: 150px;">
+                  <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
+                </div>
+                <% }); %>
+                  <% } else { %>
+                    <p>No images available for this product.</p>
+                    <% } %>
+          </div>
         </div>
+
+        <!-- Upload New Images -->
+        <div class="form-group">
+          <label for="images">Upload New Images (min 3)</label>
+          <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+        </div>
+
+        <!-- Preview New Images -->
+        <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+
+
+
+
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success">Update Product</button><br><br>
+        </form>
       </div>
     </div>
   </div>
-
-  <!-- Modal for adding a new category -->
-  <div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="categoryModalLabel">Add New Category</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="addCategoryForm">
-            <div class="form-group">
-              <label for="newCategory">Category Name</label>
-              <input type="text" class="form-control" id="newCategory" name="newCategory" required>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="submitNewCategory()">Save</button>
-          </form>
-        </div>
-      </div>
-    </div>
   </div>
-
   <script>
-   const fileInput = document.getElementById('images');
+    // Function to check if the input has only spaces
+    function hasOnlySpaces(value) {
+      return value.trim().length === 0;
+    }
+  
+    // Function to validate individual fields
+    function validateField(fieldId, errorId) {
+      const field = document.getElementById(fieldId);
+      const errorElement = document.getElementById(errorId);
+  
+      if (hasOnlySpaces(field.value)) {
+        errorElement.style.display = 'inline'; // Show the error message
+        field.classList.add('is-invalid'); // Add a Bootstrap invalid style
+      } else {
+        errorElement.style.display = 'none'; // Hide the error message
+        field.classList.remove('is-invalid'); // Remove the invalid style
+      }
+    }
+  
+    // Validate all fields on form submit
+    function validateForm() {
+      // Fields to validate
+      const fields = [
+        { id: 'name', error: 'nameError' },
+        { id: 'description', error: 'descriptionError' },
+        { id: 'brand', error: 'brandError' },
+        { id: 'color', error: 'colorError' },
+        { id: 'material', error: 'materialError' }
+      ];
+  
+      let isValid = true;
+  
+      fields.forEach(function(field) {
+        const inputField = document.getElementById(field.id);
+        const errorField = document.getElementById(field.error);
+        
+        // Validate the field
+        if (hasOnlySpaces(inputField.value)) {
+          errorField.style.display = 'inline';
+          inputField.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          errorField.style.display = 'none';
+          inputField.classList.remove('is-invalid');
+        }
+      });
+  
+      return isValid; // Only allow form submission if all fields are valid
+    }
+  
+    // Attach 'blur' event listeners for real-time validation
+    document.getElementById('name').addEventListener('blur', function() {
+      validateField('name', 'nameError');
+    });
+  
+    document.getElementById('description').addEventListener('blur', function() {
+      validateField('description', 'descriptionError');
+    });
+  
+    document.getElementById('brand').addEventListener('blur', function() {
+      validateField('brand', 'brandError');
+    });
+  
+    document.getElementById('color').addEventListener('blur', function() {
+      validateField('color', 'colorError');
+    });
+  
+    document.getElementById('material').addEventListener('blur', function() {
+      validateField('material', 'materialError');
+    });
+  
+    // Prevent form submission if validation fails
+    document.querySelector('form').addEventListener('submit', function(event) {
+      if (!validateForm()) {
+        event.preventDefault(); // Prevent form submission if validation fails
+      }
+    });
+  </script>
+  <script>
+    const fileInput = document.getElementById('images');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-    fileInput.addEventListener('change', function() {
+    fileInput.addEventListener('change', function () {
       const files = fileInput.files;
       imagePreviewContainer.innerHTML = ''; // Clear previous previews
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
           const imageData = event.target.result;
           const imagePreview = document.createElement('div');
           imagePreview.className = 'image-preview';
@@ -188,7 +252,7 @@
           imagePreview.appendChild(img);
           imagePreviewContainer.appendChild(imagePreview);
 
-          img.addEventListener('click', function() {
+          img.addEventListener('click', function () {
             const modal = document.createElement('div');
             modal.className = 'modal';
             const modalContent = document.createElement('div');
@@ -196,7 +260,7 @@
             const closeButton = document.createElement('span');
             closeButton.className = 'close';
             closeButton.innerHTML = '&times;';
-            closeButton.addEventListener('click', function() {
+            closeButton.addEventListener('click', function () {
               modal.style.display = 'none';
               cropper.destroy(); // Destroy the cropper instance
             });
@@ -214,11 +278,11 @@
               viewMode: 1,
               dragMode: 'move',
               cropBoxResizable: true,
-              ready: function() {
+              ready: function () {
                 const cropButton = document.createElement('button');
                 cropButton.innerHTML = 'Crop';
                 cropButton.className = 'crop';
-                cropButton.addEventListener('click', function() {
+                cropButton.addEventListener('click', function () {
                   const croppedCanvas = cropper.getCroppedCanvas();
                   const croppedImage = croppedCanvas.toDataURL("image/png");
                   img.src = croppedImage; // Update preview with cropped image
@@ -235,33 +299,7 @@
     });
 
 
-    // Form Validation to ensure at least 3 images
-/*     function validateForm() {
-      const imageInput = document.getElementById('images');
-      if (imageInput.files.length < 3) {
-        alert('Please upload at least 3 images.');
-        return false;
-      }
-      return true;
-    }
- */
-    // Open Add Category Modal
-    function openCategoryModal() {
-      $('#categoryModal').modal('show');
-    }
 
-    // Add New Category
-    function submitNewCategory() {
-      const newCategoryName = document.getElementById('newCategory').value;
-      if (newCategoryName.trim()) {
-        // Example: Submit new category via Ajax or refresh category options with the new category.
-        // You would write the actual logic based on your backend setup.
-        alert(`New Category "${newCategoryName}" added!`);
-        $('#categoryModal').modal('hide');
-      } else {
-        alert('Please enter a valid category name.');
-      }
-    }
   </script>
 
   <%- include("../../views/partials/admin/footer") %>

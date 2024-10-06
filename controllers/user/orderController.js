@@ -134,6 +134,18 @@ const placeOrder = async (req, res) => {
       { userId: user._id },
       { $set: { grandTotal: grandTotal } }
     );
+    if (payment_method === 'Wallet') {
+      const userWallet = await Wallet.findOne({ userId: user._id });
+      
+      if (!userWallet || userWallet.balance < parseFloat(grandTotal)) {
+        return res.status(400).json({
+          error: 'insufficient_balance',
+          message: 'Insufficient wallet balance',
+          requiredAmount: parseFloat(grandTotal),
+          currentBalance: userWallet ? userWallet.balance : 0
+        });
+      }
+    }
 
     // Prepare data for the order confirmation page
     const renderData = {
@@ -177,6 +189,7 @@ const placeOrder = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
 
 //order confirmation
 const confirmOrder = async (req, res) => {
@@ -246,8 +259,6 @@ const confirmOrder = async (req, res) => {
       return res.status(400).json({ message: "No products are available" });
     }
 
-    console.log(appliedCoupon ? appliedCoupon.code : null);
-
     // Create the new order with address snapshot
     const newOrder = new Order({
       userId,
@@ -302,10 +313,45 @@ const confirmOrder = async (req, res) => {
       { $set: { items: [], grandTotal: 0 } }
     );
 
-    // If payment is not COD, proceed with payment gateway (e.g., Razorpay)
-    if (paymentMethodEnum !== "Cash on Delivery") {
+    if (paymentMethodEnum === "Wallet") {
+      let wallet = await Wallet.findOne({ userId: req.session.user._id });
+      
+      if (!wallet || wallet.balance < grandTotal) {
+        return res.status(400).json({ message: "Insufficient wallet balance" });
+      }
+
+      wallet.balance = Number((wallet.balance - grandTotal).toFixed(2));
+
+      const transactionId = generateTransactionId();
+      const transaction = {
+        type: "debit",
+        amount: grandTotal,
+        description: `Paid for new order with ID: ${newOrder._id}`,
+        date: new Date(),
+        transactionId,
+      };
+
+      wallet.transactions.push(transaction);
+      await wallet.save();
+
+      newOrder.paymentStatus = "Paid";
+      await newOrder.save();
+    }
+
+    // Clear the cart after order placement
+    await Cart.findOneAndUpdate(
+      { userId },
+      { $set: { items: [], grandTotal: 0 } }
+    );
+
+    // For Wallet and COD, render orderPlaced page
+    if (paymentMethodEnum === "Wallet" || paymentMethodEnum === "Cash on Delivery") {
+      const populatedOrder = await Order.findById(newOrder._id).populate("items.productId");
+      return res.render("orderPlaced", { user, order: populatedOrder });
+    } else {
+      // Handle Razorpay payment
       const razorpayOrder = await razorpay.orders.create({
-        amount: grandTotal * 100,
+        amount: grandTotal * 100, // Razorpay expects amount in paise
         currency: "INR",
         receipt: newOrder.orderId,
         payment_capture: 1,
@@ -314,24 +360,18 @@ const confirmOrder = async (req, res) => {
       newOrder.razorpayOrderId = razorpayOrder.id;
       await newOrder.save();
 
-      res.render("razorpayCheckout", {
+      return res.render("razorpayCheckout", {
         user,
         order: newOrder,
         razorpayOrder,
         razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       });
-    } else {
-      // For COD, render the order placed page
-      const populatedOrder = await Order.findById(newOrder._id).populate("items.productId");
-
-      res.render("orderPlaced", { user, order: populatedOrder });
     }
   } catch (error) {
     console.error("Error in confirmOrder:", error);
-    res.status(500).json({ message: "Failed to place order", error: error.message });
+    return res.status(500).json({ message: "Failed to place order", error: error.message });
   }
 };
-
 
 
 const verifyPayment = async (req, res) => {

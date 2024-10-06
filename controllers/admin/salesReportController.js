@@ -62,7 +62,7 @@ const filterSalesReport = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in filterSalesReport:", error);
-        res.status(400).render("admin/sales-report", {
+        res.status(400).render("sales-report", {
             error: error.message,
             totalOrders: 0,
             totalSales: 0,

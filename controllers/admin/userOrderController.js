@@ -56,41 +56,47 @@ const listOrderDetails = async (req, res) => {
     res.status(500).send('An error occurred while fetching order details');
   }
 };
+const updateOrderStatus = async (req, res) => {
+  try {
+      const { orderId, paymentStatus, productId, newStatus } = req.body;
 
-  const updateOrderStatus = async (req, res) => {
-    try {
-        const { orderId, paymentStatus, productId, newStatus } = req.body;
+      const order = await Order.findById(orderId);
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
 
-        // If it's a payment status update
-        if (paymentStatus) {
-            await Order.findByIdAndUpdate(orderId, { paymentStatus });
-            return res.json({ message: 'Payment status updated successfully!' });
-        }
+      // Handle payment status update
+      if (paymentStatus) {
+          order.paymentStatus = paymentStatus;
+          await order.save();
+          return res.json({ message: 'Payment status updated successfully!' });
+      }
 
-        // If it's a delivery status update
-        if (productId && newStatus) {
-            const order = await Order.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
+      // Handle delivery status update
+      if (productId && newStatus) {
+          const item = order.items.find(item => item.productId.equals(productId));
+          if (!item) {
+              return res.status(404).json({ message: 'Product not found in the order' });
+          }
 
-            // Find the item in the order and update its delivery status
-            const item = order.items.find(item => item.productId.equals(productId));
-            if (!item) {
-                return res.status(404).json({ message: 'Product not found in the order' });
-            }
+          // Validate status transitions
+          if (
+              (item.deliveryStatus === 'Pending' && ['Delivered', 'Admin Cancelled'].includes(newStatus)) ||
+              (item.deliveryStatus === 'Return Pending' && newStatus === 'Returned')
+          ) {
+              item.deliveryStatus = newStatus;
+              await order.save();
+              return res.json({ message: 'Delivery status updated successfully!' });
+          } else {
+              return res.status(400).json({ message: 'Invalid status transition' });
+          }
+      }
 
-            item.deliveryStatus = newStatus;
-            await order.save();
-
-            return res.json({ message: 'Delivery status updated successfully!' });
-        }
-
-        return res.status(400).json({ message: 'Invalid request' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
-    }
+      return res.status(400).json({ message: 'Invalid request' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+  }
 };
   module.exports = {
     listOrders,

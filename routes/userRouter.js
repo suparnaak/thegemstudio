@@ -92,5 +92,6 @@ router.post('/wishlist/add-to-cart', userAuth,fetchCartData, wishlistController.
 
 //wallet
 router.get('/wallet',userAuth,fetchCartData,walletController.loadWallet);
-
+router.post('/add-money-to-wallet',userAuth,fetchCartData, walletController.addMoneyToWallet);
+router.post('/verify-wallet-payment',userAuth,fetchCartData, walletController.verifyWalletPayment);
 module.exports = router;
