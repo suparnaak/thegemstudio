@@ -17,7 +17,6 @@
                     <h1 class="page_title">Checkout</h1>
                 </header>
 
-                <!-- Available Coupons Section -->
                 <div class="coupons-section">
                     <h3>Available Coupons:</h3>
                     <div class="coupon-dropdown">
@@ -58,46 +57,50 @@
                                 <td style="text-align: left;">
                                     <%= product.quantity %>
                                 </td>
-                                <td style="text-align: left;">₹<%= product.price %></td>
-                                <td style="text-align: left;"><%= product.appliedDiscountPercent %></td>
-                                <td style="text-align: left;">₹<%= product.finalPrice %></td>
+                                <td style="text-align: left;">₹<%= product.price %>
+                                </td>
+                                <td style="text-align: left;">
+                                    <%= product.appliedDiscountPercent %>
+                                </td>
+                                <td style="text-align: left;">₹<%= product.finalPrice %>
+                                </td>
                                 <td style="text-align: left;">Available</td>
                             </tr>
-                        <% }) %>
-                
-                        <% unavailableProducts.forEach(function(product) { %>
-                            <tr style="color: red;">
-                                <td style="text-align: left;">
-                                    <%= product.name %>
-                                </td>
-                                <td style="text-align: left;">N/A</td>
-                                <td style="text-align: left;">N/A</td>
-                                <td style="text-align: left;">
-                                    <%= product.status %>
-                                </td>
-                            </tr>
-                        <% }) %>
+                            <% }) %>
+
+                                <% unavailableProducts.forEach(function(product) { %>
+                                    <tr style="color: red;">
+                                        <td style="text-align: left;">
+                                            <%= product.name %>
+                                        </td>
+                                        <td style="text-align: left;">N/A</td>
+                                        <td style="text-align: left;">N/A</td>
+                                        <td style="text-align: left;">
+                                            <%= product.status %>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3" style="text-align: left; font-size: 1.5rem; color: rgb(1, 169, 1);">
-                                <strong>Grand Total: ₹<span id="displayed-total"><%= grandTotal %></span></strong>
+                                <strong>Grand Total: ₹<span id="displayed-total">
+                                        <%= grandTotal %>
+                                    </span></strong>
                             </td>
                         </tr>
                     </tfoot>
                 </table>
-                
+
 
                 <div id="checkout-content" class="checkout-content">
                     <% if (availableProducts.length> 0) { %>
                         <form action="/checkout/placeOrder" method="POST" id="checkout-form">
                             <input type="hidden" name="availableProducts"
                                 value='<%= JSON.stringify(availableProducts) %>'>
-                                <input type="hidden" name="grandTotal" id="grandTotal" value="<%= grandTotal %>">
-                                <input type="hidden" name="appliedCoupon" id="appliedCoupon">
-                                
+                            <input type="hidden" name="grandTotal" id="grandTotal" value="<%= grandTotal %>">
+                            <input type="hidden" name="appliedCoupon" id="appliedCoupon">
 
-                            <!-- Step 1: Delivery Address -->
                             <div id="delivery-address" class="checkout-step">
                                 <h3 class="step-title">1. Delivery Address</h3>
 
@@ -125,8 +128,6 @@
                                         address</a>
                                 </div>
                             </div>
-
-                            <!-- Step 2: Payment Method -->
                             <div id="payment-method" class="checkout-step">
                                 <h3 class="step-title">2. Payment Method</h3>
                                 <div class="payment-options">
@@ -147,8 +148,6 @@
                                     </ul>
                                 </div>
                             </div>
-
-                            <!-- Step 3: Place Order -->
                             <div id="place-order" class="checkout-step">
                                 <h3 class="step-title">3. Place Your Order</h3>
                                 <button type="submit" class="button place-order-button" disabled>Place Order</button>
@@ -164,182 +163,180 @@
 
     <div class="clear"></div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-let originalGrandTotal = parseFloat('<%= grandTotal %>');
-let discountedTotal = originalGrandTotal;
+    <script>
+        let originalGrandTotal = parseFloat('<%= grandTotal %>');
+        let discountedTotal = originalGrandTotal;
 
-const applyCouponBtn = document.getElementById('apply-coupon-btn');
-const removeCouponBtn = document.getElementById('remove-coupon-btn');
-const couponSelect = document.getElementById('coupon-select');
-const appliedCouponInput = document.getElementById('appliedCoupon');
-const grandTotalInput = document.getElementById('grandTotal');
-const placeOrderButton = document.querySelector('.place-order-button');
-const addressRadios = document.querySelectorAll('input[name="delivery_address"]');
-const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-const checkoutForm = document.getElementById('checkout-form');
+        const applyCouponBtn = document.getElementById('apply-coupon-btn');
+        const removeCouponBtn = document.getElementById('remove-coupon-btn');
+        const couponSelect = document.getElementById('coupon-select');
+        const appliedCouponInput = document.getElementById('appliedCoupon');
+        const grandTotalInput = document.getElementById('grandTotal');
+        const placeOrderButton = document.querySelector('.place-order-button');
+        const addressRadios = document.querySelectorAll('input[name="delivery_address"]');
+        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+        const checkoutForm = document.getElementById('checkout-form');
 
-function updateDisplayedTotal(total) {
-    const displayedTotal = document.getElementById('displayed-total');
-    if (displayedTotal) {
-        displayedTotal.innerText = total.toFixed(2);
-    }
-    grandTotalInput.value = total.toFixed(2);
-}
-
-function checkOrderRequirements() {
-    const addressSelected = Array.from(addressRadios).some(radio => radio.checked);
-    const paymentSelected = Array.from(paymentRadios).some(radio => radio.checked);
-    return {
-        addressSelected,
-        paymentSelected,
-        isValid: addressSelected && paymentSelected
-    };
-}
-
-function updatePlaceOrderButton() {
-    const requirements = checkOrderRequirements();
-    if (requirements.isValid) {
-        placeOrderButton.removeAttribute('disabled');
-    } else {
-        placeOrderButton.setAttribute('disabled', 'disabled');
-    }
-}
-
-applyCouponBtn.addEventListener('click', function () {
-    const selectedOption = couponSelect.options[couponSelect.selectedIndex];
-    const selectedCoupon = selectedOption.value;
-    const discountAmount = parseFloat(selectedOption.getAttribute('data-discount'));
-
-    if (selectedCoupon) {
-        discountedTotal = originalGrandTotal - discountAmount;
-
-        appliedCouponInput.value = selectedCoupon;
-        applyCouponBtn.style.display = 'none';
-        removeCouponBtn.style.display = 'inline-block';
-
-        updateDisplayedTotal(discountedTotal);
-
-        Swal.fire({
-            icon: 'success',
-            title: 'Coupon Applied!',
-            text: `Coupon code ${selectedCoupon} has been applied successfully!`,
-            confirmButtonText: 'OK'
-        });
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'No Coupon Selected',
-            text: 'Please select a coupon to apply.',
-            confirmButtonText: 'OK'
-        });
-    }
-    updatePlaceOrderButton();
-});
-
-removeCouponBtn.addEventListener('click', function () {
-    appliedCouponInput.value = '';
-    applyCouponBtn.style.display = 'inline-block';
-    removeCouponBtn.style.display = 'none';
-
-    couponSelect.selectedIndex = 0;
-
-    discountedTotal = originalGrandTotal;
-
-    updateDisplayedTotal(discountedTotal);
-
-    Swal.fire({
-        icon: 'info',
-        title: 'Coupon Removed',
-        text: 'The applied coupon has been removed.',
-        confirmButtonText: 'OK'
-    });
-    updatePlaceOrderButton();
-});
-
-addressRadios.forEach(radio => {
-    radio.addEventListener('change', updatePlaceOrderButton);
-});
-
-paymentRadios.forEach(radio => {
-    radio.addEventListener('change', updatePlaceOrderButton);
-});
-
-placeOrderButton.addEventListener('click', async function (event) {
-    event.preventDefault(); // Prevent default form submission
-    
-    const requirements = checkOrderRequirements();
-
-    if (!requirements.isValid) {
-        let errorMessage = 'Please ';
-        if (!requirements.addressSelected) errorMessage += 'select a delivery address';
-        if (!requirements.addressSelected && !requirements.paymentSelected) errorMessage += ' and ';
-        if (!requirements.paymentSelected) errorMessage += 'select a payment method';
-        errorMessage += ' before placing the order.';
-
-        Swal.fire({
-            icon: 'warning',
-            title: 'Incomplete Order',
-            text: errorMessage,
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-
-    if (selectedPaymentMethod === 'Wallet') {
-        try {
-            const formData = new FormData(checkoutForm);
-            const formDataObject = {};
-            formData.forEach((value, key) => {
-                formDataObject[key] = value;
-            });
-
-            const response = await fetch('/checkout/placeOrder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formDataObject)
-            });
-
-            if (!response.ok) {
-                const result = await response.json();
-                if (result.error === 'insufficient_balance') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Insufficient Wallet Balance',
-                        text: `Your wallet balance (₹${result.currentBalance}) is insufficient for this purchase (₹${result.requiredAmount}). Please try another payment method.`,
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-                throw new Error('Something went wrong');
+        function updateDisplayedTotal(total) {
+            const displayedTotal = document.getElementById('displayed-total');
+            if (displayedTotal) {
+                displayedTotal.innerText = total.toFixed(2);
             }
+            grandTotalInput.value = total.toFixed(2);
+        }
 
-            // If wallet payment is successful, submit the form
-            checkoutForm.submit();
+        function checkOrderRequirements() {
+            const addressSelected = Array.from(addressRadios).some(radio => radio.checked);
+            const paymentSelected = Array.from(paymentRadios).some(radio => radio.checked);
+            return {
+                addressSelected,
+                paymentSelected,
+                isValid: addressSelected && paymentSelected
+            };
+        }
 
-        } catch (error) {
-            console.error('Error:', error);
+        function updatePlaceOrderButton() {
+            const requirements = checkOrderRequirements();
+            if (requirements.isValid) {
+                placeOrderButton.removeAttribute('disabled');
+            } else {
+                placeOrderButton.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        applyCouponBtn.addEventListener('click', function () {
+            const selectedOption = couponSelect.options[couponSelect.selectedIndex];
+            const selectedCoupon = selectedOption.value;
+            const discountAmount = parseFloat(selectedOption.getAttribute('data-discount'));
+
+            if (selectedCoupon) {
+                discountedTotal = originalGrandTotal - discountAmount;
+
+                appliedCouponInput.value = selectedCoupon;
+                applyCouponBtn.style.display = 'none';
+                removeCouponBtn.style.display = 'inline-block';
+
+                updateDisplayedTotal(discountedTotal);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Coupon Applied!',
+                    text: `Coupon code ${selectedCoupon} has been applied successfully!`,
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No Coupon Selected',
+                    text: 'Please select a coupon to apply.',
+                    confirmButtonText: 'OK'
+                });
+            }
+            updatePlaceOrderButton();
+        });
+
+        removeCouponBtn.addEventListener('click', function () {
+            appliedCouponInput.value = '';
+            applyCouponBtn.style.display = 'inline-block';
+            removeCouponBtn.style.display = 'none';
+
+            couponSelect.selectedIndex = 0;
+
+            discountedTotal = originalGrandTotal;
+
+            updateDisplayedTotal(discountedTotal);
+
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while processing your order. Please try again.',
+                icon: 'info',
+                title: 'Coupon Removed',
+                text: 'The applied coupon has been removed.',
                 confirmButtonText: 'OK'
             });
-        }
-    } else {
-        // For other payment methods, submit the form normally
-        checkoutForm.submit();
-    }
-});
+            updatePlaceOrderButton();
+        });
 
-updateDisplayedTotal(originalGrandTotal);
-updatePlaceOrderButton();
-</script>
+        addressRadios.forEach(radio => {
+            radio.addEventListener('change', updatePlaceOrderButton);
+        });
 
-    
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', updatePlaceOrderButton);
+        });
+
+        placeOrderButton.addEventListener('click', async function (event) {
+            event.preventDefault();
+
+            const requirements = checkOrderRequirements();
+
+            if (!requirements.isValid) {
+                let errorMessage = 'Please ';
+                if (!requirements.addressSelected) errorMessage += 'select a delivery address';
+                if (!requirements.addressSelected && !requirements.paymentSelected) errorMessage += ' and ';
+                if (!requirements.paymentSelected) errorMessage += 'select a payment method';
+                errorMessage += ' before placing the order.';
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Order',
+                    text: errorMessage,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+            if (selectedPaymentMethod === 'Wallet') {
+                try {
+                    const formData = new FormData(checkoutForm);
+                    const formDataObject = {};
+                    formData.forEach((value, key) => {
+                        formDataObject[key] = value;
+                    });
+
+                    const response = await fetch('/checkout/placeOrder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formDataObject)
+                    });
+
+                    if (!response.ok) {
+                        const result = await response.json();
+                        if (result.error === 'insufficient_balance') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Insufficient Wallet Balance',
+                                text: `Your wallet balance (₹${result.currentBalance}) is insufficient for this purchase (₹${result.requiredAmount}). Please try another payment method.`,
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+                        throw new Error('Something went wrong');
+                    }
+
+                    checkoutForm.submit();
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while processing your order. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } else {
+                checkoutForm.submit();
+            }
+        });
+
+        updateDisplayedTotal(originalGrandTotal);
+        updatePlaceOrderButton();
+    </script>
+
+
     <!--footer begins-->
     <%- include("../../views/partials/user/footer") %>
         <!--footer ends-->

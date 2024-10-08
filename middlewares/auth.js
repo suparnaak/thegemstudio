@@ -5,10 +5,9 @@ const userAuth = (req, res, next) => {
     User.findById(req.session.user)
       .then((data) => {
         if (data && !data.isBlocked) {
-          req.user = data; // Attach the user data to the request object
+          req.user = data;
           next();
         } else {
-          // Destroy the session if the user is blocked
           req.session.destroy((err) => {
             if (err) {
               console.error("Error destroying session:", err);
@@ -29,24 +28,22 @@ const userAuth = (req, res, next) => {
 };
 const isLoggedIn = (req, res, next) => {
   if (req.session.user) {
-    // If user is logged in, redirect to home page
-    res.redirect('/');
+    res.redirect("/");
   } else {
-    // If user is not logged in, proceed to the next middleware/route handler
     next();
   }
 };
 const adminAuth = (req, res, next) => {
-  if(req.session.admin){
+  if (req.session.admin) {
     User.findOne({ isAdmin: "true" })
-      .then(data => {
+      .then((data) => {
         if (data) {
           next();
         } else {
           res.redirect("/admin/login");
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log("Error in adminAuth middleware", error);
         res.status(500).send("Internal Server Error");
       });
@@ -57,6 +54,6 @@ const adminAuth = (req, res, next) => {
 
 module.exports = {
   userAuth,
-   isLoggedIn, 
-  adminAuth
-}; 
+  isLoggedIn,
+  adminAuth,
+};

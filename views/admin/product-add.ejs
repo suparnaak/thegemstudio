@@ -1,143 +1,85 @@
 <%- include("../../views/partials/admin/header") %>
 
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-      <h1>Add Product</h1>
-      <form id="add-product-form" action="/admin/products/add" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="name">Product Name</label>
-          <input
-            type="text"
-            class="form-control"
-            id="name"
-            name="name"
-            required
-          />
-          <span id="name-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea
-            class="form-control"
-            id="description"
-            name="description"
-            rows="3"
-            required
-          ></textarea>
-          <span id="description-error" style="color: red;"></span>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+        <h1>Add Product</h1>
+        <form id="add-product-form" action="/admin/products/add" method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="name">Product Name</label>
+            <input type="text" class="form-control" id="name" name="name" required />
+            <span id="name-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            <span id="description-error" style="color: red;"></span>
 
 
-        </div>
-        <div class="form-group">
-          <label for="brand">Brand</label>
-          <input
-            type="text"
-            class="form-control"
-            id="brand"
-            name="brand"
-            required
-          />
-          <span id="brand-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="brand">Brand</label>
+            <input type="text" class="form-control" id="brand" name="brand" required />
+            <span id="brand-error" style="color: red;"></span>
 
 
-        </div>
-        <div class="form-group">
-          <label for="category">Category</label>
-          <select
-            class="form-control"
-            id="category"
-            name="category"
-            required
-          >
-            <option value="">Select Category</option>
-            <!-- Populate categories from database -->
-            <% categories.forEach(category => { %>
-              <option value="<%= category._id %>"><%= category.name %></option>
-            <% }); %>
-          </select>
-          <span id="category-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select class="form-control" id="category" name="category" required>
+              <option value="">Select Category</option>
+              <!-- Populate categories from database -->
+              <% categories.forEach(category=> { %>
+                <option value="<%= category._id %>">
+                  <%= category.name %>
+                </option>
+                <% }); %>
+            </select>
+            <span id="category-error" style="color: red;"></span>
 
 
-        </div>
-        <div class="form-group">
-          <label for="price">Price</label>
-          <input
-            type="number"
-            class="form-control"
-            id="price"
-            name="price"
-            required
-            min="0"
-            value="0"
-          />  
-          <span id="price-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="discount">Discount (%)</label>
-          <input
-            type="number"
-            class="form-control"
-            id="discount"
-            name="discount"
-            value="0"
-            required
-          />
-          <span id="discount-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="quantity">Quantity</label>
-          <input
-            type="number"
-            class="form-control"
-            id="quantity"
-            name="quantity"
-            required
-            value="0"
-             
-          />
-          <span id="quanty-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="color">Color</label>
-          <input
-            type="text"
-            class="form-control"
-            id="color"
-            name="color"
-            required
-          />
-          <span id="color-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="material">Material</label>
-          <input
-            type="text"
-            class="form-control"
-            id="material"
-            name="material"
-            required
-          />
-          <span id="material-error" style="color: red;"></span>
-        </div>
-        <div class="form-group">
-          <label for="images">Upload New Images (min 3)</label>
-          <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
-        </div>
+          </div>
+          <div class="form-group">
+            <label for="price">Price</label>
+            <input type="number" class="form-control" id="price" name="price" required min="0" value="0" />
+            <span id="price-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="discount">Discount (%)</label>
+            <input type="number" class="form-control" id="discount" name="discount" value="0" required />
+            <span id="discount-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" required value="0" />
+            <span id="quanty-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="color">Color</label>
+            <input type="text" class="form-control" id="color" name="color" required />
+            <span id="color-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="material">Material</label>
+            <input type="text" class="form-control" id="material" name="material" required />
+            <span id="material-error" style="color: red;"></span>
+          </div>
+          <div class="form-group">
+            <label for="images">Upload New Images (min 3)</label>
+            <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+          </div>
+
+          <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
 
 
-        <!-- Preview new images -->
-        <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
-
-
-        <button type="submit" class="btn btn-success">Add Product</button>
-        <br><br>
-      </form>
+          <button type="submit" class="btn btn-success">Add Product</button>
+          <br><br>
+        </form>
+      </div>
     </div>
   </div>
-</div>
-<script>
+  <script>
     const form = document.getElementById('add-product-form');
     const nameInput = document.getElementById('name');
     const descriptionInput = document.getElementById('description');
@@ -148,8 +90,7 @@
     const quantityInput = document.getElementById('quantity');
     const colorInput = document.getElementById('color');
     const materialInput = document.getElementById('material');
- 
-    // add event listeners for input fields
+
     nameInput.addEventListener('input', validateName);
     descriptionInput.addEventListener('input', validateDescription);
     priceInput.addEventListener('input', validatePrice);
@@ -161,21 +102,19 @@
     materialInput.addEventListener('input', validateMaterial);
 
 
-   
-        // add submit event listener to form
-        form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       if (!validateForm()) {
-        e.preventDefault(); // prevent form submission if form is invalid
+        e.preventDefault();
       }
     });
- 
- 
+
+
     function validateName() {
       const nameValue = nameInput.value.trim();
       if (nameValue === '') {
         document.getElementById('name-error').innerText = 'Product name is required';
         return false;
-      } else if (nameValue.trim()==="") {
+      } else if (nameValue.trim() === "") {
         document.getElementById('name-error').innerText = 'Invalid Product Name';
         return false;
       } else {
@@ -183,14 +122,14 @@
         return true;
       }
     }
- 
+
     function validateDescription() {
       const descriptionValue = descriptionInput.value.trim();
       if (descriptionValue === '') {
         document.getElementById('description-error').innerText = 'Product description is required';
         return false;
       }
-      else if (descriptionValue.trim()==="") {
+      else if (descriptionValue.trim() === "") {
         document.getElementById('description-error').innerText = 'Invalid Description';
         return false;
       }
@@ -199,14 +138,14 @@
         return true;
       }
     }
- 
+
     function validateBrand() {
       const brandValue = brandInput.value.trim();
       if (brandValue === '') {
         document.getElementById('brand-error').innerText = 'Product brand is required';
         return false;
-     
-      } else if (brandValue.trim()==="") {
+
+      } else if (brandValue.trim() === "") {
         document.getElementById('brand-error').innerText = 'Invalid Brand Name';
         return false;
       }
@@ -230,7 +169,7 @@
         return true;
       }
     }
- 
+
     function validateCategory() {
       const categoryValue = categoryInput.value.trim();
       if (categoryValue === '') {
@@ -246,15 +185,15 @@
     function validateDiscount() {
       const discountValue = discountInput.value.trim();
       if (discountValue === '') {
-    document.getElementById('discount-error').innerText = 'Discount is required';
-    return false;
-  } else if (isNaN(discountValue) || discountValue < 0) {
-    document.getElementById('discount-error').innerText = 'Discount must be a positive number or 0';
-    return false;
-  } else if (discountValue > 90) { // Upper limit of 90%
-    document.getElementById('discount-error').innerText = 'Discount cannot exceed 90%';
-    return false;
-  } else {
+        document.getElementById('discount-error').innerText = 'Discount is required';
+        return false;
+      } else if (isNaN(discountValue) || discountValue < 0) {
+        document.getElementById('discount-error').innerText = 'Discount must be a positive number or 0';
+        return false;
+      } else if (discountValue > 90) {
+        document.getElementById('discount-error').innerText = 'Discount cannot exceed 90%';
+        return false;
+      } else {
         document.getElementById('discount-error').innerText = '';
         return true;
       }
@@ -279,8 +218,8 @@
       if (materialValue === '') {
         document.getElementById('material-error').innerText = 'Material is required';
         return false;
-     
-      } else if (materialValue.trim()==="") {
+
+      } else if (materialValue.trim() === "") {
         document.getElementById('material-error').innerText = 'Invalid Material';
         return false;
       }
@@ -296,8 +235,8 @@
       if (colorValue === '') {
         document.getElementById('color-error').innerText = 'Color is required';
         return false;
-     
-      } else if (colorValue.trim()==="") {
+
+      } else if (colorValue.trim() === "") {
         document.getElementById('color-error').innerText = 'Invalid Color';
         return false;
       }
@@ -311,18 +250,18 @@
     function validateForm() {
       return validateName() && validateDescription() && validatePrice() && validateCategory() && validateBrand() && validateDiscount() && validateQuantity() && validateMaterial() && validateColor();
     }
-   
+
     const fileInput = document.getElementById('images');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-    fileInput.addEventListener('change', function() {
+    fileInput.addEventListener('change', function () {
       const files = fileInput.files;
-      imagePreviewContainer.innerHTML = ''; // Clear previous previews
+      imagePreviewContainer.innerHTML = '';
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
           const imageData = event.target.result;
           const imagePreview = document.createElement('div');
           imagePreview.className = 'image-preview';
@@ -331,7 +270,7 @@
           imagePreview.appendChild(img);
           imagePreviewContainer.appendChild(imagePreview);
 
-          img.addEventListener('click', function() {
+          img.addEventListener('click', function () {
             const modal = document.createElement('div');
             modal.className = 'modal';
             const modalContent = document.createElement('div');
@@ -339,9 +278,9 @@
             const closeButton = document.createElement('span');
             closeButton.className = 'close';
             closeButton.innerHTML = '&times;';
-            closeButton.addEventListener('click', function() {
+            closeButton.addEventListener('click', function () {
               modal.style.display = 'none';
-              cropper.destroy(); // Destroy the cropper instance
+              cropper.destroy();
             });
             modalContent.appendChild(closeButton);
 
@@ -357,16 +296,16 @@
               viewMode: 1,
               dragMode: 'move',
               cropBoxResizable: true,
-              ready: function() {
+              ready: function () {
                 const cropButton = document.createElement('button');
                 cropButton.innerHTML = 'Crop';
                 cropButton.className = 'crop';
-                cropButton.addEventListener('click', function() {
+                cropButton.addEventListener('click', function () {
                   const croppedCanvas = cropper.getCroppedCanvas();
                   const croppedImage = croppedCanvas.toDataURL("image/png");
-                  img.src = croppedImage; // Update preview with cropped image
+                  img.src = croppedImage;
                   modal.style.display = 'none';
-                  cropper.destroy(); // Destroy the cropper instance
+                  cropper.destroy();
                 });
                 modalContent.appendChild(cropButton);
               }
@@ -380,4 +319,4 @@
   </script>
 
 
-<%- include("../../views/partials/admin/footer") %>
+  <%- include("../../views/partials/admin/footer") %>

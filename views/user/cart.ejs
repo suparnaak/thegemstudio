@@ -155,7 +155,7 @@
         const previousQuantity = parseInt(quantityElement.textContent);
         const quantity = previousQuantity + 1;
 
-        if (quantity <= 5) { // Enforce max limit of 5
+        if (quantity <= 5) {
           quantityElement.textContent = quantity;
           updateQuantity(productId, quantity);
         } else {
@@ -175,7 +175,7 @@
         const productId = this.getAttribute('data-product-id');
         const quantityElement = document.querySelector(`tr[data-product-id="${productId}"] .qty span`);
         const previousQuantity = parseInt(quantityElement.textContent);
-        const quantity = Math.max(previousQuantity - 1, 1); // Ensure quantity doesn't go below 1
+        const quantity = Math.max(previousQuantity - 1, 1);
 
         if (quantity >= 1) {
           quantityElement.textContent = quantity;
@@ -203,7 +203,6 @@
         .then(response => response.json().then(data => ({ status: response.status, body: data })))
         .then(({ status, body }) => {
           if (body.success) {
-            // Successfully updated the cart
             Swal.fire({
               icon: 'success',
               title: 'Cart updated successfully',
@@ -211,10 +210,8 @@
               timer: 2000,
               showConfirmButton: false
             });
-            // Update the cart and grand total separately
             updateCartTotals(body.cart, body.grandTotal);
           } else {
-            // The update failed, show the error message from the server
             throw new Error(body.error || 'Failed to update cart');
           }
         })
@@ -234,32 +231,26 @@
       const subtotalElement = document.querySelector('.subtotal .price');
       const grandTotalElement = document.querySelector('.grand_total .price');
 
-      // If the cart is empty or not defined
       if (!cart || cart.length === 0) {
         subtotalElement.textContent = `₹0.00`;
         grandTotalElement.textContent = `₹0.00`;
-        // Optionally disable the checkout button here
         return;
       }
 
-      // Calculate the subtotal for the cart (sum of finalPrice * quantity for each item)
       let subtotal = 0;
 
       cart.forEach(item => {
-        const itemTotal = item.finalPrice * item.quantity; // Use finalPrice from the item directly
-        subtotal += itemTotal; // Accumulate subtotal
+        const itemTotal = item.finalPrice * item.quantity;
+        subtotal += itemTotal;
 
-        // Update item subtotal in the DOM
         const itemSubtotalElement = document.querySelector(`tr[data-product-id="${item.product._id}"] .subtotal`);
         if (itemSubtotalElement) {
-          itemSubtotalElement.textContent = `₹${itemTotal.toFixed(2)}`; // Update item subtotal
+          itemSubtotalElement.textContent = `₹${itemTotal.toFixed(2)}`;
         }
       });
 
-      // Update the subtotal in the DOM
       subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
 
-      // Update the grand total in the DOM using the grandTotal from the server
       if (grandTotal !== undefined) {
         grandTotalElement.textContent = `₹${grandTotal.toFixed(2)}`;
       }
@@ -282,18 +273,18 @@
             confirmButtonText: 'Yes, remove it!'
           }).then((result) => {
             if (result.isConfirmed) {
-              // Send request to remove item from cart
+
               fetch('/cart/remove', {
-                method: 'POST',  // Use POST method
+                method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ productId })  // Send productId in the body
+                body: JSON.stringify({ productId })
               })
                 .then(response => response.json())
                 .then(data => {
                   if (data.success) {
-                    // Show success message
+
                     Swal.fire({
                       icon: 'success',
                       title: 'Removed!',
@@ -302,16 +293,14 @@
                       showConfirmButton: false
                     });
 
-                    // Remove the item row from the DOM
+
                     const itemRow = document.querySelector(`tr[data-product-id="${productId}"]`);
                     if (itemRow) {
                       itemRow.remove();
                     }
 
-                    // Update the cart totals with the new cart and grand total
-                    updateCartTotals(data.cart, data.grandTotal);  // Pass both cart and grandTotal
+                    updateCartTotals(data.cart, data.grandTotal);
                   } else {
-                    // Handle error if item removal failed
                     Swal.fire({
                       icon: 'error',
                       title: 'Failed to remove',
@@ -322,7 +311,6 @@
                   }
                 })
                 .catch(error => {
-                  // Log and display network error
                   console.error('Error removing item:', error);
                   Swal.fire({
                     icon: 'error',

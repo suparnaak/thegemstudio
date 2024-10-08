@@ -56,31 +56,31 @@
                                 <strong>Full Name:</strong><sup>*</sup><br>
                                 <input type="text" name="name" class="" value="" id="name">
                                 <div id="error1" class="error-message"></div>
-                            </div><!-- .name -->
+                            </div>
 
                             <div class="email">
                                 <strong>Email Address:</strong><sup>*</sup><br>
                                 <input type="email" name="email" class="" value="" id="email">
                                 <div id="error2" class="error-message"></div>
-                            </div><!-- .email -->
+                            </div>
 
                             <div class="phone">
                                 <strong>Phone Number:</strong><sup>*</sup><br>
                                 <input type="text" name="phone" class="" value="" id="phone">
                                 <div id="error3" class="error-message"></div>
-                            </div><!-- .phone -->
+                            </div>
 
                             <div class="password">
                                 <strong>Password:</strong><sup>*</sup><br>
                                 <input type="password" name="password" class="" value="" id="password">
                                 <div id="error4" class="error-message"></div>
-                            </div><!-- .password -->
+                            </div>
 
                             <div class="confirm_password">
                                 <strong>Confirm Password:</strong><sup>*</sup><br>
                                 <input type="password" name="cpassword" class="" value="" id="cpassword">
                                 <div id="error5" class="error-message"></div>
-                            </div><!-- .confirm_password -->
+                            </div>
                             <%if(locals.message && message.length>0){%>
                                 <div class="text-danger text-center alert alert-warning fs-5">
                                     <%=message%>
@@ -89,7 +89,7 @@
                                     <div class="terms">
                                         <input class="niceCheck" type="checkbox" name="accept_terms">
                                         <span class="rem">I agree to the <a href="#">terms and conditions</a></span>
-                                    </div><!-- .terms -->
+                                    </div>
 
                                     <div class="submit">
                                         <input type="submit" value="Sign Up">
@@ -99,9 +99,7 @@
                         </form><!-- .registed -->
                     </div><!-- .grid_6 -->
                 </article>
-                
 
-                <!-- Google Sign-Up Button -->
                 <div class="google-signup-wrapper">
                     <div class="or-text">OR</div>
                     <a href="/auth/google" class="google-btn">
@@ -172,21 +170,21 @@
 
 
         function phoneValidateChecking() {
-  const phoneval = phoneid.value.trim();
-  if (phoneval === "") {
-    error3.style.display = "block";
-    error3.innerHTML = "Enter a valid phone number";
-  } else if (phoneval.length !== 10 || isNaN(phoneval)) {
-    error3.style.display = "block";
-    error3.innerHTML = "Enter a 10-digit phone number";
-  } else if (/^(0){10}$/.test(phoneval)) {
-    error3.style.display = "block";
-    error3.innerHTML = "Phone number cannot be all zeros";
-  } else {
-    error3.style.display = "none";
-    error3.innerHTML = "";
-  }
-}
+            const phoneval = phoneid.value.trim();
+            if (phoneval === "") {
+                error3.style.display = "block";
+                error3.innerHTML = "Enter a valid phone number";
+            } else if (phoneval.length !== 10 || isNaN(phoneval)) {
+                error3.style.display = "block";
+                error3.innerHTML = "Enter a 10-digit phone number";
+            } else if (/^(0){10}$/.test(phoneval)) {
+                error3.style.display = "block";
+                error3.innerHTML = "Phone number cannot be all zeros";
+            } else {
+                error3.style.display = "none";
+                error3.innerHTML = "";
+            }
+        }
 
         // Password validation
         function passwordValidateChecking() {

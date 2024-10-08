@@ -15,8 +15,7 @@ const wishlistSchema = new Schema(
           ref: "Product",
           required: true,
         },
-        
-      }
+      },
     ],
     createdAt: {
       type: Date,
@@ -28,10 +27,9 @@ const wishlistSchema = new Schema(
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
-
 
 const Wishlist = mongoose.model("Wishlist", wishlistSchema);
 

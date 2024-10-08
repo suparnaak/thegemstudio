@@ -15,10 +15,7 @@
 
             <%- include("../../views/partials/user/sidebar") %>
 
-                <!-- Profile Content -->
                 <div class="col-md-9 profile-content">
-
-
 
                     <h1>Order Cancellation Confirmation</h1>
 
@@ -34,7 +31,6 @@
                     <p><strong>Quantity:</strong>
                         <%= order.items.find(item=> item.productId.equals(product._id)).quantity %>
                     </p>
-                    <!-- <p><strong>Reason for Cancellation:</strong> <%= cancelReason %></p> -->
 
                     <a href="/my-orders">Back to My Orders</a>
                 </div>

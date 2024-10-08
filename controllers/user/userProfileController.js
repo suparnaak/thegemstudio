@@ -1,5 +1,6 @@
 const User = require("../../models/userSchema");
 const Order = require("../../models/orderSchema");
+const Coupon = require("../../models/couponSchema");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
@@ -83,25 +84,21 @@ const verifyOtp = async (req, res) => {
 
     if (!req.session.resetPasswordOtp) {
       console.log("No OTP found in session");
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "OTP expired or not found. Please request a new one.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired or not found. Please request a new one.",
+      });
     }
 
     if (otp === String(req.session.resetPasswordOtp)) {
       console.log("OTP matched successfully");
 
       req.session.resetPasswordOtp = null;
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "OTP verified successfully",
-          redirectUrl: "/reset-password",
-        });
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        redirectUrl: "/reset-password",
+      });
     } else {
       console.log("OTP mismatch");
       return res
@@ -110,12 +107,10 @@ const verifyOtp = async (req, res) => {
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "An error occurred while verifying OTP",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while verifying OTP",
+    });
   }
 };
 //resend otp
@@ -138,21 +133,17 @@ const resendOtp = async (req, res) => {
         .status(200)
         .json({ success: true, message: "OTP resent successfully" });
     } else {
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Failed to resend OTP. Please try again",
-        });
+      res.status(500).json({
+        success: false,
+        message: "Failed to resend OTP. Please try again",
+      });
     }
   } catch (error) {
     console.error("Error resending OTP", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal Server error. Please try again",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Internal Server error. Please try again",
+    });
   }
 };
 //reset password
@@ -170,12 +161,10 @@ const resetPassword = async (req, res) => {
     const email = req.session.resetPasswordEmail;
 
     if (!email) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Session expired. Please request a password reset again.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Session expired. Please request a password reset again.",
+      });
     }
 
     const user = await User.findOne({ email });
@@ -227,6 +216,7 @@ const loadMyOrders = async (req, res) => {
     if (user) {
       const orders = await Order.find({ userId: user._id })
         .populate("items.productId")
+
         .sort({ createdAt: -1 });
 
       res.render("myorders-page", { user: user, orders: orders });

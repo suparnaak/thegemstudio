@@ -13,9 +13,7 @@
         <div class="container mt-4">
             <div class="row">
                 <!-- Sidebar -->
-                <%- include("../../views/partials/user/sidebar") %> <!-- Include the sidebar here -->
-
-                    <!-- Order List -->
+                <%- include("../../views/partials/user/sidebar") %>
                     <div class="col-lg-9 col-md-8">
                         <div class="card shadow-sm">
                             <div class="card-header" style="background-color: rgb(108, 128, 157); color: white;">
@@ -29,34 +27,46 @@
                                                 <ul class="list-unstyled">
                                                     <li><strong>ORDER PLACED:</strong>
                                                         <%= order.orderDate.toLocaleDateString() %>
-                                                    </li>
+                                                    </li><br>
+                                                    <li><strong>COUPON DISCOUNT:</strong> ₹
+
+                                                        <% let subtotal=0; order.items.forEach(item=> {
+                                                            subtotal += item.subtotal;
+                                                            });
+                                                            let discount = subtotal - order.grandTotal;
+                                                            if (discount > 0) {
+                                                            %>
+                                                            <%= discount %>
+                                                                <% } else { %>
+                                                                    0
+                                                                    <% } %>
+
                                                     <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %>
-                                                    </li>
+                                                    </li><br>
                                                     <li><strong>SHIP TO:</strong>
                                                         <%= order.address.name %>, <%= order.address.houseName %>,
-                                                                <%= order.address.street %>, <%= order.address.city
-                                                                        %>, <%= order.address.country %>,<%=
+                                                                <%= order.address.street %>, <%= order.address.city %>,
+                                                                        <%= order.address.country %>,<%=
                                                                                 order.address.zipcode %>
                                                     </li>
-                                                    <li><strong>Payment:</strong> <%= order.paymentStatus %>
+                                                    <li><strong>Payment:</strong>
+                                                        <%= order.paymentStatus %>
                                                 </ul>
                                                 <div>
                                                     <p class="mb-0"><strong>ORDER #</strong>
                                                         <%= order.orderId %>
                                                     </p>
-                                                    <!-- <a href="#" class="text-primary">View Order Details</a> -->
+
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <!-- Order Item -->
                                         <% order.items.forEach(function(item) { %>
                                             <div class="order-item mt-4">
                                                 <div class="d-flex align-items-center mb-3">
                                                     <a href="/product_page/<%= item.productId._id %>">
-                                                    <img src="/uploads/products/<%= item.productId.images[0] %>"
-                                                        alt="Product Image" class="img-thumbnail"
-                                                        style="width: 100px; height: auto;"></a>
+                                                        <img src="/uploads/products/<%= item.productId.images[0] %>"
+                                                            alt="Product Image" class="img-thumbnail"
+                                                            style="width: 100px; height: auto;"></a>
                                                     <div class="ml-3">
                                                         <h6>
                                                             <%= item.productId.name %>
@@ -64,28 +74,29 @@
                                                         <p>Sold by: <span class="text-muted">
                                                                 <%= item.productId.brand %>
                                                             </span></p>
-                                                        <strong class="text-success">₹<%= item.price %></strong>
+                                                        <p>Quantity:<span class="text-muted">
+                                                                <%= item.quantity %>
+                                                            </span></p>
+                                                        <strong class="text-success">₹<%= item.subtotal %></strong>
                                                     </div>
                                                 </div>
 
                                                 <p class="text-muted">Delivery: <%= item.deliveryStatus %>
                                                 </p>
 
-                                                <!-- Action Buttons -->
                                                 <div class="d-flex justify-content-start">
 
-                                                    <!--  <button class="btn btn-outline-secondary btn-sm mr-2">Buy it again</button>-->
-                                        
-                                                    <% if (item.deliveryStatus ==='Pending') { %>
+
+                                                    <% if (item.deliveryStatus==='Pending' ) { %>
                                                         <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
                                                             class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
-                                                            
+
                                                         <%}%>
 
-                                                        <% if (item.deliveryStatus ==='Delivered') { %>
-                                                        <a href="/my-orders/return-order/<%= order._id %>/<%= item.productId._id %>"
-                                                            class="btn btn-outline-danger btn-sm mr-2">Return</a>
-                                                            <%}%>
+                                                            <% if (item.deliveryStatus==='Delivered' ) { %>
+                                                                <a href="/my-orders/return-order/<%= order._id %>/<%= item.productId._id %>"
+                                                                    class="btn btn-outline-danger btn-sm mr-2">Return</a>
+                                                                <%}%>
                                                 </div>
                                             </div>
                                             <% }); %>
@@ -98,12 +109,9 @@
                         </div>
                     </div>
             </div>
-
-            <!-- Add a gap before the footer -->
             <div class="my-5"></div>
         </div>
     </div>
-    <!-- Including external scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 

@@ -11,28 +11,25 @@ const listProducts = async (req, res) => {
     const limit = 3;
     const skip = (page - 1) * limit;
     const search = req.query.search;
-    const regex = new RegExp(search, 'i');
+    const regex = new RegExp(search, "i");
 
     const products = await Product.find({
-      $or: [
-        { name: regex },
-        { brand: regex },
-        // Add more fields to search if needed
-      ]
+      $or: [{ name: regex }, { brand: regex }],
     })
-      .populate({ path: "category", match: { name: regex, isListed: true } }) // Update this line
+      .populate({ path: "category", match: { name: regex, isListed: true } })
       .skip(skip)
       .limit(limit);
 
     const totalProducts = await Product.countDocuments({
-      $or: [
-        { name: regex },
-        { brand: regex },
-        // Add more fields to search if needed
-      ]
+      $or: [{ name: regex }, { brand: regex }],
     });
     const totalPages = Math.ceil(totalProducts / limit);
-    res.render("products-list", { products, currentPage: page, totalPages, search });
+    res.render("products-list", {
+      products,
+      currentPage: page,
+      totalPages,
+      search,
+    });
   } catch (error) {
     console.log("Error listing products:", error);
     res.redirect("/admin/pageerror");
@@ -45,7 +42,6 @@ const loadAddProducts = async (req, res) => {
     const categories = await Category.find({ isListed: true });
 
     res.render("product-add", { categories: categories });
-    //res.render("product-add", { title: "Add New Product" });
   } catch (error) {
     console.log("Error rendering add category page:", error);
     res.redirect("/admin/pageerror");
@@ -54,7 +50,6 @@ const loadAddProducts = async (req, res) => {
 //add product
 const addProduct = async (req, res) => {
   try {
-    // Ensure `req.files` contains at least 3 images
     if (req.files.length < 3) {
       return res.status(400).send("Please upload at least 3 images.");
     }
@@ -70,7 +65,6 @@ const addProduct = async (req, res) => {
       color,
       material,
     } = req.body;
-    // Extract image filenames if uploaded
     let images = [];
     if (req.files) {
       images = req.files.map((file) => file.filename);
@@ -86,10 +80,9 @@ const addProduct = async (req, res) => {
       color,
       material,
       status: "Available",
-      images, // Assign array of image paths
+      images,
     });
     console.log("Product to be saved:", product);
-    // Save product to the database
     await product.save();
     res.redirect("/admin/products");
   } catch (error) {
@@ -97,6 +90,7 @@ const addProduct = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
+
 // Load all categories
 const loadCategories = async () => {
   try {
@@ -109,25 +103,25 @@ const loadCategories = async () => {
     return [];
   }
 };
+
 // Load product edit
 const loadEditProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id).populate("category");
     const categories = await loadCategories();
-    res.render("product-edit", { 
-      product, 
+    res.render("product-edit", {
+      product,
       categories,
-      // Adding these to match your existing setup
       admin: true,
-      pageTitle: 'Edit Product'
+      pageTitle: "Edit Product",
     });
   } catch (error) {
     console.log("Error rendering edit product page:", error);
     res.redirect("/admin/pageerror");
   }
 };
-
+//edit product
 const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -143,21 +137,26 @@ const editProduct = async (req, res) => {
       material,
     } = req.body;
 
-    // Find the product by ID
     const product = await Product.findById(id);
 
-    // Handle image removal
-    let imagesToKeep = product.images; // Initially keep all images
+    let imagesToKeep = product.images;
     if (req.body.removeImages) {
-      const imagesToRemove = Array.isArray(req.body.removeImages) ? req.body.removeImages : [req.body.removeImages];
-      imagesToKeep = product.images.filter(image => !imagesToRemove.includes(image));
-      
-      // Delete removed images from the filesystem
-      imagesToRemove.forEach(image => {
-        const imagePath = path.join(__dirname, "../../public/uploads/products/", image);
+      const imagesToRemove = Array.isArray(req.body.removeImages)
+        ? req.body.removeImages
+        : [req.body.removeImages];
+      imagesToKeep = product.images.filter(
+        (image) => !imagesToRemove.includes(image)
+      );
+
+      imagesToRemove.forEach((image) => {
+        const imagePath = path.join(
+          __dirname,
+          "../../public/uploads/products/",
+          image
+        );
         try {
           if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath); // Delete file from disk
+            fs.unlinkSync(imagePath);
           }
         } catch (err) {
           console.error(`Error deleting image: ${imagePath}. Error: ${err}`);
@@ -165,19 +164,15 @@ const editProduct = async (req, res) => {
       });
     }
 
-    // Handle new images upload
     let newImages = [];
     if (req.files && req.files.length > 0) {
-      newImages = req.files.map(file => file.filename);
+      newImages = req.files.map((file) => file.filename);
     }
 
-    // Merge new images with existing images (after removal)
     const updatedImages = [...imagesToKeep, ...newImages];
 
-    // Determine stock status based on quantity
-    const status = parseInt(quantity) === 0 ? 'Out of Stock' : 'Available';
+    const status = parseInt(quantity) === 0 ? "Out of Stock" : "Available";
 
-    // Update the product with the new information
     const updatedProduct = {
       name,
       description,
@@ -189,12 +184,11 @@ const editProduct = async (req, res) => {
       color,
       material,
       images: updatedImages,
-      status
+      status,
     };
 
     await Product.findByIdAndUpdate(id, { $set: updatedProduct });
 
-    // Redirect back to the products page
     res.redirect("/admin/products");
   } catch (error) {
     console.error("Error editing product:", error);
@@ -230,5 +224,5 @@ module.exports = {
   loadEditProduct,
   editProduct,
   blockProduct,
-  unblockProduct
+  unblockProduct,
 };

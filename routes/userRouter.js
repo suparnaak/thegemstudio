@@ -52,7 +52,16 @@ router.get('/cart', userAuth,fetchCartData, cartController.loadCart);
 router.post('/cart/update', userAuth,fetchCartData, cartController.updateCartItem);
 router.post('/cart/remove', userAuth, fetchCartData,cartController.removeFromCart);
 
-
+/* router.get('/api/cart-data', userAuth, fetchCartData, (req, res) => {
+    res.json({
+      success: true,
+      data: {
+        recentItems: res.locals.recentItems || [],
+        totalPrice: res.locals.totalPrice || 0,
+        itemCount: res.locals.itemCount || 0
+      }
+    });
+  }); */
 
 //checkout management
 //router.get('/checkout', userAuth,fetchCartData, orderController.loadCheckout);

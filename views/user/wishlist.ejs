@@ -1,151 +1,157 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
-<div class="breadcrumbs">
-    <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><span class="current">Wish List</span>
+    <!--header ends-->
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">Wish List</span>
+            </div>
         </div>
     </div>
-</div>
-<section id="main">
-    <div class="container_12">
-        <div id="content" class="grid_12">
-            <header>
-                <h1 class="page_title">Wish List</h1>
-            </header>
-            <article>
-                <div id="cart-container">
-                    <table class="cart_product">
-                        <tr class="bg">
-                            <th class="images" style="text-align: left;">Image</th>
-                            <th class="name" style="text-align: left;">Product Name</th>
-                            <th class="name" style="text-align: left;">Price</th>
-                            <th  style="text-align: left;"></th>
-                        </tr>
-
-                        <% if (wishlist.length > 0) { %>
-                            <% wishlist.forEach(item => { %>
-                                <tr>
-                                    <td class="images">
-                                        <a href="/product_page/<%= item.product._id %>"> <img src="/uploads/products/<%= item.product.images[0] %>" alt="<%= item.product.name %>"></a>
-                                    </td>
-                                    <td class="name"><%= item.product.name %></td>
-                                    <td class="price"><%= item.product.price %></td>
-                                    <td class="addtocart"><div class="cart">
-                                        <a href="#" class="bay" data-id="<%= item.product._id %>" id="addToCartBtn">
-                                            
-                                            Add to Cart
-                                        </a>
-                                    </div></td>
-                                    <td style="text-align: left; font-size: large;">
-                                        <a href="#" class="remove-wishlist-item" data-id="<%= item.product._id %>">X</a>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="3" style="text-align: center;">Your wishlist is empty.</td>
+    <section id="main">
+        <div class="container_12">
+            <div id="content" class="grid_12">
+                <header>
+                    <h1 class="page_title">Wish List</h1>
+                </header>
+                <article>
+                    <div id="cart-container">
+                        <table class="cart_product">
+                            <tr class="bg">
+                                <th class="images" style="text-align: left;">Image</th>
+                                <th class="name" style="text-align: left;">Product Name</th>
+                                <th class="name" style="text-align: left;">Price</th>
+                                <th style="text-align: left;"></th>
                             </tr>
-                        <% } %>
-                    </table>
-                </div>
 
-                <div class="clear"></div>
+                            <% if (wishlist.length> 0) { %>
+                                <% wishlist.forEach(item=> { %>
+                                    <tr>
+                                        <td class="images">
+                                            <a href="/product_page/<%= item.product._id %>"> <img
+                                                    src="/uploads/products/<%= item.product.images[0] %>"
+                                                    alt="<%= item.product.name %>"></a>
+                                        </td>
+                                        <td class="name">
+                                            <%= item.product.name %>
+                                        </td>
+                                        <td class="price">
+                                            <%= item.product.price %>
+                                        </td>
+                                        <td class="addtocart">
+                                            <div class="cart">
+                                                <a href="#" class="bay" data-id="<%= item.product._id %>"
+                                                    id="addToCartBtn">
+
+                                                    Add to Cart
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td style="text-align: left; font-size: large;">
+                                            <a href="#" class="remove-wishlist-item"
+                                                data-id="<%= item.product._id %>">X</a>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="3" style="text-align: center;">Your wishlist is empty.</td>
+                                            </tr>
+                                            <% } %>
+                        </table>
+                    </div>
+
+                    <div class="clear"></div>
             </div><!-- #cart_forms -->
             <div class="clear"></div>
             </article>
         </div><!-- #content -->
         <div class="clear"></div>
-    </div><!-- .container_12 -->
-</section><!-- #main -->
-<script>
-    document.querySelectorAll('.remove-wishlist-item').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent default link behavior
+        </div><!-- .container_12 -->
+    </section><!-- #main -->
+    <script>
+        document.querySelectorAll('.remove-wishlist-item').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
 
-        const productId = this.getAttribute('data-id');
+                const productId = this.getAttribute('data-id');
 
-        // Send an AJAX request to remove the product from the wishlist
-        fetch('/wishlist/remove', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productId }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Product removed from wishlist') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Removed',
-                        text: 'Product removed from wishlist!',
+                fetch('/wishlist/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Product removed from wishlist') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Removed',
+                                text: 'Product removed from wishlist!',
+                            });
+
+                            const row = this.closest('tr');
+                            row.parentNode.removeChild(row);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'An error occurred while removing the product.',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while removing the product from the wishlist.',
+                        });
                     });
-
-                    // Remove the product row from the front end
-                    const row = this.closest('tr');
-                    row.parentNode.removeChild(row);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'An error occurred while removing the product.',
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while removing the product from the wishlist.',
-                });
-            });
-    });
-});
-</script>
-<script>
-    document.querySelectorAll('.bay').forEach(button => {
-    button.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        const productId = this.getAttribute('data-id');
-
-        // Send AJAX request to add product to cart
-        fetch('/wishlist/add-to-cart', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === 'Product added to cart') {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Product added to your cart!',
-                });
-            } else if (data.message === 'Product already in cart') {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Already in Cart',
-                    text: 'This product is already in your cart.',
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while adding the product to the cart.',
             });
         });
-    });
-});
+    </script>
+    <script>
+        document.querySelectorAll('.bay').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
 
-</script>
-<%- include("../../views/partials/user/footer") %>
+                const productId = this.getAttribute('data-id');
+                fetch('/wishlist/add-to-cart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Product added to cart') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Product added to your cart!',
+                            });
+                        } else if (data.message === 'Product already in cart') {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Already in Cart',
+                                text: 'This product is already in your cart.',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while adding the product to the cart.',
+                        });
+                    });
+            });
+        });
+
+    </script>
+    <%- include("../../views/partials/user/footer") %>

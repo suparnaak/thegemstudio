@@ -1,76 +1,84 @@
 <%- include("../../views/partials/admin/header") %>
 
-<!-- Main Content -->
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar already included from header.ejs -->
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row">
 
-        <!-- Content Area -->
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h1 class="text-center">User Management</h1>
+            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+                <h1 class="text-center">User Management</h1>
 
-            <!-- User Table -->
-            <table class="table table-bordered table-striped mt-4">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Mobile</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% users.forEach(user => { %>
-                    <tr>
-                        <td><%= user.name %></td>
-                        <td><%= user.email %></td>
-                        <td><%= user.mobile %></td>
-                        <td><%= user.isBlocked ? 'Blocked' : 'Active' %></td>
-                        <td>
-                            <% if (user.isBlocked) { %>
-                            <!-- Unblock with confirmation -->
-                            <form action="/admin/users/unblock/<%= user._id %>" method="POST" class="d-inline"
-                                onsubmit="return confirm('Are you sure you want to unblock this user?');">
-                                <button type="submit" class="btn btn-success btn-sm">Unblock</button>
-                            </form>
-                            <% } else { %>
-                            <!-- Block with confirmation -->
-                            <form action="/admin/users/block/<%= user._id %>" method="POST" class="d-inline"
-                                onsubmit="return confirm('Are you sure you want to block this user?');">
-                                <button type="submit" class="btn btn-danger btn-sm">Block</button>
-                            </form>
+                <table class="table table-bordered table-striped mt-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user=> { %>
+                            <tr>
+                                <td>
+                                    <%= user.name %>
+                                </td>
+                                <td>
+                                    <%= user.email %>
+                                </td>
+                                <td>
+                                    <%= user.mobile %>
+                                </td>
+                                <td>
+                                    <%= user.isBlocked ? 'Blocked' : 'Active' %>
+                                </td>
+                                <td>
+                                    <% if (user.isBlocked) { %>
+                                        <!-- Unblock with confirmation -->
+                                        <form action="/admin/users/unblock/<%= user._id %>" method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Are you sure you want to unblock this user?');">
+                                            <button type="submit" class="btn btn-success btn-sm">Unblock</button>
+                                        </form>
+                                        <% } else { %>
+                                            <form action="/admin/users/block/<%= user._id %>" method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('Are you sure you want to block this user?');">
+                                                <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                                            </form>
+                                            <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                    <ul class="pagination">
+                        <% if (currentPage> 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                            </li>
                             <% } %>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
 
-            <!-- Pagination -->
-            <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                <ul class="pagination">
-                    <% if (currentPage > 1) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                    </li>
-                    <% } %>
+                                <% for (let i=1; i <=totalPages; i++) { %>
+                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %>">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                    <% } %>
 
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                    </li>
-                    <% } %>
-
-                    <% if (currentPage < totalPages) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                    </li>
-                    <% } %>
-                </ul>
-            </nav>
+                                        <% if (currentPage < totalPages) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                                            </li>
+                                            <% } %>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
-</div>
 
-<%- include("../../views/partials/admin/footer") %>
+    <%- include("../../views/partials/admin/footer") %>

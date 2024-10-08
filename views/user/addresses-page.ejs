@@ -19,11 +19,7 @@
                     <!-- Main Content -->
                     <div class="col-md-9">
                         <h2 class="mb-4">Manage Addresses</h2>
-
-                        <!-- New Address Button -->
                         <a href="/manage-addresses/add-address" class="btn btn-primary mb-3">Add New Address</a>
-
-                        <!-- Address Cards -->
                         <div id="addressCards" class="row mt-4">
                             <% if (addresses && addresses.length> 0) { %>
                                 <% addresses.forEach(address=> { %>
@@ -64,7 +60,6 @@
     </div>
 
     <script>
-        // Delete address function
         function deleteAddress(addressId) {
             Swal.fire({
                 title: 'Are you sure?',
@@ -96,7 +91,6 @@
             });
         }
 
-        // Handle delete buttons
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const addressId = this.getAttribute('data-address-id');

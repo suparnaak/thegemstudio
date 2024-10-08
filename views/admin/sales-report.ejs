@@ -1,105 +1,105 @@
 <%- include("../partials/admin/header") %>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h2 class="text-center mb-4">Sales Report</h2>
-            
-            <!-- Filters Section -->
-            <div class="row mb-4">
-                <form action="/admin/filter-sales" method="POST" class="row g-3">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+                <h2 class="text-center mb-4">Sales Report</h2>
+
+                <div class="row mb-4">
+                    <form action="/admin/filter-sales" method="POST" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="dateFilter" class="form-label">Select Date Range</label>
+                            <select class="form-select" id="dateFilter" name="dateFilter"
+                                onchange="toggleCustomDateInputs()">
+                                <option value="daily">Today</option>
+                                <option value="weekly">This Week</option>
+                                <option value="monthly">This Month</option>
+                                <option value="yearly">This Year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 custom-date" style="display: none;">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate">
+                        </div>
+
+                        <div class="col-md-3 custom-date" style="display: none;">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate">
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="row mb-4">
                     <div class="col-md-4">
-                        <label for="dateFilter" class="form-label">Select Date Range</label>
-                        <select class="form-select" id="dateFilter" name="dateFilter" onchange="toggleCustomDateInputs()">
-                            <option value="daily">Today</option>
-                            <option value="weekly">This Week</option>
-                            <option value="monthly">This Month</option>
-                            <option value="yearly">This Year</option>
-                            <option value="custom">Custom Range</option>
-                        </select>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Orders</h5>
+                                <p class="card-text h3">
+                                    <%= totalOrders %>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="col-md-3 custom-date" style="display: none;">
-                        <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Sales</h5>
+                                <p class="card-text h3">₹<%= totalSales %>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="col-md-3 custom-date" style="display: none;">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Discount</h5>
+                                <p class="card-text h3">₹<%= totalDiscount %>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary">Apply</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="row">
+                    <div class="col text-center">
+                        <form action="/admin/download-report" method="POST" class="d-inline">
+                            <input type="hidden" name="format" value="excel">
+                            <input type="hidden" name="dateFilter" value="<%= dateRange %>">
+                            <% if (typeof startDate !=='undefined' && typeof endDate !=='undefined' ) { %>
+                                <input type="hidden" name="startDate" value="<%= startDate %>">
+                                <input type="hidden" name="endDate" value="<%= endDate %>">
+                                <% } %>
+                                    <button type="submit" class="btn btn-success me-2">Download Excel</button>
+                        </form>
 
-            <!-- Sales Stats Section -->
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Orders</h5>
-                            <p class="card-text h3"><%= totalOrders %></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Sales</h5>
-                            <p class="card-text h3">₹<%= totalSales %></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Discount</h5>
-                            <p class="card-text h3">₹<%= totalDiscount %></p>
-                        </div>
+                        <form action="/admin/download-report" method="POST" class="d-inline">
+                            <input type="hidden" name="format" value="pdf">
+                            <input type="hidden" name="dateFilter" value="<%= dateRange %>">
+                            <% if (typeof startDate !=='undefined' && typeof endDate !=='undefined' ) { %>
+                                <input type="hidden" name="startDate" value="<%= startDate %>">
+                                <input type="hidden" name="endDate" value="<%= endDate %>">
+                                <% } %>
+                                    <button type="submit" class="btn btn-danger">Download PDF</button>
+                        </form>
                     </div>
                 </div>
             </div>
-
-            <!-- Download Buttons -->
-            <div class="row">
-              <div class="col text-center">
-                  <form action="/admin/download-report" method="POST" class="d-inline">
-                      <input type="hidden" name="format" value="excel">
-                      <input type="hidden" name="dateFilter" value="<%= dateRange %>">
-                      <% if (typeof startDate !== 'undefined' && typeof endDate !== 'undefined') { %>
-                          <input type="hidden" name="startDate" value="<%= startDate %>">
-                          <input type="hidden" name="endDate" value="<%= endDate %>">
-                      <% } %>
-                      <button type="submit" class="btn btn-success me-2">Download Excel</button>
-                  </form>
-                  
-                  <form action="/admin/download-report" method="POST" class="d-inline">
-                      <input type="hidden" name="format" value="pdf">
-                      <input type="hidden" name="dateFilter" value="<%= dateRange %>">
-                      <% if (typeof startDate !== 'undefined' && typeof endDate !== 'undefined') { %>
-                          <input type="hidden" name="startDate" value="<%= startDate %>">
-                          <input type="hidden" name="endDate" value="<%= endDate %>">
-                      <% } %>
-                      <button type="submit" class="btn btn-danger">Download PDF</button>
-                  </form>
-              </div>
-          </div>
         </div>
     </div>
-</div>
 
-<script>
-function toggleCustomDateInputs() {
-    const dateFilter = document.getElementById('dateFilter');
-    const customDateInputs = document.querySelectorAll('.custom-date');
-    
-    customDateInputs.forEach(input => {
-        input.style.display = dateFilter.value === 'custom' ? 'block' : 'none';
-    });
-}
-</script>
+    <script>
+        function toggleCustomDateInputs() {
+            const dateFilter = document.getElementById('dateFilter');
+            const customDateInputs = document.querySelectorAll('.custom-date');
 
-<%- include("../partials/admin/footer") %>
+            customDateInputs.forEach(input => {
+                input.style.display = dateFilter.value === 'custom' ? 'block' : 'none';
+            });
+        }
+    </script>
+
+    <%- include("../partials/admin/footer") %>

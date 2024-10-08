@@ -98,7 +98,9 @@ const loadEditAddress = async (req, res) => {
 };
 const editAddress = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const user = req.session.user;
+    const userId = user._id;
+    const addressId = req.params.addressId;
     const address = await Address.findOne({ _id: addressId, userId: userId });
 
     if (!address) {

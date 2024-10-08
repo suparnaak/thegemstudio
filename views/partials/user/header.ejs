@@ -93,39 +93,36 @@
                     </a>
                     <ul class="cart_cont">
                       <li class="no_border recently">Recently added item(s)</li>
-                      <% if (recentItems && recentItems.length> 0) { %>
-                        <% recentItems.forEach(item=> { %>
+                      <% if (recentItems && recentItems.length > 0) { %>
+                        <% recentItems.forEach(item => { %>
+                          <!-- <% if (item.product) { %> --> <!-- Check if item.product is not null -->
                           <li>
                             <a href="/product_page/<%= item.product._id %>" class="prev_cart">
                               <div class="cart_vert">
                                 <img src="/uploads/products/<%= item.product.images[0] %>"
-                                  alt="<%= item.product.name %>" title="" />
+                                  alt="<%= item.product.name %>" title="<%= item.product.name %>" />
                               </div>
                             </a>
                             <div class="cont_cart">
-                              <h4>
-                                <%= item.product.name %>
-                              </h4>
+                              <h4><%= item.product.name %></h4>
                               <div class="price">
-                                <%= item.quantity %> x <span>₹<%= item.product.price - item.product.discount %></span>
+                                <%= item.quantity %> x <span>₹<%= item.finalPrice %></span>
                               </div>
                             </div>
                             <a title="close" class="close" href="/cart/remove/<%= item.product._id %>"></a>
                             <div class="clear"></div>
                           </li>
-                          <% }) %>
-                            <% } else { %>
-                              <li class="no_items">No items in the cart</li>
-                              <% } %>
-
-                                <li class="no_border">
-                                  <a href="/cart" class="view_cart">View shopping cart</a>
-                                  <a href="/checkout" class="checkout">Proceed to Checkout</a>
-                                </li>
+                          <!-- <% } %> --> <!-- End product check -->
+                        <% }); %>
+                      <% } else { %>
+                        <li class="no_items">No items in the cart</li>
+                      <% } %>
+                      <li class="no_border">
+                        <a href="/cart" class="view_cart">View shopping cart</a>
+                        <a href="/checkout" class="checkout">Proceed to Checkout</a>
+                      </li>
                     </ul>
-                  </li>
-                </ul>
-
+                    
                 <!-- .cart_nav -->
 
 

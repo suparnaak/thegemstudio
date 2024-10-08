@@ -19,85 +19,83 @@
                     <!-- Main Content -->
                     <div class="col-md-9">
                         <h2 class="mb-4">Wallet</h2>
-
-                        <!-- Display the Balance -->
                         <div class="wallet-balance mb-4">
                             <h4>Your Balance: ₹<%= balance.toFixed(2) %>
                             </h4>
                         </div>
-
-                        <!-- Add Money Form -->
                         <div class="add-money-form mb-4">
-                            <h4>Add Money to Wallet</h4>
-                            <form id="addMoneyForm" class="mt-3">
-                                <div class="form-group">
-                                    <label for="amount">Amount (₹)</label>
-                                    <input type="number" class="form-control" id="amount" name="amount" min="1" step="1"
-                                        required>
-                                </div>
-                                <button type="submit" class="btn btn-primary mt-2">Add Money</button>
-                            </form>
+                            <div class="d-flex align-items-center">
+                                <h5 class="me-3 mb-0">Add Money to Wallet</h5>
+                                <form id="addMoneyForm" class="d-flex align-items-center" style="width:auto;">
+                                    <div class="form-group mb-0 me-2">
+                                        <label for="amount" class="visually-hidden">Amount (₹)</label>
+                                        <input type="number" class="form-control" id="amount" name="amount" min="1" step="1" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Money</button>
+                                </form>
+                            </div>
                         </div>
+                        
+                        <h4>Transactions</h4>
+                        <% if (transactions.length===0) { %>
+                            <p>No transactions yet.</p>
+                            <% } else { %>
+                                <table class="table table-bordered" style="text-align: left;">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% transactions.forEach(transaction=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= new Date(transaction.date).toLocaleDateString() %>
+                                                </td>
+                                                <td>
+                                                    <%= transaction.type==='credit' ? 'Credit' : 'Debit' %>
+                                                </td>
+                                                <td>₹<%= transaction.amount.toFixed(2) %>
+                                                </td>
+                                                <td>
+                                                    <%= transaction.description %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
 
-                        <!-- Display Transactions -->
-<h4>Transactions</h4>
-<% if (transactions.length === 0) { %>
-    <p>No transactions yet.</p>
-<% } else { %>
-    <table class="table table-bordered" style="text-align: left;">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% transactions.forEach(transaction => { %>
-                <tr>
-                    <td>
-                        <%= new Date(transaction.date).toLocaleDateString() %>
-                    </td>
-                    <td>
-                        <%= transaction.type === 'credit' ? 'Credit' : 'Debit' %>
-                    </td>
-                    <td>₹<%= transaction.amount.toFixed(2) %></td>
-                    <td>
-                        <%= transaction.description %>
-                    </td>
-                </tr>
-            <% }) %>
-        </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            <% if (currentPage > 1) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                </li>
-            <% } %>
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                </li>
-            <% } %>
-            <% if (currentPage < totalPages) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                </li>
-            <% } %>
-        </ul>
-    </nav>
-<% } %>
+                                <!-- Pagination -->
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination">
+                                        <% if (currentPage> 1) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                                            </li>
+                                            <% } %>
+                                                <% for (let i=1; i <=totalPages; i++) { %>
+                                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                        <a class="page-link" href="?page=<%= i %>">
+                                                            <%= i %>
+                                                        </a>
+                                                    </li>
+                                                    <% } %>
+                                                        <% if (currentPage < totalPages) { %>
+                                                            <li class="page-item">
+                                                                <a class="page-link"
+                                                                    href="?page=<%= currentPage + 1 %>">Next</a>
+                                                            </li>
+                                                            <% } %>
+                                    </ul>
+                                </nav>
+                                <% } %>
                     </div>
             </div>
         </div>
     </div>
-
-    <!-- Add this before the footer -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

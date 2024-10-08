@@ -2,45 +2,21 @@
 
   <div class="container-fluid">
     <div class="row">
-      <!-- Sidebar -->
-      <div class="col-md-2 p-0">
-        <div class="sidebar bg-dark text-white p-3">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link text-white" href="/admin/users">Users</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="/admin/categories">Categories</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="/admin/products">Products</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="#">Coupons</a>
-            </li>
-          </ul>
-        </div>
-      </div>
 
-      <!-- Main Content: Edit Product Form -->
-      <div class="col-md-10">
+      <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
         <div class="container mt-4">
           <h2>Edit Product</h2>
 
-          <!-- Edit Product Form -->
           <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data"
             onsubmit="return validateForm()">
             <div class="row">
               <div class="col-md-6">
-                <!-- Product Name -->
                 <div class="form-group">
                   <label for="name">Product Name</label>
                   <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
                   <small id="nameError" class="text-danger" style="display:none;">Product name cannot contain only
                     spaces.</small>
                 </div>
-
-                <!-- Description -->
                 <div class="form-group">
                   <label for="description">Description</label>
                   <textarea class="form-control" id="description" name="description"
@@ -49,7 +25,6 @@
                     spaces.</small>
                 </div>
 
-                <!-- Brand -->
                 <div class="form-group">
                   <label for="brand">Brand</label>
                   <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand %>" required>
@@ -57,7 +32,6 @@
                     spaces.</small>
                 </div>
               </div>
-              <!-- Category -->
               <div class="form-group">
                 <label for="brand">Category</label>
 
@@ -69,45 +43,39 @@
                     <% }) %>
                 </select>
               </div>
-              <!-- Color -->
               <div class="form-group">
                 <label for="color">Color</label>
                 <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
-                <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only spaces.</small>
+                <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only
+                  spaces.</small>
               </div>
 
-              <!-- Material -->
               <div class="form-group">
                 <label for="material">Material</label>
                 <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>"
                   required>
-                  <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only spaces.</small>
+                <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only
+                  spaces.</small>
               </div>
             </div>
 
             <div class="col-md-6">
-              <!-- Price -->
               <div class="form-group">
                 <label for="price">Price</label>
                 <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>" required
                   min="0">
               </div>
-
-              <!-- Discount -->
               <div class="form-group">
                 <label for="discount">Discount (%)</label>
                 <input type="number" class="form-control" id="discount" name="discount" value="<%= product.discount %>"
                   min="0" max="90">
               </div>
 
-              <!-- Quantity -->
               <div class="form-group">
                 <label for="quantity">Quantity</label>
                 <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product.quantity %>"
                   required min="0">
               </div>
-
-              <!-- Stock Status -->
               <div class="form-group">
                 <label for="status">Stock Status</label>
                 <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" required
@@ -115,7 +83,6 @@
               </div>
             </div>
         </div>
-        <!-- Image Preview and Upload Section -->
         <div class="form-group">
           <label for="existingImages">Current Product Images</label>
           <div class="d-flex flex-wrap">
@@ -132,21 +99,13 @@
                     <% } %>
           </div>
         </div>
-
-        <!-- Upload New Images -->
         <div class="form-group">
           <label for="images">Upload New Images (min 3)</label>
           <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
         </div>
 
-        <!-- Preview New Images -->
         <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
 
-
-
-
-
-        <!-- Submit Button -->
         <button type="submit" class="btn btn-success">Update Product</button><br><br>
         </form>
       </div>
@@ -154,28 +113,24 @@
   </div>
   </div>
   <script>
-    // Function to check if the input has only spaces
     function hasOnlySpaces(value) {
       return value.trim().length === 0;
     }
-  
-    // Function to validate individual fields
+
     function validateField(fieldId, errorId) {
       const field = document.getElementById(fieldId);
       const errorElement = document.getElementById(errorId);
-  
+
       if (hasOnlySpaces(field.value)) {
-        errorElement.style.display = 'inline'; // Show the error message
-        field.classList.add('is-invalid'); // Add a Bootstrap invalid style
+        errorElement.style.display = 'inline';
+        field.classList.add('is-invalid');
       } else {
-        errorElement.style.display = 'none'; // Hide the error message
-        field.classList.remove('is-invalid'); // Remove the invalid style
+        errorElement.style.display = 'none';
+        field.classList.remove('is-invalid');
       }
     }
-  
-    // Validate all fields on form submit
     function validateForm() {
-      // Fields to validate
+
       const fields = [
         { id: 'name', error: 'nameError' },
         { id: 'description', error: 'descriptionError' },
@@ -183,14 +138,13 @@
         { id: 'color', error: 'colorError' },
         { id: 'material', error: 'materialError' }
       ];
-  
+
       let isValid = true;
-  
-      fields.forEach(function(field) {
+
+      fields.forEach(function (field) {
         const inputField = document.getElementById(field.id);
         const errorField = document.getElementById(field.error);
-        
-        // Validate the field
+
         if (hasOnlySpaces(inputField.value)) {
           errorField.style.display = 'inline';
           inputField.classList.add('is-invalid');
@@ -200,35 +154,32 @@
           inputField.classList.remove('is-invalid');
         }
       });
-  
-      return isValid; // Only allow form submission if all fields are valid
+
+      return isValid;
     }
-  
-    // Attach 'blur' event listeners for real-time validation
-    document.getElementById('name').addEventListener('blur', function() {
+    document.getElementById('name').addEventListener('blur', function () {
       validateField('name', 'nameError');
     });
-  
-    document.getElementById('description').addEventListener('blur', function() {
+
+    document.getElementById('description').addEventListener('blur', function () {
       validateField('description', 'descriptionError');
     });
-  
-    document.getElementById('brand').addEventListener('blur', function() {
+
+    document.getElementById('brand').addEventListener('blur', function () {
       validateField('brand', 'brandError');
     });
-  
-    document.getElementById('color').addEventListener('blur', function() {
+
+    document.getElementById('color').addEventListener('blur', function () {
       validateField('color', 'colorError');
     });
-  
-    document.getElementById('material').addEventListener('blur', function() {
+
+    document.getElementById('material').addEventListener('blur', function () {
       validateField('material', 'materialError');
     });
-  
-    // Prevent form submission if validation fails
-    document.querySelector('form').addEventListener('submit', function(event) {
+
+    document.querySelector('form').addEventListener('submit', function (event) {
       if (!validateForm()) {
-        event.preventDefault(); // Prevent form submission if validation fails
+        event.preventDefault();
       }
     });
   </script>
@@ -238,7 +189,7 @@
 
     fileInput.addEventListener('change', function () {
       const files = fileInput.files;
-      imagePreviewContainer.innerHTML = ''; // Clear previous previews
+      imagePreviewContainer.innerHTML = '';
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -262,7 +213,7 @@
             closeButton.innerHTML = '&times;';
             closeButton.addEventListener('click', function () {
               modal.style.display = 'none';
-              cropper.destroy(); // Destroy the cropper instance
+              cropper.destroy();
             });
             modalContent.appendChild(closeButton);
 
@@ -285,9 +236,9 @@
                 cropButton.addEventListener('click', function () {
                   const croppedCanvas = cropper.getCroppedCanvas();
                   const croppedImage = croppedCanvas.toDataURL("image/png");
-                  img.src = croppedImage; // Update preview with cropped image
+                  img.src = croppedImage;
                   modal.style.display = 'none';
-                  cropper.destroy(); // Destroy the cropper instance
+                  cropper.destroy();
                 });
                 modalContent.appendChild(cropButton);
               }

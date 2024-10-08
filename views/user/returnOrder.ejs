@@ -20,35 +20,37 @@
 
           <h1>Return Order</h1>
           <% if (order && item) { %>
-          <p>Order ID: <%= order._id %>
-          </p>
-          <p><strong>Product: <%= product.name %></strong></p>
-          <p>Quantity: <%= item.quantity %>
-          </p>
-          <p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail"
-              style="width: 100px; height: auto;"></p>
+            <p>Order ID: <%= order._id %>
+            </p>
+            <p><strong>Product: <%= product.name %></strong></p>
+            <p>Quantity: <%= item.quantity %>
+            </p>
+            <p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail"
+                style="width: 100px; height: auto;"></p>
 
-          <form action="/my-orders/Return-order/<%= order._id %>/<%= product._id %>" method="post">
-            <label>Reason for Return:</label>
-            <ul style="list-style-type: none;">
-              <li>
-                <input type="radio" name="returnReason" value="Incorrect Item" />
-                Incorrect Item
-              </li>
-              <li>
-                <input type="radio" name="returnReason" value="Damaged Item" />
-                Damaged Item
-              </li>
-              <li>
-                <input type="radio" name="returnReason" value="Item Not as Described" />
-                Item Not as Described
-              </li>
-            </ul>
-            <button type="submit">Return Order</button>
-          </form>
-          <% } else { %>
-            <p><%= message %></p>
-          <% } %>
+            <form action="/my-orders/Return-order/<%= order._id %>/<%= product._id %>" method="post">
+              <label>Reason for Return:</label>
+              <ul style="list-style-type: none;">
+                <li>
+                  <input type="radio" name="returnReason" value="Incorrect Item" />
+                  Incorrect Item
+                </li>
+                <li>
+                  <input type="radio" name="returnReason" value="Damaged Item" />
+                  Damaged Item
+                </li>
+                <li>
+                  <input type="radio" name="returnReason" value="Item Not as Described" />
+                  Item Not as Described
+                </li>
+              </ul>
+              <button type="submit">Return Order</button>
+            </form>
+            <% } else { %>
+              <p>
+                <%= message %>
+              </p>
+              <% } %>
         </div>
     </div>
   </div>

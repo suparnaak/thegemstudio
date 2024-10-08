@@ -1,152 +1,175 @@
 <%- include("../../views/partials/user/header") %>
 
-<div class="breadcrumbs">
-    <div class="container_12">
-        <div class="grid_12">
-            <a href="/">Home</a><span></span><span class="current">Shop</span>
-        </div><!-- .grid_12 -->
-        <!-- search -->
-        <form class="search" action="/products" method="GET">
-            <input type="submit" class="search_button" value="" />
-            <input type="text" name="search" class="search_form" value="<%= searchQuery %>" placeholder="Search entire store here..." />
-        </form>
-        
-        
- <!-- search -->
-    </div><!-- .container_12 -->
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">Shop</span>
+            </div><!-- .grid_12 -->
+            <!-- search -->
+            <form class="search" action="/products" method="GET">
+                <input type="submit" class="search_button" value="" />
+                <input type="text" name="search" class="search_form" value="<%= searchQuery %>"
+                    placeholder="Search entire store here..." />
+            </form>
 
-</div><!-- .breadcrumbs -->
 
-<section id="main">
-    <div class="container_12">
-        <div id="content" class="grid_9">
-            <h1 class="page_title">Product List</h1>
+            <!-- search -->
+        </div><!-- .container_12 -->
 
-            <div class="options">
-                <div class="show">
-                    <span>Show</span>
-                    <select>
-                        <option>1</option>
-                    </select>
-                    <span>per page</span>
-                </div><!-- .show -->
+    </div><!-- .breadcrumbs -->
 
-                <div class="sort">
-                    <span>Sort By</span>
-                    <select id="sort-options" onchange="sortProducts()">
-                        <option value="newest" <%= sortOption === 'newest' ? 'selected' : '' %>>Newest First</option>
-                        <option value="price-asc" <%= sortOption === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
-                        <option value="price-desc" <%= sortOption === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
-                    </select>
-                </div><!-- .sort -->
+    <section id="main">
+        <div class="container_12">
+            <div id="content" class="grid_9">
+                <h1 class="page_title">Product List</h1>
 
-                <div class="grid-list">
-                    <a class="grid current" href="/"><span></span></a>
-                    <a class="list" href="/catalog_list.html"><span></span></a>
-                </div><!-- .grid-list -->
-            </div><!-- .options -->
-            <div class="clear"></div>
+                <div class="options">
+                    <div class="show">
+                        <span>Show</span>
+                        <select>
+                            <option>1</option>
+                        </select>
+                        <span>per page</span>
+                    </div><!-- .show -->
 
-            <div class="products catalog negative-grid">
-                <% if (products.length > 0) { %>
-                    <% products.forEach(product => { %>
-                        <article class="grid_3 article">
-                            <div class="prev">
-                                <a href="/product_page/<%= product._id %>">
-                                    <img src="/uploads/products/<%- product.images[0] %>" alt="<%= product.name %>" title="">
-                                </a>
-                            </div>
-                            <h3 class="title"><%= product.name %></h3>
-                            <div class="cart">
-                                <div class="price">
-                                    <div class="vert">
-                                        ₹<%= product.finalPrice %> 
-                                        <% if (product.maxDiscount > 0) { %> 
-                                            <div class="price_old">₹<%= product.price %></div> 
-                                        <% } %>
-                                    </div>
-                                    
-                                </div>
-                                <a href="#" class="compare"></a>
-                                <a href="#" class="wishlist"></a>
-                                <a href="#" class="buy">
-                                    <img src="img/bg_cart.png" alt="Buy" title="">
-                                </a>
-                            </div>
-                        </article>
-                    <% }) %>
-                <% } else { %>
-                    <p>No products available.</p>
-                <% } %>
+                    <div class="sort">
+                        <span>Sort By</span>
+                        <select id="sort-options" onchange="sortProducts()">
+                            <option value="newest" <%=sortOption==='newest' ? 'selected' : '' %>>Newest First</option>
+                            <option value="price-asc" <%=sortOption==='price-asc' ? 'selected' : '' %>>Price: Low to
+                                High</option>
+                            <option value="price-desc" <%=sortOption==='price-desc' ? 'selected' : '' %>>Price: High to
+                                Low</option>
+                        </select>
+                    </div><!-- .sort -->
+
+                    <div class="grid-list">
+                        <a class="grid current" href="/"><span></span></a>
+                        <a class="list" href="/catalog_list.html"><span></span></a>
+                    </div><!-- .grid-list -->
+                </div><!-- .options -->
                 <div class="clear"></div>
-            </div><!-- .products -->
-            <div class="clear"></div>
 
-           <!-- Pagination -->
-<div class="pagination">
-    <ul>
-        <% if (currentPage > 1) { %>
-            <li class="prev"><a href="?page=<%= currentPage - 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8592;</a></li>
-        <% } else { %>
-            <li class="prev"><span>&#8592;</span></li>
-        <% } %>
+                <div class="products catalog negative-grid">
+                    <% if (products.length> 0) { %>
+                        <% products.forEach(product=> { %>
+                            <article class="grid_3 article">
+                                <div class="prev">
+                                    <a href="/product_page/<%= product._id %>">
+                                        <img src="/uploads/products/<%- product.images[0] %>" alt="<%= product.name %>"
+                                            title="">
+                                    </a>
+                                </div>
+                                <h3 class="title">
+                                    <%= product.name %>
+                                </h3>
+                                <p
+                                    class="status text-center <%= product.status === 'Available' ? 'text-success' : 'text-danger' %>">
+                                    <%= product.status %>
+                                </p>
+                                <div class="cart">
+                                    <div class="price">
+                                        <div class="vert">
+                                            ₹<%= product.finalPrice %>
+                                                <% if (product.maxDiscount> 0) { %>
+                                                    <div class="price_old">₹<%= product.price %>
+                                                    </div>
+                                                    <% } %>
+                                        </div>
 
-        <% for (let i = 1; i <= totalPages; i++) { %>
-            <% if (i === currentPage) { %>
-                <li class="current"><span><%= i %></span></li>
-            <% } else { %>
-                <li><a href="?page=<%= i %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>"><%= i %></a></li>
-            <% } %>
-        <% } %>
+                                    </div>
+                                    <a href="#" class="compare"></a>
+                                    <a href="#" class="wishlist"></a>
+                                    <a href="#" class="buy">
+                                        <img src="img/bg_cart.png" alt="Buy" title="">
+                                    </a>
 
-        <% if (currentPage < totalPages) { %>
-            <li class="next"><a href="?page=<%= currentPage + 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8594;</a></li>
-        <% } else { %>
-            <li class="next"><span>&#8594;</span></li>
-        <% } %>
-    </ul>
-</div>
+                                </div>
+                            </article>
+                            <% }) %>
+                                <% } else { %>
+                                    <p>No products available.</p>
+                                    <% } %>
+                                        <div class="clear"></div>
+                </div><!-- .products -->
+                <div class="clear"></div>
 
-
-            <div class="clear"></div>
-        </div>
-
-        <div id="sidebar" class="grid_3">
-            <aside id="categories_nav">
-                <header class="aside_title">
-                    <h3>Categories</h3>
-                </header>
-                <nav class="right_menu">
+                <!-- Pagination -->
+                <div class="pagination">
                     <ul>
-                        <% categories.forEach(category => { %>
-                            <li class="<%= category._id == selectedCategory ? 'current' : '' %>">
-                                <a href="?category=<%= category._id %>&sort=<%= sortOption %>"><%= category.name %></a>
+                        <% if (currentPage> 1) { %>
+                            <li class="prev"><a
+                                    href="?page=<%= currentPage - 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8592;</a>
                             </li>
-                        <% }) %>
+                            <% } else { %>
+                                <li class="prev"><span>&#8592;</span></li>
+                                <% } %>
+
+                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                        <% if (i===currentPage) { %>
+                                            <li class="current"><span>
+                                                    <%= i %>
+                                                </span></li>
+                                            <% } else { %>
+                                                <li><a
+                                                        href="?page=<%= i %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">
+                                                        <%= i %>
+                                                    </a></li>
+                                                <% } %>
+                                                    <% } %>
+
+                                                        <% if (currentPage < totalPages) { %>
+                                                            <li class="next"><a
+                                                                    href="?page=<%= currentPage + 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8594;</a>
+                                                            </li>
+                                                            <% } else { %>
+                                                                <li class="next"><span>&#8594;</span></li>
+                                                                <% } %>
                     </ul>
-                </nav><!-- .right_menu -->
-            </aside><!-- #categories_nav -->
-        </div><!-- .sidebar -->
-        
-        <div class="clear"></div>
-    </div><!-- .container_12 -->
-</section><!-- #main -->
+                </div>
 
-<div class="clear"></div>
-<script>
-  function sortProducts() {
-    const selectedOption = document.getElementById('sort-options').value;
-    const url = new URL(window.location.href);
-    url.searchParams.set('sort', selectedOption); // Set the sort parameter
-    url.searchParams.set('page', 1); // Reset to the first page
 
-    const searchInput = document.querySelector('.search_form').value; // Get the current search term
-    if (searchInput) {
-        url.searchParams.set('search', searchInput); // Retain the search term in the query
-    }
+                <div class="clear"></div>
+            </div>
 
-    window.location.href = url.toString(); // Redirect to the updated URL
-}
+            <div id="sidebar" class="grid_3">
+                <aside id="categories_nav">
+                    <header class="aside_title">
+                        <h3>Categories</h3>
+                    </header>
+                    <nav class="right_menu">
+                        <ul>
+                            <% categories.forEach(category=> { %>
+                                <li class="<%= category._id == selectedCategory ? 'current' : '' %>">
+                                    <a href="?category=<%= category._id %>&sort=<%= sortOption %>">
+                                        <%= category.name %>
+                                    </a>
+                                </li>
+                                <% }) %>
+                        </ul>
+                    </nav><!-- .right_menu -->
+                </aside><!-- #categories_nav -->
+            </div><!-- .sidebar -->
 
-</script>
-<%- include("../../views/partials/user/footer") %>
+            <div class="clear"></div>
+        </div><!-- .container_12 -->
+    </section><!-- #main -->
+
+    <div class="clear"></div>
+    <script>
+        function sortProducts() {
+            const selectedOption = document.getElementById('sort-options').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', selectedOption); // Set the sort parameter
+            url.searchParams.set('page', 1); // Reset to the first page
+
+            const searchInput = document.querySelector('.search_form').value; // Get the current search term
+            if (searchInput) {
+                url.searchParams.set('search', searchInput); // Retain the search term in the query
+            }
+
+            window.location.href = url.toString(); // Redirect to the updated URL
+        }
+
+    </script>
+    <%- include("../../views/partials/user/footer") %>

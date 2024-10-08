@@ -1,118 +1,127 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-<!--header ends-->
+  <!--header ends-->
 
-<div class="breadcrumbs">
-  <div class="container_12">
-    <div class="grid_12">
-      <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
+  <div class="breadcrumbs">
+    <div class="container_12">
+      <div class="grid_12">
+        <a href="/">Home</a><span></span><span class="current">Confirm Order</span>
+      </div>
     </div>
   </div>
-</div>
 
-<section id="main">
-  <div class="container_12">
-    <div id="content" class="grid_12">
-      <header>
-        <h1 class="page_title">Confirm Your Order</h1>
-      </header>
+  <section id="main">
+    <div class="container_12">
+      <div id="content" class="grid_12">
+        <header>
+          <h1 class="page_title">Confirm Your Order</h1>
+        </header>
 
-      <h3>Shipping to:</h3>
-      <p>
-        <%= address.name %>,<br>
-        <%= address.houseName %>,<br>
-        <%= address.street %>,<br>
-        <%= address.city %>,<br>
-        <%= address.country %>,<br>
-        <%= address.zipcode %>,<br>
-        <%= address.mobile %>,<br>
-      </p>
+        <h3>Shipping to:</h3>
+        <p>
+          <%= address.name %>,<br>
+            <%= address.houseName %>,<br>
+              <%= address.street %>,<br>
+                <%= address.city %>,<br>
+                  <%= address.country %>,<br>
+                    <%= address.zipcode %>,<br>
+                      <%= address.mobile %>,<br>
+        </p>
 
-      <h3>Products in Your Order:</h3>
-      <table class="order-table">
-        <thead>
-          <tr>
-            <th style="text-align: left;">Product Name</th>
-            <th style="text-align: left;">Unit Price</th>
-            <th style="text-align: left;">Discounted Price</th>
-            <th style="text-align: left;">Quantity</th>
-            <th style="text-align: left;">Sub Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% cartItems.forEach(function(item) { %>
+        <h3>Products in Your Order:</h3>
+        <table class="order-table">
+          <thead>
             <tr>
-             
-              <td style="text-align: left;"><%= item.product.name %></td>
-              <td style="text-align: left;">₹<%= item.product.price %></td>
-              <td style="text-align: left;">₹<%= item.finalPrice %></td>
-              <td style="text-align: left;"><%= item.quantity %></td>
-              <td style="text-align: left;">₹<%= item.quantity * item.finalPrice %></td>
+              <th style="text-align: left;">Product Name</th>
+              <th style="text-align: left;">Unit Price</th>
+              <th style="text-align: left;">Discounted Price</th>
+              <th style="text-align: left;">Quantity</th>
+              <th style="text-align: left;">Sub Total</th>
             </tr>
-          <% }) %>
-        </tbody>
-        <tfoot>
-          <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
-            <tr>
-              <td colspan="3">
-                <h5>Coupon Discount: ₹<%= appliedCoupon.discount_rs %></h5>
-              </td>
-            </tr>
-          <% } %>
-          <tr>
-            <td colspan="3">
-              <h3>Grand Total: ₹<%= grandTotal %></h3>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+          </thead>
+          <tbody>
+            <% cartItems.forEach(function(item) { %>
+              <tr>
 
-      <form action="/checkout/confirmOrder" method="post">
-        <input type="hidden" name="addressId" value='<%= JSON.stringify(address) %>'>
-        <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
-        <% if (typeof appliedCoupon !== 'undefined' && appliedCoupon) { %>
-          <input type="hidden" name="appliedCoupon" value='<%= JSON.stringify(appliedCoupon) %>'>
-        <% } %>
-        <input type="hidden" name="grandTotal" value="<%= grandTotal %>">
-        <button type="submit" class="btn-confirm-order">Confirm Order</button>
-      </form>
-    </div><!-- #content -->
-  </div><!-- .container_12 -->
-</section><!-- #main -->
-<div class="clear"></div>
-<!--footer begins-->
-<script>
-  const paymentMethod = '<%= paymentMethod %>'; 
-const form = document.querySelector('form[action="/checkout/confirmOrder"]');
+                <td style="text-align: left;">
+                  <%= item.product.name %>
+                </td>
+                <td style="text-align: left;">₹<%= item.product.price %>
+                </td>
+                <td style="text-align: left;">₹<%= item.finalPrice %>
+                </td>
+                <td style="text-align: left;">
+                  <%= item.quantity %>
+                </td>
+                <td style="text-align: left;">₹<%= item.quantity * item.finalPrice %>
+                </td>
+              </tr>
+              <% }) %>
+          </tbody>
+          <tfoot>
+            <% if (typeof appliedCoupon !=='undefined' && appliedCoupon) { %>
+              <tr>
+                <td colspan="3">
+                  <h5>Coupon Discount: ₹<%= appliedCoupon.discount_rs %>
+                  </h5>
+                </td>
+              </tr>
+              <% } %>
+                <tr>
+                  <td colspan="3">
+                    <h3>Grand Total: ₹<%= grandTotal %>
+                    </h3>
+                  </td>
+                </tr>
+          </tfoot>
+        </table>
 
-form.addEventListener('submit', async function (event) {
-  event.preventDefault();
+        <form action="/checkout/confirmOrder" method="post">
+          <input type="hidden" name="addressId" value='<%= JSON.stringify(address) %>'>
+          <input type="hidden" name="paymentMethod" value="<%= paymentMethod %>">
+          <% if (typeof appliedCoupon !=='undefined' && appliedCoupon) { %>
+            <input type="hidden" name="appliedCoupon" value='<%= JSON.stringify(appliedCoupon) %>'>
+            <% } %>
+              <input type="hidden" name="grandTotal" value="<%= grandTotal %>">
+              <button type="submit" class="btn-confirm-order">Confirm Order</button>
+        </form>
+      </div><!-- #content -->
+    </div><!-- .container_12 -->
+  </section><!-- #main -->
+  <div class="clear"></div>
+  <!--footer begins-->
+  <script>
+    const paymentMethod = '<%= paymentMethod %>';
+    const form = document.querySelector('form[action="/checkout/confirmOrder"]');
 
-  if (paymentMethod === 'Wallet') {
-    Swal.fire({
-      title: 'Your order is being placed...',
-      text: 'Please wait while we confirm your order.',
-      icon: 'info',
-      showConfirmButton: false,
-      timer: 2000
-    }).then(() => {
-      form.submit(); // Submit the form normally after showing the alert
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      if (paymentMethod === 'Wallet') {
+        Swal.fire({
+          title: 'Your order is being placed...',
+          text: 'Please wait while we confirm your order.',
+          icon: 'info',
+          showConfirmButton: false,
+          timer: 2000
+        }).then(() => {
+          form.submit();
+        });
+      } else if (paymentMethod === 'Cash on Delivery') {
+        Swal.fire({
+          title: 'Your order is being placed...',
+          text: 'Please wait while we confirm your order.',
+          icon: 'info',
+          showConfirmButton: false,
+          timer: 2000
+        }).then(() => {
+          form.submit();
+        });
+      } else {
+        form.submit();
+      }
     });
-  } else if (paymentMethod === 'Cash on Delivery') {
-    Swal.fire({
-      title: 'Your order is being placed...',
-      text: 'Please wait while we confirm your order.',
-      icon: 'info',
-      showConfirmButton: false,
-      timer: 2000
-    }).then(() => {
-      form.submit();
-    });
-  } else {
-    form.submit(); // For other payment methods
-  }
-});
   </script>
 
-<%- include("../../views/partials/user/footer") %>
-<!--footer ends-->
+  <%- include("../../views/partials/user/footer") %>
+    <!--footer ends-->

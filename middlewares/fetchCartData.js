@@ -1,44 +1,47 @@
 const Product = require("../models/productsSchema");
 const Cart = require("../models/cartSchema");
-
 const fetchCartData = async (req, res, next) => {
-    try {
-        let totalPrice = 0;
-        let itemCount = 0;
-        let recentItems = [];
+  try {
+    let totalPrice = 0;
+    let itemCount = 0;
+    let recentItems = [];
 
-        const userId = req.session.user?._id;
+    const userId = req.session.user?._id;
 
-        if (userId) {
-            const cart = await Cart.findOne({ userId }).populate({
-                path: 'items.product',
-                model: 'Product',
-                select: 'name price discount images'
-            });
+    if (userId) {
+      // Fetch the cart with populated product details
+      const cart = await Cart.findOne({ userId }).populate({
+        path: "items.product",
+        model: "Product",
+        select: "name finalPrice images", // Select finalPrice directly
+      });
 
-            if (cart && cart.items.length > 0) {
-                recentItems = cart.items.slice(-2); // Get last two items added
-                cart.items.forEach(item => {
-                    const discountedPrice = item.product.price - item.product.discount;
-                    item.subtotal = discountedPrice * item.quantity;
-                    totalPrice += item.subtotal;
-                    itemCount += item.quantity;
-                });
-            }
-        }
+      if (cart && cart.items.length > 0) {
+        // Fetch the 2 most recent items
+        recentItems = cart.items.slice(-2);
 
-        // Attach the cart data to the response locals
-        res.locals.recentItems = recentItems; // Set recentItems here
-        res.locals.totalPrice = totalPrice;
-        res.locals.itemCount = itemCount;
+        // Loop through cart items to calculate total item count
+        cart.items.forEach((item) => {
+          itemCount += item.quantity; // Increment item count by quantity
+        });
 
-        next();
-    } catch (error) {
-        console.error('Error fetching cart:', error);
-        next(error);
+        // Use cart's grandTotal field directly
+        totalPrice = cart.grandTotal;
+      }
     }
+
+    // Always set res.locals to ensure no undefined values
+    res.locals.recentItems = recentItems || []; // Ensure it's always an array
+    res.locals.totalPrice = totalPrice || 0;
+    res.locals.itemCount = itemCount || 0;
+
+    next();
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    next(error);
+  }
 };
 
 module.exports = {
-    fetchCartData
+  fetchCartData,
 };

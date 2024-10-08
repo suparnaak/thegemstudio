@@ -20,35 +20,37 @@
 
           <h1>Cancel Order</h1>
           <% if (order && item) { %>
-          <p>Order ID: <%= order._id %>
-          </p>
-          <p><strong>Product: <%= product.name %></strong></p>
-          <p>Quantity: <%= item.quantity %>
-          </p>
-          <p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail"
-              style="width: 100px; height: auto;"></p>
+            <p>Order ID: <%= order._id %>
+            </p>
+            <p><strong>Product: <%= product.name %></strong></p>
+            <p>Quantity: <%= item.quantity %>
+            </p>
+            <p><img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" class="img-thumbnail"
+                style="width: 100px; height: auto;"></p>
 
-          <form action="/my-orders/cancel-order/<%= order._id %>/<%= product._id %>" method="post">
-            <label>Reason for cancellation:</label>
-            <ul style="list-style-type: none;">
-              <li>
-                <input type="radio" name="cancelReason" value="Incorrect Item" />
-                Incorrect Item
-              </li>
-              <li>
-                <input type="radio" name="cancelReason" value="Damaged Item" />
-                Damaged Item
-              </li>
-              <li>
-                <input type="radio" name="cancelReason" value="Item Not as Described" />
-                Item Not as Described
-              </li>
-            </ul>
-            <button type="submit">Cancel Order</button>
-          </form>
-          <% } else { %>
-            <p><%= message %></p>
-          <% } %>
+            <form action="/my-orders/cancel-order/<%= order._id %>/<%= product._id %>" method="post">
+              <label>Reason for cancellation:</label>
+              <ul style="list-style-type: none;">
+                <li>
+                  <input type="radio" name="cancelReason" value="Incorrect Item" />
+                  Incorrect Item
+                </li>
+                <li>
+                  <input type="radio" name="cancelReason" value="Damaged Item" />
+                  Damaged Item
+                </li>
+                <li>
+                  <input type="radio" name="cancelReason" value="Item Not as Described" />
+                  Item Not as Described
+                </li>
+              </ul>
+              <button type="submit">Cancel Order</button>
+            </form>
+            <% } else { %>
+              <p>
+                <%= message %>
+              </p>
+              <% } %>
         </div>
     </div>
   </div>
