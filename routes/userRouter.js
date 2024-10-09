@@ -7,6 +7,7 @@ const addressController = require('../controllers/user/addressController');
 const orderController = require('../controllers/user/orderController');
 const wishlistController = require('../controllers/user/wishlistController');
 const walletController = require('../controllers/user/walletController');
+const invoiceController = require('../controllers/user/invoiceController');
 const passport = require('../config/passport');
 const { userAuth,isLoggedIn } = require("../middlewares/auth");
 const { fetchCartData } = require("../middlewares/fetchCartData");
@@ -69,8 +70,9 @@ router.post('/checkout', userAuth,fetchCartData, orderController.loadCheckout);
 router.post('/add-address', userAuth,fetchCartData, addressController.addAddress);
 router.post('/checkout/placeOrder', userAuth,fetchCartData, orderController.placeOrder);
 router.post('/checkout/confirmOrder', userAuth,fetchCartData, orderController.confirmOrder);
-router.get('/payment/verify', userAuth,fetchCartData, orderController.verifyPayment);//payment
-
+router.get('/payment/verify', userAuth,fetchCartData, orderController.verifyPayment);
+//invoice download
+router.get('/download-invoice/:orderId',userAuth,fetchCartData, invoiceController.downloadInvoice)
 
 //account management
 router.get('/account',userAuth,fetchCartData,userProfileController.loadMyAccount);

@@ -98,22 +98,24 @@ const loadCheckout = async (req, res) => {
   }
 };
 
-//confirmation page
 const placeOrder = async (req, res) => {
   try {
     const user = req.session.user;
-    const { delivery_address, payment_method, grandTotal, appliedCoupon } =
-      req.body;
+    const { delivery_address, payment_method, grandTotal, appliedCoupon } = req.body;
 
     if (!delivery_address || !payment_method) {
-      return res
-        .status(400)
-        .send("Delivery address and payment method are required.");
+      return res.status(400).json({
+        error: 'validation_error',
+        message: "Delivery address and payment method are required."
+      });
     }
 
     const addressFull = await Address.findById(delivery_address);
     if (!addressFull) {
-      return res.status(404).send("Address not found.");
+      return res.status(404).json({
+        error: 'address_not_found',
+        message: "Address not found."
+      });
     }
 
     let couponDetails = null;
@@ -130,13 +132,17 @@ const placeOrder = async (req, res) => {
     });
 
     if (!cart || cart.items.length === 0) {
-      return res.status(400).send("Your cart is empty.");
+      return res.status(400).json({
+        error: 'empty_cart',
+        message: "Your cart is empty."
+      });
     }
 
     await Cart.updateOne(
       { userId: user._id },
       { $set: { grandTotal: grandTotal } }
     );
+
     if (payment_method === "Wallet") {
       const userWallet = await Wallet.findOne({ userId: user._id });
 
@@ -183,13 +189,16 @@ const placeOrder = async (req, res) => {
       };
     }
 
+    // Render the confirmation page and send it as a response
     res.render("confirmOrder", renderData);
   } catch (error) {
     console.error("Error placing order:", error);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      error: 'server_error',
+      message: "An error occurred while processing your order."
+    });
   }
 };
-
 //order confirmation
 const confirmOrder = async (req, res) => {
   try {
@@ -734,6 +743,8 @@ const loadReturnConfirmation = async (req, res) => {
     user: req.session.user,
   });
 };
+
+
 
 module.exports = {
   loadCheckout,

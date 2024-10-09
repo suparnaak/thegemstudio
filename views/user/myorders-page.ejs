@@ -49,14 +49,16 @@
                                                                         <%= order.address.country %>,<%=
                                                                                 order.address.zipcode %>
                                                     </li>
-                                                    <li><strong>Payment:</strong>
-                                                        <%= order.paymentStatus %>
+                                                    <li><strong>Payment Method:</strong>
+                                                        <%= order.paymentMethod %></li>
+                                                    <li><strong>Payment Status:</strong>
+                                                        <%= order.paymentStatus %></li>
                                                 </ul>
                                                 <div>
                                                     <p class="mb-0"><strong>ORDER #</strong>
                                                         <%= order.orderId %>
                                                     </p>
-
+                                                    <a href="/download-invoice/<%= order.orderId %>" >Download Invoice</a>
                                                 </div>
                                             </div>
                                         </div>

@@ -130,7 +130,7 @@
 
                         <div id="place-order" class="checkout-step">
                             <h3 class="step-title">3. Place Your Order</h3>
-                            <button type="submit" class="button place-order-button" disabled>Place Order</button>
+                            <button type="submit" class="button place-order-button">Place Order</button>
                         </div>
                     </form>
                 <% } else { %>
@@ -144,7 +144,8 @@
 <div class="clear"></div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    let originalGrandTotal = parseFloat('<%= grandTotal %>');
+ document.addEventListener('DOMContentLoaded', function() {
+    const originalGrandTotal = parseFloat('<%= grandTotal %>');
     let discountedTotal = originalGrandTotal;
 
     const applyCouponBtn = document.getElementById('apply-coupon-btn');
@@ -152,88 +153,17 @@
     const couponSelect = document.getElementById('coupon-select');
     const appliedCouponInput = document.getElementById('appliedCoupon');
     const grandTotalInput = document.getElementById('grandTotal');
+    const checkoutForm = document.getElementById('checkout-form');
     const placeOrderButton = document.querySelector('.place-order-button');
+    const discountDisplay = document.getElementById('discount-display');
     const addressRadios = document.querySelectorAll('input[name="delivery_address"]');
     const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-    const checkoutForm = document.getElementById('checkout-form');
-    const discountDisplay = document.getElementById('discount-display');
-
-    function updateDisplayedTotal(total) {
-        const displayedTotal = document.getElementById('displayed-total');
-        if (displayedTotal) {
-            displayedTotal.innerText = total.toFixed(2);
-        }
-        grandTotalInput.value = total.toFixed(2);
-    }
-
-    function checkOrderRequirements() {
-        const addressSelected = Array.from(addressRadios).some(radio => radio.checked);
-        const paymentSelected = Array.from(paymentRadios).some(radio => radio.checked);
-        return {
-            addressSelected,
-            paymentSelected,
-            isValid: addressSelected && paymentSelected
-        };
-    }
 
     function updatePlaceOrderButton() {
-        const requirements = checkOrderRequirements();
-        if (requirements.isValid) {
-            placeOrderButton.removeAttribute('disabled');
-        } else {
-            placeOrderButton.setAttribute('disabled', 'disabled');
-        }
+        const addressSelected = Array.from(addressRadios).some(radio => radio.checked);
+        const paymentSelected = Array.from(paymentRadios).some(radio => radio.checked);
+        placeOrderButton.disabled = !addressSelected || !paymentSelected;
     }
-
-    applyCouponBtn.addEventListener('click', function () {
-        const selectedOption = couponSelect.options[couponSelect.selectedIndex];
-        const selectedCoupon = selectedOption.value;
-        const discountAmount = parseFloat(selectedOption.getAttribute('data-discount'));
-
-        if (selectedCoupon) {
-            discountedTotal = originalGrandTotal - discountAmount;
-
-            appliedCouponInput.value = selectedCoupon;
-            applyCouponBtn.style.display = 'none';
-            removeCouponBtn.style.display = 'inline-block';
-
-            updateDisplayedTotal(discountedTotal);
-
-            discountDisplay.innerHTML = `You saved ₹${discountAmount} with coupon ${selectedCoupon}`;
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Coupon Applied!',
-                text: `Coupon code ${selectedCoupon} has been applied successfully!`,
-                confirmButtonText: 'OK'
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'No Coupon Selected',
-                text: 'Please select a coupon to apply.',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
-
-    removeCouponBtn.addEventListener('click', function () {
-        discountedTotal = originalGrandTotal;
-        appliedCouponInput.value = '';
-        updateDisplayedTotal(discountedTotal);
-
-        discountDisplay.innerHTML = '';
-
-        applyCouponBtn.style.display = 'inline-block';
-        removeCouponBtn.style.display = 'none';
-
-        Swal.fire({
-            icon: 'info',
-            title: 'Coupon Removed',
-            text: 'The coupon has been removed from your order.',
-            confirmButtonText: 'OK'
-        });
-    });
 
     addressRadios.forEach(radio => {
         radio.addEventListener('change', updatePlaceOrderButton);
@@ -243,17 +173,142 @@
         radio.addEventListener('change', updatePlaceOrderButton);
     });
 
-    checkoutForm.addEventListener('submit', function (e) {
-        const requirements = checkOrderRequirements();
-        if (!requirements.isValid) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Incomplete Order Details',
-                text: 'Please select both a delivery address and payment method to proceed.',
+    function updateDisplayedTotal(total) {
+        const displayedTotal = document.getElementById('displayed-total');
+        if (displayedTotal) {
+            displayedTotal.innerText = total.toFixed(2);
+        }
+        grandTotalInput.value = total.toFixed(2);
+    }
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const addressSelected = Array.from(addressRadios).some(radio => radio.checked);
+            const paymentSelected = Array.from(paymentRadios).some(radio => radio.checked);
+            
+            // Address and payment validation
+            if (!addressSelected || !paymentSelected) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Incomplete Order Details',
+                    text: 'Please select both a delivery address and payment method.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const selectedPaymentMethod = Array.from(paymentRadios).find(radio => radio.checked)?.value;
+            
+            // Cash on Delivery validation
+            if (selectedPaymentMethod === 'Cash on Delivery' && discountedTotal > 1000) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Cash on Delivery Not Available',
+                    text: 'Cash on Delivery is not available for orders above ₹1000. Please choose a different payment method.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            try {
+                const formData = new FormData(checkoutForm);
+                const response = await fetch(checkoutForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(formData)
+                });
+                
+                const contentType = response.headers.get("content-type");
+                
+                if (contentType && contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (!response.ok) {
+                        if (result.error === 'insufficient_balance') {
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Insufficient Wallet Balance',
+                                html: `Your wallet balance (₹${result.currentBalance.toFixed(2)}) is insufficient for this purchase.<br>Required amount: ₹${result.requiredAmount.toFixed(2)}`,
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            throw new Error(result.message || 'Something went wrong');
+                        }
+                    }
+                } else {
+                    // If the response is HTML, replace the current page
+                    const htmlContent = await response.text();
+                    document.open();
+                    document.write(htmlContent);
+                    document.close();
+                }
+            } catch (error) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'An error occurred while processing your order.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    // Coupon application logic
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', async function() {
+            const selectedOption = couponSelect.options[couponSelect.selectedIndex];
+            const selectedCoupon = selectedOption.value;
+            if (!selectedCoupon) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'No Coupon Selected',
+                    text: 'Please select a coupon to apply.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const discountAmount = parseFloat(selectedOption.getAttribute('data-discount'));
+            discountedTotal = originalGrandTotal - discountAmount;
+
+            appliedCouponInput.value = selectedCoupon;
+            updateDisplayedTotal(discountedTotal);
+            
+            applyCouponBtn.style.display = 'none';
+            removeCouponBtn.style.display = 'inline-block';
+            discountDisplay.innerHTML = `You saved ₹${discountAmount} with coupon ${selectedCoupon}`;
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'Coupon Applied!',
+                text: `Coupon code ${selectedCoupon} has been applied successfully!`,
                 confirmButtonText: 'OK'
             });
-        }
-    });
+        });
+    }
+
+    // Coupon removal logic
+    if (removeCouponBtn) {
+        removeCouponBtn.addEventListener('click', async function() {
+            discountedTotal = originalGrandTotal;
+            appliedCouponInput.value = '';
+            updateDisplayedTotal(discountedTotal);
+            
+            discountDisplay.innerHTML = '';
+            applyCouponBtn.style.display = 'inline-block';
+            removeCouponBtn.style.display = 'none';
+
+            await Swal.fire({
+                icon: 'info',
+                title: 'Coupon Removed',
+                text: 'The coupon has been removed from your order.',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
+});
 </script>
 <%- include("../../views/partials/user/footer") %>

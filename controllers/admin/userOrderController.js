@@ -55,35 +55,45 @@ const listOrderDetails = async (req, res) => {
 //update different order statuses
 const updateOrderStatus = async (req, res) => {
   try {
-    const { orderId, paymentStatus, productId, newStatus } = req.body;
+    const { orderId, productId, newStatus } = req.body;
 
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (paymentStatus) {
-      order.paymentStatus = paymentStatus;
-      await order.save();
-      return res.json({ message: "Payment status updated successfully!" });
-    }
-
+    // Handle delivery status update
     if (productId && newStatus) {
       const item = order.items.find((item) => item.productId.equals(productId));
       if (!item) {
-        return res
-          .status(404)
-          .json({ message: "Product not found in the order" });
+        return res.status(404).json({ message: "Product not found in the order" });
       }
 
-      if (
-        (item.deliveryStatus === "Pending" &&
-          ["Delivered", "Admin Cancelled"].includes(newStatus)) ||
-        (item.deliveryStatus === "Return Pending" && newStatus === "Returned")
-      ) {
+      const validStatusTransitions = {
+        'Pending': ['Shipped', 'Admin Cancelled'],
+        'Shipped': ['On Transit'],
+        'On Transit': ['Out for Delivery'],
+        'Out for Delivery': ['Delivered'],
+        'Return Pending': ['Returned']
+      };
+
+      // Check if the status transition is valid
+      if (validStatusTransitions[item.deliveryStatus]?.includes(newStatus)) {
         item.deliveryStatus = newStatus;
         await order.save();
 
+        // Implicitly update payment status to 'Paid' if payment method is Cash on Delivery and delivery status is changed to 'Delivered'
+        if (order.paymentMethod === 'Cash on Delivery' && newStatus === 'Delivered') {
+          order.paymentStatus = 'Paid';
+          await order.save();
+        }
+
+        // Check if payment status is not 'Paid' and payment method is not Cash on Delivery, prevent delivery status update
+        if (order.paymentStatus !== 'Paid' && order.paymentMethod !== 'Cash on Delivery') {
+          return res.status(400).json({ message: "Payment not made, cannot update delivery status" });
+        }
+
+        // Handle refund logic for cancelled or returned items
         if (newStatus === "Returned" || newStatus === "Admin Cancelled") {
           if (order.paymentStatus === "Paid") {
             let wallet = await Wallet.findOne({ userId: order.userId });
@@ -131,17 +141,12 @@ const updateOrderStatus = async (req, res) => {
               refunded: true,
               amount: refundAmount,
             });
-          } else {
-            return res.json({
-              message: "Delivery status updated successfully!",
-              refunded: false,
-            });
           }
-        } else {
-          return res.json({ message: "Delivery status updated successfully!" });
         }
+        
+        return res.json({ message: "Delivery status updated successfully!" });
       } else {
-        return res.status(400).json({ message: "Invalid status transition" });
+        return res.status(400).json({ message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}` });
       }
     }
 

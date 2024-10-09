@@ -17,8 +17,6 @@ const orderSchema = new Schema(
       },
     },
     address: {
-
-      // Snapshot of the address details at the time of the order
       name: { type: String, required: true },
       houseName: { type: String, required: true },
       street: { type: String, required: true },
@@ -50,17 +48,21 @@ const orderSchema = new Schema(
           type: Number,
           required: true,
           default: function () {
-            return this.quantity * this.price; // Adjusted to calculate without discount
+            return this.quantity * this.price; 
           },
         },
-        /*         status: {
-          type: String,
-          enum: ["Delivered", "Pending", "Returned", "Cancelled"],
-          default: "Pending",
-        }, */
+       
         deliveryStatus: {
-          type: String, // Added type property
-          enum: ["Delivered", "Pending", "Cancelled", "Admin Cancelled","Return Pending","Returned"],
+          type: String, 
+          enum: ["Pending",
+    "Shipped",
+    "On Transit",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled",
+    "Admin Cancelled",
+    "Return Pending",
+    "Returned"],
           default: "Pending",
         },
         cancelReason: {
@@ -71,7 +73,7 @@ const orderSchema = new Schema(
     ],
     coupons: {
       type: String,
-      default: null, // If a coupon is applied, store coupon code
+      default: null, 
     },
     grandTotal: {
       type: Number,
@@ -79,13 +81,6 @@ const orderSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-     /*  enum: [
-        "Credit Card",
-        "Debit Card",
-        "Cash on Delivery",
-        "UPI",
-        "Net Banking",
-      ], */
       required: true,
     },
     paymentStatus: {
@@ -104,11 +99,11 @@ const orderSchema = new Schema(
   },
   
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt timestamps
+    timestamps: true, 
   }
 );
 
-// Generate model from schema
+
 const Order = mongoose.model("Order", orderSchema);
 
 module.exports = Order;
