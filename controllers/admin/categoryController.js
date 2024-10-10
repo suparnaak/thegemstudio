@@ -7,11 +7,15 @@ const listCategories = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
-    const categories = await Category.find({ isListed: true })
+
+    // Fetch all categories without checking for isListed field
+    const categories = await Category.find({})
       .skip(skip)
       .limit(limit);
-    const totalCategories = await Category.countDocuments({ isListed: true });
+    const totalCategories = await Category.countDocuments({});
+
     const totalPages = Math.ceil(totalCategories / limit);
+
     res.render("categories-list", {
       categories,
       currentPage: page,
@@ -102,11 +106,23 @@ const editCategory = async (req, res) => {
 };
 
 // Soft delete a category
-const deleteCategory = async (req, res) => {
+const blockCategory = async (req, res) => {
   try {
     const { id } = req.params;
     await Category.findByIdAndUpdate(id, { isListed: false });
-    await Product.updateMany({ category: id }, { isListed: false });
+   // await Product.updateMany({ category: id }, { isListed: false });
+    res.redirect("/admin/categories");
+  } catch (error) {
+    console.log("Error deleting category:", error);
+    res.redirect("/admin/pageerror");
+  }
+};
+// unblock a category
+const unblockCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Category.findByIdAndUpdate(id, { isListed: true });
+   // await Product.updateMany({ category: id }, { isListed: false });
     res.redirect("/admin/categories");
   } catch (error) {
     console.log("Error deleting category:", error);
@@ -119,6 +135,7 @@ module.exports = {
   addCategory,
   listCategories,
   editCategory,
-  deleteCategory,
+  blockCategory,
   loadEditCategory,
+  unblockCategory
 };

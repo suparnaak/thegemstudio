@@ -44,7 +44,7 @@
                 <% } %>
               </td>
               <td><%= product.name %></td>
-              <td><%= product.brand %></td>
+              <td><%= product.brand.brandName %></td>
               <td><%= product.category ? product.category.name : 'Uncategorized' %></td>
               <td>₹<%= product.price.toFixed(2) %></td>
               <td><%= product.discount %></td>

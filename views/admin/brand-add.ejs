@@ -1,0 +1,67 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Add New Brand</h1>
+      <form id="brandForm" action="/admin/brands/add" method="POST">
+        <div class="form-group">
+          <label for="brandName">Brand Name</label>
+          <input type="text" class="form-control" id="brandName" name="brandName" required />
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Add Brand</button>
+        <div class="error-message text-danger"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.querySelector("#brandForm");
+
+  const isEmptyOrSpaces = (str) => {
+    return !str || str.trim().length === 0;
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const brandName = document.querySelector("#brandName").value;
+    const description = document.querySelector("#description").value;
+    const errorMessage = document.querySelector(".error-message");
+
+    errorMessage.innerHTML = "";
+
+    if (isEmptyOrSpaces(brandName)) {
+      errorMessage.innerHTML = "Brand name cannot be empty or only spaces.";
+      return;
+    }
+    if (isEmptyOrSpaces(description)) {
+      errorMessage.innerHTML = "Description cannot be empty or only spaces.";
+      return;
+    }
+
+    try {
+      const response = await fetch("/admin/brands/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brandName, description }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        errorMessage.innerHTML = data.error;
+      } else {
+        window.location.href = "/admin/brands";
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

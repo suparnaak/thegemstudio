@@ -27,13 +27,18 @@
 
                 <div class="form-group">
                   <label for="brand">Brand</label>
-                  <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand %>" required>
-                  <small id="brandError" class="text-danger" style="display:none;">Brand cannot contain only
-                    spaces.</small>
+  
+                  <select class="form-control same-width" id="brand" name="brand" required>
+                    <% brands.forEach(brand=> { %>
+                      <option value="<%= brand._id %>" <%=product.brand._id.equals(brand._id) ? 'selected' : ''
+                        %>><%= brand.brandName %>
+                      </option>
+                      <% }) %>
+                  </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="brand">Category</label>
+                <label for="category">Category</label>
 
                 <select class="form-control same-width" id="category" name="category" required>
                   <% categories.forEach(category=> { %>
@@ -89,7 +94,7 @@
             <% if (product.images && product.images.length> 0) { %>
               <% product.images.forEach(function(image, index) { %>
                 <div class="me-2">
-                  <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image"
+                  <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt ="Product Image"
                     style="max-width: 150px;">
                   <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
                 </div>

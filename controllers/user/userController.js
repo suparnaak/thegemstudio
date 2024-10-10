@@ -1,6 +1,7 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productsSchema");
 const Category = require("../../models/categorySchema");
+const Brand = require("../../models/brandSchema");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
@@ -240,7 +241,6 @@ const logout = async (req, res) => {
   }
 };
 
-// Load products
 const loadProducts = async (req, res) => {
   try {
     const user = req.session.user;
@@ -252,18 +252,24 @@ const loadProducts = async (req, res) => {
 
     const categories = await Category.find({ isListed: true });
 
-    const productQuery = { isListed: true };
+    // Base query for products
+    const productQuery = {
+      isListed: true,
+      category: { $exists: true, $ne: null },
+      brand: { $exists: true, $ne: null },
+    };
 
+    // Search query
     if (searchQuery) {
       productQuery.name = { $regex: new RegExp(searchQuery, "i") };
     }
 
+    // Filter by selected category if provided
     if (selectedCategory) {
       productQuery.category = selectedCategory;
     }
 
-    const totalProducts = await Product.countDocuments(productQuery);
-
+    // Sort criteria
     let sortCriteria;
     switch (sortOption) {
       case "price-asc":
@@ -280,17 +286,32 @@ const loadProducts = async (req, res) => {
         break;
     }
 
+    // Count total products before pagination
+    const totalProducts = await Product.countDocuments(productQuery);
+
+    // Fetch products with populated category and brand, applying pagination and sorting
     const products = await Product.find(productQuery)
       .sort(sortCriteria)
       .skip((page - 1) * itemsPerPage)
       .limit(itemsPerPage)
-      .populate("category");
+      .populate({
+        path: "category",
+        match: { isListed: true },  // Ensure only listed categories
+      })
+      .populate({
+        path: "brand",
+        match: { isListed: true },  // Ensure only listed brands
+      });
 
-    const productsWithFinalPrice = products.map((product) => {
+    // Filter out products with unlisted categories or brands
+    const productsWithFinalPrice = products.filter((product) => {
+      return product.category && product.brand;  // Only include products with valid category and brand
+    }).map((product) => {
       const productDiscount = product.discount || 0;
       const categoryOffer = product.category.offer || 0;
+      const brandOffer = product.brand.offer || 0;
 
-      const maxDiscount = Math.max(productDiscount, categoryOffer);
+      const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
 
       const finalPrice = product.price - product.price * (maxDiscount / 100);
 
@@ -301,6 +322,7 @@ const loadProducts = async (req, res) => {
       };
     });
 
+    // Render the products page with pagination and other filters
     res.render("products", {
       user: user || null,
       products: productsWithFinalPrice,
@@ -317,25 +339,26 @@ const loadProducts = async (req, res) => {
   }
 };
 
-// Load product details page
 const loadProductPage = async (req, res) => {
   try {
     const user = req.session.user;
     const productId = req.params.id;
 
-    const product = await Product.findById(productId).populate("category");
+    const product = await Product.findById(productId).populate("category").populate("brand");
 
     if (!product) {
       return res.status(404).send("Product not found");
     }
     const productDiscount = product.discount || 0;
     const categoryOffer = product.category.offer || 0;
-    const maxDiscount = Math.max(productDiscount, categoryOffer);
+    const brandOffer = product.brand.offer || 0;
+    const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
     const finalPrice = product.price - product.price * (maxDiscount / 100);
     const productWithFinalPrice = {
       ...product._doc,
       finalPrice: finalPrice.toFixed(2),
       maxDiscount,
+      brandName: product.brand.name, // Add brand name to the product object
     };
     const relatedProducts = await Product.find({
       category: product.category._id,

@@ -7,6 +7,7 @@ const productController = require("../controllers/admin/productController");
 const userOrderController = require("../controllers/admin/userOrderController");
 const couponController = require("../controllers/admin/couponController");
 const salesReportController = require("../controllers/admin/salesReportController");
+const brandController = require("../controllers/admin/brandController");
 const multer = require('../helpers/multer-config');
 const { adminAuth } = require("../middlewares/auth");
 
@@ -30,7 +31,17 @@ router.get("/categories/add", adminAuth, categoryController.loadAddCategory);
 router.post("/categories/add", adminAuth, categoryController.addCategory); 
 router.get("/categories/edit/:id", adminAuth,categoryController.loadEditCategory); 
 router.post("/categories/edit/:id", adminAuth, categoryController.editCategory); 
-router.post("/categories/delete/:id", adminAuth,categoryController.deleteCategory);
+router.post("/categories/block/:id", adminAuth,categoryController.blockCategory);
+router.post("/categories/unblock/:id", adminAuth,categoryController.unblockCategory);
+
+//brand management
+router.get("/brands", adminAuth, brandController.listBrands); 
+router.get("/brands/add", adminAuth, brandController.loadAddBrands); 
+router.post("/brands/add", adminAuth, brandController.addBrands); 
+router.post("/brands/block/:id", adminAuth,brandController.blockBrand);
+router.post("/brands/unblock/:id", adminAuth,brandController.unblockBrand);
+router.get("/brands/edit/:id", adminAuth,brandController.loadEditBrand); 
+router.post("/brands/edit/:id", adminAuth, brandController.editBrand); 
 
 // Product management routes
 router.get("/products", adminAuth, productController.listProducts);

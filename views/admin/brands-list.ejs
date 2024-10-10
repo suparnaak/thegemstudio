@@ -3,40 +3,38 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h1>Category Management</h1>
-            <a href="/admin/categories/add" class="btn btn-primary mb-3">Add New Category</a>
+            <h1>Brand Management</h1>
+            <a href="/admin/brands/add" class="btn btn-primary mb-3">Add New Brand</a>
             <table class="table table-bordered">
                 <thead class="thead-dark">
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>Offer (%)</th>
-                        <th>Status</th> <!-- Added Status Column -->
+                        <th>Status</th> <!-- Added Status Column for Brands -->
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% categories.forEach(category => { %>
+                    <% brands.forEach(brand => { %> <!-- Changed categories to brands -->
                         <tr>
-                            <td><%= category.name %></td>
-                            <td><%= category.description %></td>
-                            <td><%= category.offer %></td>
-                            <td><%= category.isListed ? 'Active' : 'Blocked' %></td> <!-- Show Category Status -->
+                            <td><%= brand.brandName %></td> <!-- brandName from the brand schema -->
+                            <td><%= brand.description %></td>
+                            <td><%= brand.isListed ? 'Active' : 'Blocked' %></td> <!-- Show Brand Status -->
                             <td>
-                                <a href="/admin/categories/edit/<%= category._id %>"
+                                <a href="/admin/brands/edit/<%= brand._id %>"
                                     class="btn btn-warning btn-sm">Edit</a>
                                 
-                                <!-- Toggle Block/Unblock button based on category status -->
-                                <% if (category.isListed) { %>
+                                <!-- Toggle Block/Unblock button based on brand status -->
+                                <% if (brand.isListed) { %>
                                     <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="toggleCategoryStatus('<%= category._id %>', 'block')">Block</button>
+                                        onclick="toggleBrandStatus('<%= brand._id %>', 'block')">Block</button>
                                 <% } else { %>
                                     <button type="button" class="btn btn-success btn-sm"
-                                        onclick="toggleCategoryStatus('<%= category._id %>', 'unblock')">Unblock</button>
+                                        onclick="toggleBrandStatus('<%= brand._id %>', 'unblock')">Unblock</button>
                                 <% } %>
                             </td>
                         </tr>
-                    <% }) %>
+                    <% }) %> <!-- Ensure you replace categories with brands in your data handling -->
                 </tbody>
             </table>
 
@@ -69,9 +67,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    function toggleCategoryStatus(categoryId, action) {
+    function toggleBrandStatus(brandId, action) {
         let actionText = action === 'block' ? 'block' : 'unblock';
-        let confirmationText = action === 'block' ? "This category will be hidden from users!" : "This category will be visible to users!";
+        let confirmationText = action === 'block' ? "This brand will be hidden from users!" : "This brand will be visible to users!";
         let confirmButtonText = action === 'block' ? 'Yes, block it!' : 'Yes, unblock it!';
 
         Swal.fire({
@@ -85,7 +83,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 const form = document.createElement('form');
-                form.action = `/admin/categories/${action}/${categoryId}`;
+                form.action = `/admin/brands/${action}/${brandId}`;
                 form.method = 'POST';
                 document.body.appendChild(form);
                 form.submit();

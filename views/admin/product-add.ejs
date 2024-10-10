@@ -20,10 +20,16 @@
           </div>
           <div class="form-group">
             <label for="brand">Brand</label>
-            <input type="text" class="form-control" id="brand" name="brand" required />
+            <select class="form-control" id="brand" name="brand" required>
+              <option value="">Select Brand</option>
+              <!-- Populate brands from database -->
+              <% brands.forEach(brand => { %>
+                <option value="<%= brand._id %>">
+                  <%= brand.brandName %>
+                </option>
+              <% }); %>
+            </select>
             <span id="brand-error" style="color: red;"></span>
-
-
           </div>
           <div class="form-group">
             <label for="category">Category</label>
@@ -140,20 +146,15 @@
     }
 
     function validateBrand() {
-      const brandValue = brandInput.value.trim();
-      if (brandValue === '') {
-        document.getElementById('brand-error').innerText = 'Product brand is required';
-        return false;
-
-      } else if (brandValue.trim() === "") {
-        document.getElementById('brand-error').innerText = 'Invalid Brand Name';
-        return false;
-      }
-      else {
-        document.getElementById('brand-error').innerText = '';
-        return true;
-      }
-    }
+  const brandValue = brandInput.value.trim();
+  if (brandValue === '') {
+    document.getElementById('brand-error').innerText = 'Product brand is required';
+    return false;
+  } else {
+    document.getElementById('brand-error').innerText = '';
+    return true;
+  }
+}
 
 
     function validatePrice() {

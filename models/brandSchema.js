@@ -7,17 +7,13 @@ const brandSchema = new Schema({
     type: String,
     required: true,
   },
-  brandImage: {
-    type: [String],
+  description: {
+    type: String,
     required: true,
   },
   isListed: {
     type: Boolean,
     default: true,
-  },
-  offer: {
-    type: Number,
-    default: 0,
   },
   createdOn: {
     type: Date,

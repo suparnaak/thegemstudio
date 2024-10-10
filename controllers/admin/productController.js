@@ -1,5 +1,6 @@
 const Product = require("../../models/productsSchema");
 const Category = require("../../models/categorySchema");
+const Brand = require("../../models/brandSchema");
 const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
@@ -13,16 +14,15 @@ const listProducts = async (req, res) => {
     const search = req.query.search;
     const regex = new RegExp(search, "i");
 
-    const products = await Product.find({
-      $or: [{ name: regex }, { brand: regex }],
-    })
-      .populate({ path: "category", match: { name: regex, isListed: true } })
+    const query = { name: regex };
+
+    const products = await Product.find(query)
+      .populate("category")
+      .populate("brand")
       .skip(skip)
       .limit(limit);
 
-    const totalProducts = await Product.countDocuments({
-      $or: [{ name: regex }, { brand: regex }],
-    });
+    const totalProducts = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalProducts / limit);
     res.render("products-list", {
       products,
@@ -35,13 +35,13 @@ const listProducts = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
-
 //Load Add Product
 const loadAddProducts = async (req, res) => {
   try {
     const categories = await Category.find({ isListed: true });
+    const brands = await Brand.find({ isListed: true });
 
-    res.render("product-add", { categories: categories });
+    res.render("product-add", { categories, brands });
   } catch (error) {
     console.log("Error rendering add category page:", error);
     res.redirect("/admin/pageerror");
@@ -72,8 +72,8 @@ const addProduct = async (req, res) => {
     const product = new Product({
       name,
       description,
-      brand,
-      category,
+      brand, // No conversion needed
+      category, // No conversion needed
       price,
       discount,
       quantity,
@@ -104,15 +104,28 @@ const loadCategories = async () => {
   }
 };
 
+// Load all brands
+const loadBrands = async () => {
+  try {
+    const brands = await Brand.find({ isListed: true }).select("brandName _id");
+    return brands;
+  } catch (error) {
+    console.log("Error loading brands:", error);
+    return [];
+  }
+};
+
 // Load product edit
 const loadEditProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id).populate("category");
+    const product = await Product.findById(id).populate("category").populate("brand");
     const categories = await loadCategories();
+    const brands = await loadBrands(); // Load all brands
     res.render("product-edit", {
       product,
       categories,
+      brands, // Pass brands to the view
       admin: true,
       pageTitle: "Edit Product",
     });
@@ -121,6 +134,7 @@ const loadEditProduct = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
+
 //edit product
 const editProduct = async (req, res) => {
   try {
