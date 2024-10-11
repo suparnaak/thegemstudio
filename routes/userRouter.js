@@ -8,6 +8,7 @@ const orderController = require('../controllers/user/orderController');
 const wishlistController = require('../controllers/user/wishlistController');
 const walletController = require('../controllers/user/walletController');
 const invoiceController = require('../controllers/user/invoiceController');
+const paymentController = require('../controllers/user/paymentController');
 const passport = require('../config/passport');
 const { userAuth,isLoggedIn } = require("../middlewares/auth");
 const { fetchCartData } = require("../middlewares/fetchCartData");
@@ -80,10 +81,15 @@ router.get('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,
 router.post('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.cancelOrder);
 router.get('/my-orders/cancel-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadCancelConfirmation);
 
+// Payment retry routes
+router.post('/retry-payment', userAuth, fetchCartData, paymentController.retryPayment);
+router.post('/verify-retry-payment', userAuth, fetchCartData, paymentController.verifyRetryPayment);
+
 //return order
 router.get('/my-orders/return-order/:orderId/:productId',userAuth,fetchCartData,orderController.loadReturnOrder);
 router.post('/my-orders/return-order/:orderId/:productId',userAuth,fetchCartData,orderController.returnOrder);
 router.get('/my-orders/return-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadReturnConfirmation);
+
 
 //wishlist management
 router.post('/wishlist/add', userAuth,fetchCartData, wishlistController.addToWishlist);

@@ -52,7 +52,7 @@ const listOrderDetails = async (req, res) => {
     res.status(500).send("An error occurred while fetching order details");
   }
 };
-//update different order statuses
+
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, productId, newStatus } = req.body;
@@ -69,6 +69,13 @@ const updateOrderStatus = async (req, res) => {
         return res.status(404).json({ message: "Product not found in the order" });
       }
 
+      // Fetch product details to get the name
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product details not found" });
+      }
+      const productName = product.name; // or whatever field contains the product name
+
       const validStatusTransitions = {
         'Pending': ['Shipped', 'Admin Cancelled'],
         'Shipped': ['On Transit'],
@@ -78,76 +85,90 @@ const updateOrderStatus = async (req, res) => {
       };
 
       // Check if the status transition is valid
-      if (validStatusTransitions[item.deliveryStatus]?.includes(newStatus)) {
+      if (!validStatusTransitions[item.deliveryStatus]?.includes(newStatus)) {
+        return res.status(400).json({ 
+          message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}` 
+        });
+      }
+
+      // Special handling for status changes
+      if (['Admin Cancelled', 'Return Pending', 'Returned'].includes(newStatus)) {
         item.deliveryStatus = newStatus;
-        await order.save();
-
-        // Implicitly update payment status to 'Paid' if payment method is Cash on Delivery and delivery status is changed to 'Delivered'
-        if (order.paymentMethod === 'Cash on Delivery' && newStatus === 'Delivered') {
-          order.paymentStatus = 'Paid';
-          await order.save();
-        }
-
-        // Check if payment status is not 'Paid' and payment method is not Cash on Delivery, prevent delivery status update
-        if (order.paymentStatus !== 'Paid' && order.paymentMethod !== 'Cash on Delivery') {
-          return res.status(400).json({ message: "Payment not made, cannot update delivery status" });
-        }
-
-        // Handle refund logic for cancelled or returned items
-        if (newStatus === "Returned" || newStatus === "Admin Cancelled") {
-          if (order.paymentStatus === "Paid") {
-            let wallet = await Wallet.findOne({ userId: order.userId });
-
-            if (!wallet) {
-              wallet = new Wallet({
-                userId: order.userId,
-                balance: 0,
-                transactions: [],
-              });
-            }
-
-            const totalSubtotals = order.items.reduce(
-              (sum, item) => sum + item.subtotal,
-              0
-            );
-            const refundAmount =
-              item.subtotal -
-              (totalSubtotals - order.grandTotal) / order.items.length;
-
-            if (isNaN(refundAmount)) {
-              throw new Error(
-                `Invalid refund amount for order ${orderId} and product ${productId}`
-              );
-            }
-
-            wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
-
-            const transactionId = generateTransactionId();
-            const transaction = {
-              type: "credit",
-              amount: refundAmount,
-              description: `Refund for ${newStatus.toLowerCase()} order ${orderId}, product ${
-                item.productName || productId
-              }`,
-              date: new Date(),
-              transactionId,
-            };
-
-            wallet.transactions.push(transaction);
-            await wallet.save();
-
-            return res.json({
-              message: `Delivery status updated and refund processed successfully!`,
-              refunded: true,
-              amount: refundAmount,
+      } else {
+        if (order.paymentMethod === 'Cash on Delivery') {
+          item.deliveryStatus = newStatus;
+          if (newStatus === 'Delivered') {
+            order.paymentStatus = 'Paid';
+          }
+        } else {
+          if (order.paymentStatus !== 'Paid') {
+            return res.status(400).json({ 
+              message: "Payment not completed. Cannot update delivery status." 
             });
           }
+          item.deliveryStatus = newStatus;
         }
-        
-        return res.json({ message: "Delivery status updated successfully!" });
-      } else {
-        return res.status(400).json({ message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}` });
       }
+
+      // Handle refund logic for admin cancelled or returned items
+      if ((newStatus === "Returned" || newStatus === "Admin Cancelled") && 
+          order.paymentStatus === "Paid") {
+        let wallet = await Wallet.findOne({ userId: order.userId });
+
+        if (!wallet) {
+          wallet = new Wallet({
+            userId: order.userId,
+            balance: 0,
+            transactions: [],
+          });
+        }
+
+        const totalSubtotals = order.items.reduce(
+          (sum, item) => sum + item.subtotal,
+          0
+        );
+        const refundAmount =
+          item.subtotal -
+          (totalSubtotals - order.grandTotal) / order.items.length;
+
+        if (isNaN(refundAmount)) {
+          throw new Error(
+            `Invalid refund amount for order ${order.orderId} and product ${productName}`
+          );
+        }
+
+        wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
+
+        const transactionId = generateTransactionId();
+        
+        const transaction = {
+          type: "credit",
+          amount: refundAmount,
+          description: `Refund for ${newStatus.toLowerCase()} - Order #${order.orderId} - ${productName}`,
+          date: new Date(),
+          transactionId,
+        };
+
+        wallet.transactions.push(transaction);
+        await wallet.save();
+        await order.save();
+
+        return res.json({
+          message: `Delivery status updated and refund processed successfully!`,
+          refunded: true,
+          amount: refundAmount,
+          newStatus: item.deliveryStatus,
+          paymentStatus: order.paymentStatus
+        });
+      }
+
+      await order.save();
+      
+      return res.json({ 
+        message: "Delivery status updated successfully!",
+        newStatus: item.deliveryStatus,
+        paymentStatus: order.paymentStatus
+      });
     }
 
     return res.status(400).json({ message: "Invalid request" });

@@ -1,122 +1,197 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-    <!--header ends-->
+<!--header ends-->
 
-    <div class="breadcrumbs">
-        <div class="container_12">
-            <div class="grid_12">
-                <a href="/">Home</a><span></span><span class="current">My Orders</span>
-            </div>
+<div class="breadcrumbs">
+    <div class="container_12">
+        <div class="grid_12">
+            <a href="/">Home</a><span></span><span class="current">My Orders</span>
         </div>
     </div>
-    <div class="order-page">
-        <div class="container mt-4">
-            <div class="row">
-                <!-- Sidebar -->
-                <%- include("../../views/partials/user/sidebar") %>
-                    <div class="col-lg-9 col-md-8">
-                        <div class="card shadow-sm">
-                            <div class="card-header" style="background-color: rgb(108, 128, 157); color: white;">
-                                <h5 class="mb-0">My Orders</h5>
-                            </div>
-                            <div class="card-body">
-                                <% if (orders.length> 0) { %>
-                                    <% orders.forEach(function(order) { %>
-                                        <div class="orderCard">
-                                            <div class="d-flex justify-content-between">
-                                                <ul class="list-unstyled">
-                                                    <li><strong>ORDER PLACED:</strong>
-                                                        <%= order.orderDate.toLocaleDateString() %>
-                                                    </li><br>
-                                                    <li><strong>COUPON DISCOUNT:</strong> ₹
-
-                                                        <% let subtotal=0; order.items.forEach(item=> {
-                                                            subtotal += item.subtotal;
-                                                            });
-                                                            let discount = subtotal - order.grandTotal;
-                                                            if (discount > 0) {
-                                                            %>
-                                                            <%= discount %>
-                                                                <% } else { %>
-                                                                    0
-                                                                    <% } %>
-
-                                                    <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %>
-                                                    </li><br>
-                                                    <li><strong>SHIP TO:</strong>
-                                                        <%= order.address.name %>, <%= order.address.houseName %>,
-                                                                <%= order.address.street %>, <%= order.address.city %>,
-                                                                        <%= order.address.country %>,<%=
-                                                                                order.address.zipcode %>
-                                                    </li>
-                                                    <li><strong>Payment Method:</strong>
-                                                        <%= order.paymentMethod %></li>
-                                                    <li><strong>Payment Status:</strong>
-                                                        <%= order.paymentStatus %></li>
-                                                </ul>
-                                                <div>
-                                                    <p class="mb-0"><strong>ORDER #</strong>
-                                                        <%= order.orderId %>
-                                                    </p>
-                                                    <a href="/download-invoice/<%= order.orderId %>" >Download Invoice</a>
-                                                </div>
+</div>
+<div class="order-page">
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/sidebar") %>
+            <div class="col-lg-9 col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header" style="background-color: rgb(108, 128, 157); color: white;">
+                        <h5 class="mb-0">My Orders</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (orders.length > 0) { %>
+                            <% orders.forEach(function(order) { %>
+                                <div class="orderCard">
+                                    <div class="d-flex justify-content-between">
+                                        <ul class="list-unstyled">
+                                            <li><strong>ORDER PLACED:</strong>
+                                                <%= order.orderDate.toLocaleDateString() %>
+                                            </li><br>
+                                            <li><strong>COUPON DISCOUNT:</strong> ₹
+                                                <% let subtotal=0; order.items.forEach(item => {
+                                                    subtotal += item.subtotal;
+                                                });
+                                                let discount = subtotal - order.grandTotal;
+                                                if (discount > 0) { %>
+                                                    <%= discount %>
+                                                <% } else { %>
+                                                    0
+                                                <% } %>
+                                            </li>
+                                            <li><strong>TOTAL:</strong> ₹<%= order.grandTotal %>
+                                            </li><br>
+                                            <li><strong>SHIP TO:</strong>
+                                                <%= order.address.name %>, <%= order.address.houseName %>,
+                                                <%= order.address.street %>, <%= order.address.city %>,
+                                                <%= order.address.country %>, <%= order.address.zipcode %>
+                                            </li>
+                                            <li><strong>Payment Method:</strong>
+                                                <%= order.paymentMethod %>
+                                            </li>
+                                            <li><strong>Payment Status:</strong>
+                                                <%= order.paymentStatus %>
+                                            </li>
+                                        </ul>
+                                        <div>
+                                            <p class="mb-0"><strong>ORDER #</strong>
+                                                <%= order.orderId %>
+                                            </p>
+                                            <a href="/download-invoice/<%= order.orderId %>">Download Invoice</a>
+                                            
+                                            <% if (order.paymentMethod !== 'Cash On Delivery' && 
+                                            (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                         <button onclick="retryPayment('<%= order._id %>', '<%= order.grandTotal %>')" 
+                                                 class="btn btn-primary btn-sm mt-2">
+                                             Retry Payment
+                                         </button>
+                                     <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% order.items.forEach(function(item) { %>
+                                    <div class="order-item mt-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <a href="/product_page/<%= item.productId._id %>">
+                                                <img src="/uploads/products/<%= item.productId.images[0] %>"
+                                                    alt="Product Image" class="img-thumbnail"
+                                                    style="width: 100px; height: auto;">
+                                            </a>
+                                            <div class="ml-3">
+                                                <h6><%= item.productId.name %></h6>
+                                                <p>Sold by: <span class="text-muted"><%= item.productId.brand.brandName %></span></p>
+                                                <p>Quantity: <span class="text-muted"><%= item.quantity %></span></p>
+                                                <strong class="text-success">₹<%= item.subtotal %></strong>
                                             </div>
                                         </div>
-                                        <% order.items.forEach(function(item) { %>
-                                            <div class="order-item mt-4">
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <a href="/product_page/<%= item.productId._id %>">
-                                                        <img src="/uploads/products/<%= item.productId.images[0] %>"
-                                                            alt="Product Image" class="img-thumbnail"
-                                                            style="width: 100px; height: auto;"></a>
-                                                    <div class="ml-3">
-                                                        <h6>
-                                                            <%= item.productId.name %>
-                                                        </h6>
-                                                        <p>Sold by: <span class="text-muted">
-                                                                <%= item.productId.brand %>
-                                                            </span></p>
-                                                        <p>Quantity:<span class="text-muted">
-                                                                <%= item.quantity %>
-                                                            </span></p>
-                                                        <strong class="text-success">₹<%= item.subtotal %></strong>
-                                                    </div>
-                                                </div>
 
-                                                <p class="text-muted">Delivery: <%= item.deliveryStatus %>
-                                                </p>
+                                        <p class="text-muted">Delivery: <%= item.deliveryStatus %></p>
 
-                                                <div class="d-flex justify-content-start">
+                                        <div class="d-flex justify-content-start">
+                                            <% if (item.deliveryStatus === 'Pending') { %>
+                                                <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
+                                                   class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
+                                            <% } %>
 
-
-                                                    <% if (item.deliveryStatus==='Pending' ) { %>
-                                                        <a href="/my-orders/cancel-order/<%= order._id %>/<%= item.productId._id %>"
-                                                            class="btn btn-outline-danger btn-sm mr-2">Cancel Order</a>
-
-                                                        <%}%>
-
-                                                            <% if (item.deliveryStatus==='Delivered' ) { %>
-                                                                <a href="/my-orders/return-order/<%= order._id %>/<%= item.productId._id %>"
-                                                                    class="btn btn-outline-danger btn-sm mr-2">Return</a>
-                                                                <%}%>
-                                                </div>
-                                            </div>
-                                            <% }); %>
-                                                <hr>
-                                                <% }); %>
-                                                    <% } else { %>
-                                                        <p>No orders found.</p>
-                                                        <% } %>
-                            </div>
-                        </div>
+                                            <% if (item.deliveryStatus === 'Delivered') { %>
+                                                <a href="/my-orders/return-order/<%= order._id %>/<%= item.productId._id %>"
+                                                   class="btn btn-outline-danger btn-sm mr-2">Return</a>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                                <hr>
+                            <% }); %>
+                        <% } else { %>
+                            <p>No orders found.</p>
+                        <% } %>
                     </div>
+                </div>
             </div>
-            <div class="my-5"></div>
         </div>
+        <div class="my-5"></div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</div>
 
-    <!--footer begins-->
-    <%- include("../../views/partials/user/footer") %>
-        <!--footer ends-->
+<!-- Add Razorpay script and payment handling code -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function retryPayment(orderId, amount) {
+    console.log('Retrying payment for order:', orderId, 'Amount:', amount);
+    fetch('/retry-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            orderId: orderId,
+            amount: parseFloat(amount)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            var options = {
+                "key": "<%= razorpayKey %>",
+                "amount": data.amount,
+                "currency": "INR",
+                "name": "The Gem Studio",
+                "description": "Order Payment",
+                "order_id": data.razorpayOrderId,
+                "handler": function (response) {
+                    verifyPayment(response, data);
+                },
+                "prefill": {
+                    "name": "<%= user.name %>",
+                    "email": "<%= user.email %>",
+                    "contact": "<%= user.mobile %>"
+                },
+                "theme": {
+                    "color": "#6c809d"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        } else {
+            alert(data.error || 'Unable to initiate payment. Please try again later.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your payment. Please try again.');
+    });
+}
+
+function verifyPayment(payment, order) {
+    fetch('/verify-retry-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            payment: payment,
+            order: order
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Payment successful!');
+            window.location.reload();
+        } else {
+            alert('Payment verification failed. Please contact support.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while verifying your payment. Please contact support.');
+    });
+}
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+<!--footer begins-->
+<%- include("../../views/partials/user/footer") %>
+<!--footer ends-->

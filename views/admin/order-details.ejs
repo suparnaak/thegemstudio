@@ -96,8 +96,19 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const newStatus = this.getAttribute('data-status');
             const productId = this.getAttribute('data-product-id');
+            const paymentMethod = this.getAttribute('data-payment-method');
+            const paymentStatus = this.getAttribute('data-payment-status');
 
             let confirmationMessage = `You are about to change the delivery status to ${newStatus}.`;
+            let warningText = '';
+
+            // Add payment-specific warnings
+            if (!['Admin Cancelled', 'Return Pending', 'Returned'].includes(newStatus)) {
+                if (paymentMethod !== 'Cash on Delivery' && paymentStatus !== 'Paid') {
+                    warningText = 'Note: This order\'s payment is still pending.';
+                }
+            }
+
             if (newStatus === 'Admin Cancelled') {
                 confirmationMessage = 'You are about to cancel this order. This action cannot be undone.';
             } else if (newStatus === 'Returned') {
@@ -107,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 title: 'Are you sure?',
                 text: confirmationMessage,
+                html: warningText ? `${confirmationMessage}<br><br><small>${warningText}</small>` : confirmationMessage,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Yes, update status',
@@ -136,7 +148,13 @@ function updateStatus(data) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.refunded) {
+        if (data.message.includes("Payment not completed")) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Cannot Update Status',
+                text: 'Payment is not completed for this order.',
+            });
+        } else if (data.refunded) {
             Swal.fire({
                 icon: 'success',
                 title: 'Status Updated',
@@ -144,14 +162,12 @@ function updateStatus(data) {
             }).then(() => {
                 location.reload();
             });
-        } else if (data.message === "Payment not made, cannot update delivery status") {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Payment not made, cannot update delivery status',
-            });
         } else {
-            Swal.fire('Updated!', data.message, 'success').then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: data.message,
+            }).then(() => {
                 location.reload();
             });
         }

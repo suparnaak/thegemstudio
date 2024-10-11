@@ -1,5 +1,5 @@
 const Order = require("../../models/orderSchema");
-const Excel = require("exceljs");
+const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
 
 // Helper function for calculations
@@ -9,7 +9,8 @@ const calculateStats = async (startDate, endDate) => {
       $gte: startDate,
       $lte: endDate,
     }
-  });
+  }).populate('userId', 'name')
+    .populate('items.productId', 'name');
 
   const stats = orders.reduce((acc, order) => {
     // 1. Count all orders
@@ -50,6 +51,26 @@ const calculateStats = async (startDate, endDate) => {
       }
     }
 
+    // Add order details to the accumulator
+    acc.orderDetails.push({
+      orderId: order._id,
+      orderDate: order.createdAt,
+      customerName: order.userId?.name || 'N/A',
+      paymentStatus: order.paymentStatus,
+      originalTotal,
+      productDiscount: originalTotal - itemsSubtotal,
+      couponDiscount: order.coupons ? (itemsSubtotal - order.grandTotal) : 0,
+      grandTotal: order.grandTotal,
+      items: order.items.map(item => ({
+        productName: item.productId?.name || 'N/A',
+        quantity: item.quantity,
+        originalPrice: item.price,
+        discountedPrice: item.subtotal / item.quantity,
+        subtotal: item.subtotal,
+        status: item.deliveryStatus
+      }))
+    });
+
     return acc;
   }, {
     totalOrders: 0,
@@ -57,7 +78,8 @@ const calculateStats = async (startDate, endDate) => {
     productDiscount: 0,
     couponDiscount: 0,
     netSales: 0,
-    refundAmount: 0
+    refundAmount: 0,
+    orderDetails: []
   });
 
   // Calculate remaining metrics
@@ -67,7 +89,7 @@ const calculateStats = async (startDate, endDate) => {
   return stats;
 };
 
-//load sales report page
+// Load sales report page
 const getSalesReport = async (req, res) => {
   try {
     const today = new Date();
@@ -86,7 +108,7 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-//filter results
+// Filter results
 const filterSalesReport = async (req, res) => {
   try {
     const { dateFilter, startDate, endDate } = req.body;
@@ -145,78 +167,143 @@ const filterSalesReport = async (req, res) => {
   }
 };
 
-//download reports
-const generateExcel = async (res, stats, dateFilter, startDate, endDate) => {
-  const workbook = new Excel.Workbook();
+const generateExcel = async (res, stats, dateFilter, start, end) => {
+  const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sales Report");
 
-  worksheet.addRow(["Sales Report"]);
-  worksheet.addRow([
-    "Date Range:",
-    `${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`,
-  ]);
-  worksheet.addRow([""]);
+  // Define columns for overall sales data
+  worksheet.columns = [
+    { header: "Metrics", key: "metric", width: 30 },
+    { header: "Value", key: "value", width: 30 },
+  ];
 
-  worksheet.addRow(["Sales Summary"]);
-  worksheet.addRow(["Metric", "Value"]);
-  worksheet.addRow(["Total Orders", stats.totalOrders]);
-  worksheet.addRow(["Total Sales(Before Discounts)", `₹${stats.totalSales}`]);
-  worksheet.addRow(["Product Discount", `₹${stats.productDiscount}`]);
-  worksheet.addRow(["Net Before Coupons", `₹${stats.netBeforeCoupons}`]);
-  worksheet.addRow(["Coupon Discount", `₹${stats.couponDiscount}`]);
-  worksheet.addRow(["Net Sales", `₹${stats.netSales}`]);
-  worksheet.addRow(["Refund Amount", `₹${stats.refundAmount}`]);
-  worksheet.addRow(["Net Sales After Refunds", `₹${stats.netSalesAfterRefunds}`]);
+  // Add overall summary at the top
+  worksheet.addRow({ metric: "Total Orders", value: stats.totalOrders });
+  worksheet.addRow({ metric: "Total Sales (Before Discounts)", value: `₹${stats.totalSales}` });
+  worksheet.addRow({ metric: "Product Discount", value: `₹${stats.productDiscount}` });
+  worksheet.addRow({ metric: "Net Before Coupons", value: `₹${stats.netBeforeCoupons}` });
+  worksheet.addRow({ metric: "Coupon Discount", value: `₹${stats.couponDiscount}` });
+  worksheet.addRow({ metric: "Net Sales", value: `₹${stats.netSales}` });
+  worksheet.addRow({ metric: "Refund Amount", value: `₹${stats.refundAmount}` });
+  worksheet.addRow({ metric: "Net Sales After Refunds", value: `₹${stats.netSalesAfterRefunds}` });
 
-  worksheet.getColumn(1).width = 25;
-  worksheet.getColumn(2).width = 15;
+  // Add some space between summary and order details
+  worksheet.addRow([]);
 
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename=sales-report-${dateFilter}.xlsx`
-  );
+  // Define columns for order details and product details
+  worksheet.columns = [
+    { header: "Sl No", key: "slNo", width: 10 },
+    { header: "Order ID", key: "orderId", width: 20 },
+    { header: "Order Date", key: "orderDate", width: 20 },
+    { header: "Payment Status", key: "paymentStatus", width: 20 },
+    { header: "Original Total", key: "originalTotal", width: 20 },
+    { header: "Product Discount", key: "productDiscount", width: 20 },
+    { header: "Coupon Discount", key: "couponDiscount", width: 20 },
+    { header: "Grand Total", key: "grandTotal", width: 20 },
+    { header: "Product Name", key: "productName", width: 30 },
+    { header: "Quantity", key: "quantity", width: 15 },
+    { header: "Original Price", key: "originalPrice", width: 15 },
+    { header: "Discounted Price", key: "discountedPrice", width: 15 },
+    { header: "Subtotal", key: "subtotal", width: 15 },
+    { header: "Product Status", key: "productStatus", width: 20 },
+  ];
 
+  // Start serial number counter
+  let slNo = 1;
+
+  // Iterate through the orders and products
+  stats.orderDetails.forEach(order => {
+    // Add common order details row (shown once for each order)
+    worksheet.addRow({
+      slNo: slNo++,  // Increment the serial number for each order
+      orderId: order._id,  // Use ObjectId instead of orderId
+      orderDate: new Date(order.orderDate).toLocaleDateString(),
+      paymentStatus: order.paymentStatus,
+      originalTotal: `₹${order.originalTotal}`,
+      productDiscount: `₹${order.productDiscount}`,
+      couponDiscount: `₹${order.couponDiscount}`,
+      grandTotal: `₹${order.grandTotal}`,
+    });
+
+    // Add subrows for each product within the order
+    order.items.forEach(item => {
+      worksheet.addRow({
+        productName: item.productName,
+        quantity: item.quantity,
+        originalPrice: `₹${item.originalPrice}`,
+        discountedPrice: `₹${item.discountedPrice}`,
+        subtotal: `₹${item.subtotal}`,
+        productStatus: item.status,
+      });
+    });
+
+    // Add a blank row after each order for separation
+    worksheet.addRow([]);
+  });
+
+  // Write Excel file
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", `attachment; filename=Sales_Report_${dateFilter}.xlsx`);
   await workbook.xlsx.write(res);
+  res.end();
 };
 
-const generatePDF = async (res, stats, dateFilter, startDate, endDate) => {
+
+// Generate PDF report
+const generatePDF = (res, stats, dateFilter, start, end) => {
   const doc = new PDFDocument();
-
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename=sales-report-${dateFilter}.pdf`
-  );
-
   doc.pipe(res);
 
-  doc.fontSize(16).text("Sales Report", { align: "center" });
-  doc
-    .fontSize(12)
-    .text(
-      `Date Range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`,
-      { align: "center" }
-    );
-  doc.moveDown();
-
-  doc.fontSize(14).text("Sales Summary");
-  doc.fontSize(12);
-  doc.text(`Total Orders: ${stats.totalOrders}`);
-  doc.text(`Total Sales(Before Discount): ₹${stats.totalSales}`);
+  // Add sales summary at the top
+  doc.fontSize(14).text("Sales Summary:");
+  doc.fontSize(12).text(`Total Orders: ${stats.totalOrders}`);
+  doc.text(`Total Sales (Before Discounts): ₹${stats.totalSales}`);
   doc.text(`Product Discount: ₹${stats.productDiscount}`);
   doc.text(`Net Before Coupons: ₹${stats.netBeforeCoupons}`);
   doc.text(`Coupon Discount: ₹${stats.couponDiscount}`);
   doc.text(`Net Sales: ₹${stats.netSales}`);
   doc.text(`Refund Amount: ₹${stats.refundAmount}`);
   doc.text(`Net Sales After Refunds: ₹${stats.netSalesAfterRefunds}`);
+  doc.moveDown();
+
+  // Create a table for order details
+  doc.fontSize(14).text("Order Details:");
+  const tableHeaders = ["Order ID", "Order Date", "Customer Name", "Payment Status", "Original Total", "Product Discount", "Coupon Discount", "Grand Total", "Product Name", "Quantity", "Original Price", "Discounted Price", "Subtotal", "Product Status"];
+  
+  // Draw table headers
+  tableHeaders.forEach(header => {
+    doc.fontSize(10).text(header, { continued: true });
+    doc.text("   ", { continued: true });  // Add space between columns
+  });
+  doc.moveDown();
+
+  // Add order details in tabular form with product details as subrows
+  stats.orderDetails.forEach(order => {
+    order.items.forEach((item, idx) => {
+      doc.fontSize(10).text(order.orderId, { continued: true });
+      doc.text(new Date(order.orderDate).toLocaleDateString(), { continued: true });
+      doc.text(order.customerName, { continued: true });
+      doc.text(order.paymentStatus, { continued: true });
+      doc.text(`₹${order.originalTotal}`, { continued: true });
+      doc.text(`₹${order.productDiscount}`, { continued: true });
+      doc.text(`₹${order.couponDiscount}`, { continued: true });
+      doc.text(`₹${order.grandTotal}`, { continued: true });
+      doc.text(item.productName, { continued: true });
+      doc.text(item.quantity, { continued: true });
+      doc.text(`₹${item.originalPrice}`, { continued: true });
+      doc.text(`₹${item.discountedPrice}`, { continued: true });
+      doc.text(`₹${item.subtotal}`, { continued: true });
+      doc.text(item.status);
+
+      // Move to the next line for the next product in the same order
+      doc.moveDown();
+    });
+    doc.moveDown();
+  });
 
   doc.end();
 };
-
+// Download report handler
 const downloadReport = async (req, res) => {
   try {
     const { format, dateFilter, startDate, endDate } = req.body;
@@ -241,6 +328,9 @@ const downloadReport = async (req, res) => {
         end = new Date(new Date().setHours(23, 59, 59, 999));
         break;
       case "custom":
+        if (!startDate || !endDate) {
+          throw new Error("Start and end dates are required for custom range");
+        }
         start = new Date(startDate);
         end = new Date(endDate);
         end.setHours(23, 59, 59, 999);

@@ -215,11 +215,20 @@ const loadMyOrders = async (req, res) => {
     const user = req.session.user;
     if (user) {
       const orders = await Order.find({ userId: user._id })
-        .populate("items.productId")
-
+        .populate({
+          path: "items.productId", // Populating the product in each item
+          populate: {
+            path: "brand", // Populating the brand field in the product
+            select: "brandName" // Selecting only the brandName field
+          }
+        })
         .sort({ createdAt: -1 });
 
-      res.render("myorders-page", { user: user, orders: orders });
+      res.render("myorders-page", {
+        orders: orders,
+        razorpayKey: process.env.RAZORPAY_KEY_ID, // Add this line
+        user: req.user
+    });
     } else {
       res.redirect("/login");
     }

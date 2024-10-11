@@ -324,7 +324,7 @@ const confirmOrder = async (req, res) => {
       const transaction = {
         type: "debit",
         amount: grandTotal,
-        description: `Paid for new order with ID: ${newOrder._id}`,
+        description: `Paid for new order with ID: ${newOrder.orderId}`,
         date: new Date(),
         transactionId,
       };
