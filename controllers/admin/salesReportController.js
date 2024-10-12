@@ -1,6 +1,7 @@
 const Order = require("../../models/orderSchema");
 const ExcelJS = require("exceljs");
-const PDFDocument = require("pdfkit");
+//const PDFDocument = require("pdfkit");
+const PDFDocument = require("pdfkit-table");
 
 // Helper function for calculations
 const calculateStats = async (startDate, endDate) => {
@@ -13,33 +14,33 @@ const calculateStats = async (startDate, endDate) => {
     .populate('items.productId', 'name');
 
   const stats = orders.reduce((acc, order) => {
-    // 1. Count all orders
+    // Count all orders
     acc.totalOrders++;
 
     // Calculate original total (before any discounts)
     const originalTotal = order.items.reduce((sum, item) => 
       sum + (item.price * item.quantity), 0);
     
-    // 2. Add to total sales (original price * quantity)
+    // Add to total sales (original price * quantity)
     acc.totalSales += originalTotal;
 
     // Calculate actual items subtotal (after product discounts)
     const itemsSubtotal = order.items.reduce((sum, item) => 
       sum + item.subtotal, 0);
     
-    // 3. Add to product discount
+    // Add to product discount
     acc.productDiscount += originalTotal - itemsSubtotal;
 
-    // 4. Add to coupon discount if applicable
+    // Add to coupon discount if applicable
     if (order.coupons) {
       acc.couponDiscount += itemsSubtotal - order.grandTotal;
     }
 
-    // 5. Add to net sales if paid
+    // Add to net sales if paid
     if (order.paymentStatus === 'Paid') {
       acc.netSales += order.grandTotal;
 
-      // 6. Calculate refunds for paid orders
+      // Calculate refunds for paid orders
       const refundEligibleItems = order.items.filter(item => 
         ['Returned', 'Cancelled', 'Admin Cancelled'].includes(item.deliveryStatus)
       );
@@ -53,10 +54,11 @@ const calculateStats = async (startDate, endDate) => {
 
     // Add order details to the accumulator
     acc.orderDetails.push({
-      orderId: order._id,
+      orderId: order.orderId,
       orderDate: order.createdAt,
       customerName: order.userId?.name || 'N/A',
       paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
       originalTotal,
       productDiscount: originalTotal - itemsSubtotal,
       couponDiscount: order.coupons ? (itemsSubtotal - order.grandTotal) : 0,
@@ -166,7 +168,6 @@ const filterSalesReport = async (req, res) => {
     });
   }
 };
-
 const generateExcel = async (res, stats, dateFilter, start, end) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sales Report");
@@ -189,56 +190,55 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
 
   // Add some space between summary and order details
   worksheet.addRow([]);
+  worksheet.addRow([]);
 
-  // Define columns for order details and product details
-  worksheet.columns = [
-    { header: "Sl No", key: "slNo", width: 10 },
-    { header: "Order ID", key: "orderId", width: 20 },
-    { header: "Order Date", key: "orderDate", width: 20 },
-    { header: "Payment Status", key: "paymentStatus", width: 20 },
-    { header: "Original Total", key: "originalTotal", width: 20 },
-    { header: "Product Discount", key: "productDiscount", width: 20 },
-    { header: "Coupon Discount", key: "couponDiscount", width: 20 },
-    { header: "Grand Total", key: "grandTotal", width: 20 },
-    { header: "Product Name", key: "productName", width: 30 },
-    { header: "Quantity", key: "quantity", width: 15 },
-    { header: "Original Price", key: "originalPrice", width: 15 },
-    { header: "Discounted Price", key: "discountedPrice", width: 15 },
-    { header: "Subtotal", key: "subtotal", width: 15 },
-    { header: "Product Status", key: "productStatus", width: 20 },
+  // Add order details table
+  const orderDetailsHeaders = [
+    "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
+    "Payment Status", "Product Name", "Quantity", "Original Price",
+    "Discounted Price", "Subtotal", "Product Status"
   ];
 
-  // Start serial number counter
-  let slNo = 1;
+  worksheet.addRow(orderDetailsHeaders);
 
-  // Iterate through the orders and products
+  // Add order details data
   stats.orderDetails.forEach(order => {
-    // Add common order details row (shown once for each order)
-    worksheet.addRow({
-      slNo: slNo++,  // Increment the serial number for each order
-      orderId: order._id,  // Use ObjectId instead of orderId
-      orderDate: new Date(order.orderDate).toLocaleDateString(),
-      paymentStatus: order.paymentStatus,
-      originalTotal: `₹${order.originalTotal}`,
-      productDiscount: `₹${order.productDiscount}`,
-      couponDiscount: `₹${order.couponDiscount}`,
-      grandTotal: `₹${order.grandTotal}`,
+    order.items.forEach((item, index) => {
+      worksheet.addRow([
+        index === 0 ? order.orderId : "",
+        index === 0 ? new Date(order.orderDate).toLocaleDateString() : "",
+        index === 0 ? order.grandTotal : "",
+        index === 0 ? order.couponDiscount : "",
+        index === 0 ? order.paymentMethod : "",
+        index === 0 ? order.paymentStatus : "",
+        item.productName,
+        item.quantity,
+        item.originalPrice,
+        item.discountedPrice,
+        item.subtotal,
+        item.status
+      ]);
     });
+  });
 
-    // Add subrows for each product within the order
-    order.items.forEach(item => {
-      worksheet.addRow({
-        productName: item.productName,
-        quantity: item.quantity,
-        originalPrice: `₹${item.originalPrice}`,
-        discountedPrice: `₹${item.discountedPrice}`,
-        subtotal: `₹${item.subtotal}`,
-        productStatus: item.status,
-      });
+  // Style the table
+  worksheet.eachRow((row, rowNumber) => {
+    row.eachCell((cell) => {
+      cell.border = {
+        top: {style:'thin'},
+        left: {style:'thin'},
+        bottom: {style:'thin'},
+        right: {style:'thin'}
+      };
     });
-
-    // Add a blank row after each order for separation
-    worksheet.addRow([]);
+    if (rowNumber === 1 || rowNumber === stats.totalOrders + 11) {
+      row.font = { bold: true };
+      row.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' }
+      };
+    }
   });
 
   // Write Excel file
@@ -248,15 +248,14 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
   res.end();
 };
 
-
-// Generate PDF report
 const generatePDF = (res, stats, dateFilter, start, end) => {
-  const doc = new PDFDocument();
+  const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 30 });
   doc.pipe(res);
 
   // Add sales summary at the top
-  doc.fontSize(14).text("Sales Summary:");
-  doc.fontSize(12).text(`Total Orders: ${stats.totalOrders}`);
+  doc.fontSize(14).text("Sales Summary:", { underline: true });
+  doc.fontSize(10);
+  doc.text(`Total Orders: ${stats.totalOrders}`);
   doc.text(`Total Sales (Before Discounts): ₹${stats.totalSales}`);
   doc.text(`Product Discount: ₹${stats.productDiscount}`);
   doc.text(`Net Before Coupons: ₹${stats.netBeforeCoupons}`);
@@ -266,44 +265,54 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
   doc.text(`Net Sales After Refunds: ₹${stats.netSalesAfterRefunds}`);
   doc.moveDown();
 
-  // Create a table for order details
-  doc.fontSize(14).text("Order Details:");
-  const tableHeaders = ["Order ID", "Order Date", "Customer Name", "Payment Status", "Original Total", "Product Discount", "Coupon Discount", "Grand Total", "Product Name", "Quantity", "Original Price", "Discounted Price", "Subtotal", "Product Status"];
-  
-  // Draw table headers
-  tableHeaders.forEach(header => {
-    doc.fontSize(10).text(header, { continued: true });
-    doc.text("   ", { continued: true });  // Add space between columns
-  });
-  doc.moveDown();
+  // Prepare table data
+  const tableData = {
+    headers: [
+      "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
+      "Payment Status", "Product Name", "Quantity", "Original Price",
+      "Discounted Price", "Subtotal", "Product Status"
+    ],
+    rows: []
+  };
 
-  // Add order details in tabular form with product details as subrows
   stats.orderDetails.forEach(order => {
-    order.items.forEach((item, idx) => {
-      doc.fontSize(10).text(order.orderId, { continued: true });
-      doc.text(new Date(order.orderDate).toLocaleDateString(), { continued: true });
-      doc.text(order.customerName, { continued: true });
-      doc.text(order.paymentStatus, { continued: true });
-      doc.text(`₹${order.originalTotal}`, { continued: true });
-      doc.text(`₹${order.productDiscount}`, { continued: true });
-      doc.text(`₹${order.couponDiscount}`, { continued: true });
-      doc.text(`₹${order.grandTotal}`, { continued: true });
-      doc.text(item.productName, { continued: true });
-      doc.text(item.quantity, { continued: true });
-      doc.text(`₹${item.originalPrice}`, { continued: true });
-      doc.text(`₹${item.discountedPrice}`, { continued: true });
-      doc.text(`₹${item.subtotal}`, { continued: true });
-      doc.text(item.status);
-
-      // Move to the next line for the next product in the same order
-      doc.moveDown();
+    order.items.forEach((item, index) => {
+      tableData.rows.push([
+        index === 0 ? order.orderId : "",
+        index === 0 ? new Date(order.orderDate).toLocaleDateString() : "",
+        index === 0 ? `₹${order.grandTotal}` : "",
+        index === 0 ? `₹${order.couponDiscount}` : "",
+        index === 0 ? order.paymentMethod : "",
+        index === 0 ? order.paymentStatus : "",
+        item.productName,
+        item.quantity,
+        `₹${item.originalPrice}`,
+        `₹${item.discountedPrice}`,
+        `₹${item.subtotal}`,
+        item.status
+      ]);
     });
-    doc.moveDown();
+  });
+
+  // Draw the table
+  doc.table({
+    title: "Order Details",
+    subtitle: `Date Range: ${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+    headers: tableData.headers,
+    rows: tableData.rows,
+    columnsSize: [60, 50, 50, 50, 60, 60, 80, 40, 50, 50, 50, 60],
+    divider: {
+      header: { disabled: false, width: 2, opacity: 1 },
+      horizontal: { disabled: false, width: 0.5, opacity: 0.5 },
+      vertical: { disabled: false, width: 0.5, opacity: 0.5 }
+    },
+    padding: 5,
+    columnSpacing: 10
   });
 
   doc.end();
 };
-// Download report handler
+
 const downloadReport = async (req, res) => {
   try {
     const { format, dateFilter, startDate, endDate } = req.body;
@@ -344,7 +353,9 @@ const downloadReport = async (req, res) => {
     if (format === "excel") {
       await generateExcel(res, stats, dateFilter, start, end);
     } else if (format === "pdf") {
-      await generatePDF(res, stats, dateFilter, start, end);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Sales_Report_${dateFilter}.pdf`);
+      generatePDF(res, stats, dateFilter, start, end);
     } else {
       throw new Error("Invalid format specified");
     }
@@ -353,7 +364,6 @@ const downloadReport = async (req, res) => {
     res.status(500).send("Error generating report");
   }
 };
-
 module.exports = {
   getSalesReport,
   filterSalesReport,
