@@ -1,9 +1,242 @@
-<%- include("../../views/partials/admin/header") %>
-    <!-- Main Content -->
-    <div class="main-content p-4 flex-fill">
-        <h5>Dashboard</h5>
-        <p>Welcome to the admin dashboard. Here you can manage users, products, categories, and coupons.</p>
-        <!-- Your content here -->
+<%- include("../partials/admin/header") %>
+    <div class="container-fluid">
+        <!-- <div class="row"> -->
+        <!-- Main Content -->
+        <!-- <div class="col-md-10"> -->
+        <div class="main-content p-4">
+            <p class="font-weight-bold text-primary h1">Welcome Admin!</p>
+
+            <div class="row">
+                <!-- Sales Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>Category-wise Sales</h5>
+                            <select class="form-control filter-select" id="salesFilter">
+                                <option value="today" selected>Today</option>
+                                <option value="week">This Week</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>Payment Method Used</h5>
+                            <select class="form-control filter-select" id="paymentFilter">
+                                <option value="today" selected>Today</option>
+                                <option value="week">This Week</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="paymentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Best Selling Products -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Best Selling Products</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <% topProducts.forEach(product=> { %>
+                                    <li class="list-group-item">
+                                        <%= product.name %>
+                                    </li>
+                                    <% }); %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best Selling Categories -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Best Selling Categories</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <% topCategories.forEach(category=> { %>
+                                    <li class="list-group-item">
+                                        <%= category.name %>
+                                    </li>
+                                    <% }); %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best Selling Brands -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Best Selling Brands</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                <% topBrands.forEach(brand=> { %>
+                                    <li class="list-group-item">
+                                        <%= brand.brandName %>
+                                    </li>
+                                    <% }); %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  </div> -->
+        <!--  </div> -->
     </div>
-    </div>
-<%- include("../../views/partials/admin/footer") %>
+    <%- include("../../views/partials/admin/footer") %>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            console.log('Script started');
+
+            // Safely parse JSON data
+            function safeJSONParse(data, fallback) {
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                    return fallback;
+                }
+            }
+
+            // Ensure data is an array
+            function ensureArray(data) {
+                return Array.isArray(data) ? data : [];
+            }
+
+            // Category-wise Sales Chart Update Function
+            function updateSalesChart(filter) {
+                console.log('Updating sales chart with filter:', filter);
+                fetch(`/admin/sales-data?filter=${filter}`)
+                    .then(response => {
+                        console.log('Sales data response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Received sales data:', data);
+                        const categorySalesData = ensureArray(data);
+                        salesChart.data.labels = categorySalesData.map(c => c._id || 'Unknown');
+                        salesChart.data.datasets[0].data = categorySalesData.map(c => c.totalSales || 0);
+                        salesChart.update();
+                        console.log('Sales chart updated');
+                    })
+                    .catch(error => console.error('Error fetching sales data:', error));
+            }
+
+            // Payment Method Chart Update Function
+            function updatePaymentChart(filter) {
+                console.log('Updating payment chart with filter:', filter);
+                fetch(`/admin/payment-data?filter=${filter}`)
+                    .then(response => {
+                        console.log('Payment data response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Received payment data:', data);
+                        const paymentMethodsData = ensureArray(data);
+                        paymentChart.data.labels = paymentMethodsData.map(p => p.method || 'Unknown');
+                        paymentChart.data.datasets[0].data = paymentMethodsData.map(p => p.count || 0);
+                        paymentChart.update();
+                        console.log('Payment chart updated');
+                    })
+                    .catch(error => console.error('Error fetching payment data:', error));
+            }
+
+            console.log('Initializing charts');
+
+            // Initialize the Sales Chart
+            const salesCtx = document.getElementById('salesChart');
+            console.log('Sales chart context:', salesCtx);
+            const salesChart = new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [],
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Initialize the Payment Method Chart
+            const paymentCtx = document.getElementById('paymentChart');
+            console.log('Payment chart context:', paymentCtx);
+            const paymentChart = new Chart(paymentCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Payment Methods',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(255, 99, 132, 0.5)',
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 99, 132, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            console.log('Charts initialized');
+
+            // Add event listeners for filter changes
+            document.getElementById('salesFilter').addEventListener('change', function () {
+                const filter = this.value;
+                console.log('Sales filter changed to:', filter);
+                updateSalesChart(filter);
+            });
+
+            document.getElementById('paymentFilter').addEventListener('change', function () {
+                const filter = this.value;
+                console.log('Payment filter changed to:', filter);
+                updatePaymentChart(filter);
+            });
+
+            // Call the update functions to load today's data by default
+            document.addEventListener('DOMContentLoaded', function () {
+                console.log('DOM fully loaded');
+                updateSalesChart('today');
+                updatePaymentChart('today');
+            });
+
+            console.log('Script ended');
+        </script>

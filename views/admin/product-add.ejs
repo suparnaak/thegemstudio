@@ -1,323 +1,444 @@
 <%- include("../../views/partials/admin/header") %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Add Product</h1>
+      <form id="add-product-form" action="/admin/products/add" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="name">Product Name</label>
+          <input type="text" class="form-control" id="name" name="name" required />
+          <span id="name-error" style="color: red;"></span>
+        </div>
 
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          <span id="description-error" style="color: red;"></span>
+        </div>
 
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-        <h1>Add Product</h1>
-        <form id="add-product-form" action="/admin/products/add" method="POST" enctype="multipart/form-data">
-          <div class="form-group">
-            <label for="name">Product Name</label>
-            <input type="text" class="form-control" id="name" name="name" required />
-            <span id="name-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-            <span id="description-error" style="color: red;"></span>
+        <div class="form-group">
+          <label for="brand">Brand</label>
+          <select class="form-control" id="brand" name="brand" required>
+            <option value="">Select Brand</option>
+            <% brands.forEach(brand => { %>
+              <option value="<%= brand._id %>"><%= brand.brandName %></option>
+            <% }); %>
+          </select>
+          <span id="brand-error" style="color: red;"></span>
+        </div>
 
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select class="form-control" id="category" name="category" required>
+            <option value="">Select Category</option>
+            <% categories.forEach(category => { %>
+              <option value="<%= category._id %>"><%= category.name %></option>
+            <% }); %>
+          </select>
+          <span id="category-error" style="color: red;"></span>
+        </div>
 
-          </div>
-          <div class="form-group">
-            <label for="brand">Brand</label>
-            <select class="form-control" id="brand" name="brand" required>
-              <option value="">Select Brand</option>
-              <!-- Populate brands from database -->
-              <% brands.forEach(brand => { %>
-                <option value="<%= brand._id %>">
-                  <%= brand.brandName %>
-                </option>
-              <% }); %>
-            </select>
-            <span id="brand-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="category">Category</label>
-            <select class="form-control" id="category" name="category" required>
-              <option value="">Select Category</option>
-              <!-- Populate categories from database -->
-              <% categories.forEach(category=> { %>
-                <option value="<%= category._id %>">
-                  <%= category.name %>
-                </option>
-                <% }); %>
-            </select>
-            <span id="category-error" style="color: red;"></span>
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input type="number" class="form-control" id="price" name="price" required min="0" value="0" />
+          <span id="price-error" style="color: red;"></span>
+        </div>
 
+        <div class="form-group">
+          <label for="discount">Discount (%)</label>
+          <input type="number" class="form-control" id="discount" name="discount" value="0" required />
+          <span id="discount-error" style="color: red;"></span>
+        </div>
 
-          </div>
-          <div class="form-group">
-            <label for="price">Price</label>
-            <input type="number" class="form-control" id="price" name="price" required min="0" value="0" />
-            <span id="price-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="discount">Discount (%)</label>
-            <input type="number" class="form-control" id="discount" name="discount" value="0" required />
-            <span id="discount-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="quantity">Quantity</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" required value="0" />
-            <span id="quanty-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="color">Color</label>
-            <input type="text" class="form-control" id="color" name="color" required />
-            <span id="color-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="material">Material</label>
-            <input type="text" class="form-control" id="material" name="material" required />
-            <span id="material-error" style="color: red;"></span>
-          </div>
-          <div class="form-group">
-            <label for="images">Upload New Images (min 3)</label>
-            <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
-          </div>
+        <div class="form-group">
+          <label for="quantity">Quantity</label>
+          <input type="number" class="form-control" id="quantity" name="quantity" required value="0" />
+          <span id="quantity-error" style="color: red;"></span>
+        </div>
 
-          <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+        <div class="form-group">
+          <label for="color">Color</label>
+          <input type="text" class="form-control" id="color" name="color" required />
+          <span id="color-error" style="color: red;"></span>
+        </div>
 
+        <div class="form-group">
+          <label for="material">Material</label>
+          <input type="text" class="form-control" id="material" name="material" required />
+          <span id="material-error" style="color: red;"></span>
+        </div>
 
-          <button type="submit" class="btn btn-success">Add Product</button>
-          <br><br>
-        </form>
+        <div class="form-group">
+          <label for="images">Upload New Images (min 3)</label>
+          <input type="file" class="form-control" id="images" name="images" multiple accept="image/*" required />
+          <span id="images-error" style="color: red;"></span>
+        </div>
+
+        <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+
+        <button type="submit" class="btn btn-success">Add Product</button>
+        <br><br>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Cropping Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" role="dialog" aria-labelledby="cropModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="img-container">
+          <img id="cropImage" src="" alt="Picture to crop">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="cropButton">Crop</button>
       </div>
     </div>
   </div>
-  <script>
-    const form = document.getElementById('add-product-form');
-    const nameInput = document.getElementById('name');
-    const descriptionInput = document.getElementById('description');
-    const brandInput = document.getElementById('brand');
-    const categoryInput = document.getElementById('category');
-    const priceInput = document.getElementById('price');
-    const discountInput = document.getElementById('discount');
-    const quantityInput = document.getElementById('quantity');
-    const colorInput = document.getElementById('color');
-    const materialInput = document.getElementById('material');
+</div>
 
-    nameInput.addEventListener('input', validateName);
-    descriptionInput.addEventListener('input', validateDescription);
-    priceInput.addEventListener('input', validatePrice);
-    categoryInput.addEventListener('change', validateCategory);
-    brandInput.addEventListener('input', validateBrand);
-    discountInput.addEventListener('input', validateDiscount);
-    quantityInput.addEventListener('input', validateQuantity);
-    colorInput.addEventListener('input', validateColor);
-    materialInput.addEventListener('input', validateMaterial);
+<!-- Add Cropper.js Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+  const form = document.getElementById('add-product-form');
+  const nameInput = document.getElementById('name');
+  const descriptionInput = document.getElementById('description');
+  const brandInput = document.getElementById('brand');
+  const categoryInput = document.getElementById('category');
+  const priceInput = document.getElementById('price');
+  const discountInput = document.getElementById('discount');
+  const quantityInput = document.getElementById('quantity');
+  const colorInput = document.getElementById('color');
+  const materialInput = document.getElementById('material');
+  const fileInput = document.getElementById('images');
+  const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+  const imagesError = document.getElementById('images-error');
+  const cropModal = document.getElementById('cropModal');
+  const cropImage = document.getElementById('cropImage');
+  const cropButton = document.getElementById('cropButton');
 
+  let cropper;
+  let currentImageIndex;
+  const croppedImages = new Map();
+  const originalImages = new Map();
 
-    form.addEventListener('submit', (e) => {
-      if (!validateForm()) {
-        e.preventDefault();
-      }
-    });
-
-
-    function validateName() {
-      const nameValue = nameInput.value.trim();
-      if (nameValue === '') {
-        document.getElementById('name-error').innerText = 'Product name is required';
-        return false;
-      } else if (nameValue.trim() === "") {
-        document.getElementById('name-error').innerText = 'Invalid Product Name';
-        return false;
-      } else {
-        document.getElementById('name-error').innerText = '';
-        return true;
-      }
+  // Validation functions
+  function validateName() {
+    const nameValue = nameInput.value.trim();
+    if (nameValue === '') {
+      document.getElementById('name-error').innerText = 'Product name is required';
+      return false;
+    } else {
+      document.getElementById('name-error').innerText = '';
+      return true;
     }
-
-    function validateDescription() {
-      const descriptionValue = descriptionInput.value.trim();
-      if (descriptionValue === '') {
-        document.getElementById('description-error').innerText = 'Product description is required';
-        return false;
-      }
-      else if (descriptionValue.trim() === "") {
-        document.getElementById('description-error').innerText = 'Invalid Description';
-        return false;
-      }
-      else {
-        document.getElementById('description-error').innerText = '';
-        return true;
-      }
-    }
-
-    function validateBrand() {
-  const brandValue = brandInput.value.trim();
-  if (brandValue === '') {
-    document.getElementById('brand-error').innerText = 'Product brand is required';
-    return false;
-  } else {
-    document.getElementById('brand-error').innerText = '';
-    return true;
   }
-}
 
+  function validateDescription() {
+    const descriptionValue = descriptionInput.value.trim();
+    if (descriptionValue === '') {
+      document.getElementById('description-error').innerText = 'Product description is required';
+      return false;
+    } else {
+      document.getElementById('description-error').innerText = '';
+      return true;
+    }
+  }
 
-    function validatePrice() {
-      const priceValue = priceInput.value.trim();
-      if (priceValue === '') {
-        document.getElementById('price-error').innerText = 'Product price is required';
-        return false;
-      } else if (isNaN(priceValue) || priceValue < 0) {
-        document.getElementById('price-error').innerText = 'Product price must be a positive number';
-        return false;
-      } else {
-        document.getElementById('price-error').innerText = '';
-        return true;
-      }
+  function validateBrand() {
+    const brandValue = brandInput.value.trim();
+    if (brandValue === '') {
+      document.getElementById('brand-error').innerText = 'Product brand is required';
+      return false;
+    } else {
+      document.getElementById('brand-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateCategory() {
+    const categoryValue = categoryInput.value.trim();
+    if (categoryValue === '') {
+      document.getElementById('category-error').innerText = 'Product category is required';
+      return false;
+    } else {
+      document.getElementById('category-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validatePrice() {
+    const priceValue = priceInput.value.trim();
+    if (priceValue === '' || priceValue < 0) {
+      document.getElementById('price-error').innerText = 'Product price must be a positive number';
+      return false;
+    } else {
+      document.getElementById('price-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateDiscount() {
+    const discountValue = discountInput.value.trim();
+    if (discountValue === '' || discountValue < 0 || discountValue > 90) {
+      document.getElementById('discount-error').innerText = 'Discount must be between 0 and 90%';
+      return false;
+    } else {
+      document.getElementById('discount-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateQuantity() {
+    const quantityValue = quantityInput.value.trim();
+    if (quantityValue === '' || quantityValue < 0) {
+      document.getElementById('quantity-error').innerText = 'Quantity must be a positive number';
+      return false;
+    } else {
+      document.getElementById('quantity-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateColor() {
+    const colorValue = colorInput.value.trim();
+    if (colorValue === '') {
+      document.getElementById('color-error').innerText = 'Color is required';
+      return false;
+    } else {
+      document.getElementById('color-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateMaterial() {
+    const materialValue = materialInput.value.trim();
+    if (materialValue === '') {
+      document.getElementById('material-error').innerText = 'Material is required';
+      return false;
+    } else {
+      document.getElementById('material-error').innerText = '';
+      return true;
+    }
+  }
+
+  function validateImages() {
+    const files = fileInput.files;
+    if (files.length < 3) {
+      imagesError.innerText = 'You must upload at least 3 images ';
+      return false;
+    } else {
+      imagesError.innerText = '';
+      return true;
+    }
+  }
+
+  function validateForm() {
+    return (
+      validateName() &&
+      validateDescription() &&
+      validateBrand() &&
+      validateCategory() &&
+      validatePrice() &&
+      validateDiscount() &&
+      validateQuantity() &&
+      validateColor() &&
+      validateMaterial() &&
+      validateImages()
+    );
+  }
+
+  // Image handling functions
+  function previewImages(files) {
+    imagePreviewContainer.innerHTML = '';
+    
+    Array.from(files).forEach((file, index) => {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        // Store original file
+        originalImages.set(index, file);
+        
+        const previewWrapper = document.createElement('div');
+        previewWrapper.className = 'position-relative m-2';
+        
+        const preview = document.createElement('img');
+        preview.src = e.target.result;
+        preview.style.width = '150px';
+        preview.style.height = '150px';
+        preview.style.objectFit = 'cover';
+        preview.style.cursor = 'pointer';
+        preview.className = 'border rounded';
+        preview.setAttribute('data-index', index);
+        
+        const cropBtn = document.createElement('button');
+        cropBtn.className = 'btn btn-sm btn-primary mt-1 d-block w-100';
+        cropBtn.textContent = 'Crop Image';
+        cropBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openCropModal(e.target.previousElementSibling.src, index);
+        });
+        
+        previewWrapper.appendChild(preview);
+        previewWrapper.appendChild(cropBtn);
+        imagePreviewContainer.appendChild(previewWrapper);
+      };
+      
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function openCropModal(imageSrc, index) {
+    currentImageIndex = index;
+    
+    // Set image source
+    const cropImage = document.getElementById('cropImage');
+    cropImage.src = imageSrc;
+    
+    // Destroy existing cropper instance if it exists
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    
+    // Show modal
+    $('#cropModal').modal({
+      backdrop: 'static',
+      keyboard: false,
+      show: true
+    });
+    
+    // Initialize cropper after modal is fully shown
+    $('#cropModal').on('shown.bs.modal', function() {
+      cropper = new Cropper(cropImage, {
+        aspectRatio: 1,
+        viewMode: 2,
+        dragMode: 'move',
+        autoCropArea: 0.8,
+        restore: false,
+        guides: true,
+        center: true,
+        highlight: false,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+        ready: function() {
+          // Force redraw of cropper when modal is fully shown
+          window.setTimeout(function() {
+            cropper.resize();
+          }, 200);
+        }
+      });
+    });
+  }
+
+  // Event Listeners
+  nameInput.addEventListener('input', validateName);
+  descriptionInput.addEventListener('input', validateDescription);
+  brandInput.addEventListener('change', validateBrand);
+  categoryInput.addEventListener('change', validateCategory);
+  priceInput.addEventListener('input', validatePrice);
+  discountInput.addEventListener('input', validateDiscount);
+  quantityInput.addEventListener('input', validateQuantity);
+  colorInput.addEventListener('input', validateColor);
+  materialInput.addEventListener('input', validateMaterial);
+  fileInput.addEventListener('change', function(e) {
+    const files = e.target.files;
+    if (files.length < 3) {
+      alert('Please select at least 3 images');
+      return;
+    }
+    validateImages();
+    previewImages(files);
+  });
+
+  // Crop button click handler
+  document.getElementById('cropButton').addEventListener('click', function() {
+    if (!cropper) return;
+
+    const canvas = cropper.getCroppedCanvas({
+      width: 800,
+      height: 800,
+      imageSmoothingQuality: 'high'
+    });
+
+    canvas.toBlob(function(blob) {
+      // Store cropped image blob
+      croppedImages.set(currentImageIndex, blob);
+      
+      // Update preview image
+      const preview = imagePreviewContainer.querySelector(`img[data-index="${currentImageIndex}"]`);
+      preview.src = canvas.toDataURL();
+      
+      // Hide modal
+      $('#cropModal').modal('hide');
+    }, 'image/jpeg', 0.8);
+  });
+
+  // Clean up modal events
+  $('#cropModal').on('hidden.bs.modal', function() {
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+    // Remove the shown.bs.modal event handler to prevent multiple instances
+    $(this).off('shown.bs.modal');
+  });
+
+  // Form submission
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
     }
 
-    function validateCategory() {
-      const categoryValue = categoryInput.value.trim();
-      if (categoryValue === '') {
-        document.getElementById('category-error').innerText = 'Product category is required';
-        return false;
-      } else {
-        document.getElementById('category-error').innerText = '';
-        return true;
-      }
-    }
+    const formData = new FormData(form);
+    
+    // Remove the original file input images
+    formData.delete('images');
+    
+    // Add cropped images to form data
+    croppedImages.forEach((blob, index) => {
+      formData.append('images', blob, `image-${index}.jpg`);
+    });
 
-
-    function validateDiscount() {
-      const discountValue = discountInput.value.trim();
-      if (discountValue === '') {
-        document.getElementById('discount-error').innerText = 'Discount is required';
-        return false;
-      } else if (isNaN(discountValue) || discountValue < 0) {
-        document.getElementById('discount-error').innerText = 'Discount must be a positive number or 0';
-        return false;
-      } else if (discountValue > 90) {
-        document.getElementById('discount-error').innerText = 'Discount cannot exceed 90%';
-        return false;
-      } else {
-        document.getElementById('discount-error').innerText = '';
-        return true;
-      }
-    }
-
-
-    function validateQuantity() {
-      const quantityValue = quantityInput.value.trim();
-      if (quantityValue === '') {
-        document.getElementById('quantity-error').innerText = 'Quantity is required';
-        return false;
-      } else if (isNaN(quantityValue) || quantityValue < 0) {
-        document.getElementById('quantity-error').innerText = 'Quantity must be a positive number';
-        return false;
-      } else {
-        document.getElementById('quantity-error').innerText = '';
-        return true;
-      }
-    }
-    function validateMaterial() {
-      const materialValue = materialInput.value.trim();
-      if (materialValue === '') {
-        document.getElementById('material-error').innerText = 'Material is required';
-        return false;
-
-      } else if (materialValue.trim() === "") {
-        document.getElementById('material-error').innerText = 'Invalid Material';
-        return false;
-      }
-      else {
-        document.getElementById('material-error').innerText = '';
-        return true;
-      }
-    }
-
-
-    function validateColor() {
-      const colorValue = colorInput.value.trim();
-      if (colorValue === '') {
-        document.getElementById('color-error').innerText = 'Color is required';
-        return false;
-
-      } else if (colorValue.trim() === "") {
-        document.getElementById('color-error').innerText = 'Invalid Color';
-        return false;
-      }
-      else {
-        document.getElementById('color-error').innerText = '';
-        return true;
-      }
-    }
-
-
-    function validateForm() {
-      return validateName() && validateDescription() && validatePrice() && validateCategory() && validateBrand() && validateDiscount() && validateQuantity() && validateMaterial() && validateColor();
-    }
-
-    const fileInput = document.getElementById('images');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-
-    fileInput.addEventListener('change', function () {
-      const files = fileInput.files;
-      imagePreviewContainer.innerHTML = '';
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const imageData = event.target.result;
-          const imagePreview = document.createElement('div');
-          imagePreview.className = 'image-preview';
-          const img = document.createElement('img');
-          img.src = imageData;
-          imagePreview.appendChild(img);
-          imagePreviewContainer.appendChild(imagePreview);
-
-          img.addEventListener('click', function () {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            const closeButton = document.createElement('span');
-            closeButton.className = 'close';
-            closeButton.innerHTML = '&times;';
-            closeButton.addEventListener('click', function () {
-              modal.style.display = 'none';
-              cropper.destroy();
-            });
-            modalContent.appendChild(closeButton);
-
-            const cropImage = document.createElement('img');
-            cropImage.src = imageData;
-            modalContent.appendChild(cropImage);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            modal.style.display = 'block';
-
-            const cropper = new Cropper(cropImage, {
-              aspectRatio: 16 / 9,
-              viewMode: 1,
-              dragMode: 'move',
-              cropBoxResizable: true,
-              ready: function () {
-                const cropButton = document.createElement('button');
-                cropButton.innerHTML = 'Crop';
-                cropButton.className = 'crop';
-                cropButton.addEventListener('click', function () {
-                  const croppedCanvas = cropper.getCroppedCanvas();
-                  const croppedImage = croppedCanvas.toDataURL("image/png");
-                  img.src = croppedImage;
-                  modal.style.display = 'none';
-                  cropper.destroy();
-                });
-                modalContent.appendChild(cropButton);
-              }
-            });
-          });
-        };
-        reader.readAsDataURL(file);
+    // Add original images that were not cropped
+    originalImages.forEach((file, index) => {
+      if (!croppedImages.has(index)) {
+        formData.append('images', file, `original-image-${index}.jpg`);
       }
     });
 
-  </script>
+    try {
+      const response = await fetch('/admin/products/add', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert('Product added successfully!');
+        window.location.href = '/admin/products';
+      } else {
+        throw new Error(result.message || 'Failed to add product');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert(error.message || 'Failed to add product. Please try again.');
+    }
+  });
+</script>
 
-
-  <%- include("../../views/partials/admin/footer") %>
+<%- include("../../views/partials/admin/footer") %>

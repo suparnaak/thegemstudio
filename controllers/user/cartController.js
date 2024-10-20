@@ -3,21 +3,19 @@ const Cart = require("../../models/cartSchema");
 const Address = require("../../models/addressSchema");
 const Coupon = require("../../models/couponSchema");
 const Category = require("../../models/categorySchema");
-//const mongoose = require('mongoose');
-
 // Add to cart
 const addToCart = async (req, res) => {
   try {
     const MAX_QUANTITY_PER_PRODUCT = 5;
     const { productId, quantity } = req.body;
     const userId = req.session.user;
-
+    if (!userId) {
+      return res.status(401).json({ error: 'Please login to add items to cart' });
+    }
     const quantityToAdd = parseInt(quantity, 10);
     if (isNaN(quantityToAdd) || quantityToAdd <= 0) {
       return res.status(400).json({ error: "Invalid quantity" });
     }
-
-    // Fetch product and its category
     const product = await Product.findById(productId).populate("category");
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
@@ -27,10 +25,7 @@ const addToCart = async (req, res) => {
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-
     const originalPrice = product.price;
-
-    // Calculate the category and product discounts
     const categoryDiscount = category.offer ? category.offer / 100 : 0;
     const productDiscount = product.discount ? product.discount / 100 : 0;
 
@@ -93,9 +88,23 @@ const addToCart = async (req, res) => {
     cart.grandTotal = grandTotal; // Add grand total to the cart
 
     await cart.save();
-    res
-      .status(200)
-      .json({ success: true, message: "Product added to cart successfully", grandTotal });
+    // Fetch updated cart data for header
+    const updatedCart = await Cart.findOne({ userId }).populate({
+      path: 'items.product',
+      select: 'name images'
+    }).exec();
+
+    // Get recent items for header
+    const recentItems = updatedCart.items.slice(-2);
+
+    res.status(200).json({
+      success: true,
+      message: "Product added to cart successfully",
+      headerData: {
+        totalPrice: updatedCart.grandTotal,
+        recentItems: recentItems
+      }
+    });
   } catch (error) {
     console.error("Error adding to cart:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -264,13 +273,14 @@ const updateCartItem = async (req, res) => {
     }
 
     await cart.save();
-
+    const recentItems = cart.items.slice(-2);
     console.log("Cart updated successfully");
     res.json({
       success: true,
       message: "Cart updated successfully",
       cart: cart.items,
       grandTotal: cart.grandTotal,
+      recentItems: recentItems
     });
   } catch (error) {
     console.error("Error updating cart:", error);
@@ -283,6 +293,7 @@ const removeFromCart = async (req, res) => {
     const { productId } = req.body;
     const userId = req.session.user;
 
+    // Step 1: Fetch the cart without populating
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -294,11 +305,10 @@ const removeFromCart = async (req, res) => {
     });
 
     if (cartItemIndex === -1) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Product not found in cart" });
+      return res.status(404).json({ success: false, error: "Product not found in cart" });
     }
 
+    // Step 2: Remove the item from the cart
     cart.items.splice(cartItemIndex, 1);
 
     let grandTotal = 0;
@@ -309,12 +319,14 @@ const removeFromCart = async (req, res) => {
     cart.grandTotal = grandTotal;
 
     await cart.save();
-
+    const updatedCart = await Cart.findOne({ userId }).populate('items.product');
+    const recentItems = updatedCart.items.slice(-2);
     res.json({
       success: true,
       message: "Product removed from cart successfully",
-      cart: cart.items,
-      grandTotal: cart.grandTotal,
+      cart: updatedCart.items,
+      grandTotal: updatedCart.grandTotal,
+      recentItems: recentItems
     });
   } catch (error) {
     console.error("Error removing from cart:", error);

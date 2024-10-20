@@ -28,7 +28,6 @@ app.use(
   })
 );
 
-//passport initialization for google sign up
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -45,7 +44,13 @@ app.use(nocache());
 
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
-
+app.all('*', (req, res) => {
+  if (req.path.startsWith('/admin')) {
+      res.redirect('/admin/pageerror');  
+  } else {
+      res.redirect('/pageNotFound'); 
+  }
+});
 //server creation
 app.listen(process.env.PORT, () => {
   console.log("server running");

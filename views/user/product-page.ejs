@@ -5,13 +5,12 @@
     <div class="breadcrumbs">
         <div class="container_12">
             <div class="grid_12">
-                <a href="/">Home</a><span></span><a href="#">Products</a><span></span><span class="current">
+                <a href="/">Home</a><span></span><a href="/products">Products</a><span></span><span class="current">
                     <%= product.name %>
                 </span>
             </div><!-- .grid_12 -->
         </div><!-- .container_12 -->
     </div><!-- .breadcrumbs -->
-
     <section id="main">
         <div class="container_12">
             <div id="content" class="grid_12">
@@ -20,7 +19,6 @@
                         <%= product.name %>
                     </h1>
                 </header>
-
                 <article class="product_page negative-grid">
                     <div class="grid_5 img_slid" id="products">
                         <img class="sale" src="/img/sale.png" alt="Sale">
@@ -59,17 +57,14 @@
 
                             <div class="ava_price">
                                 <div class="price">
-                                    <% if (product.discount > 0 || product.category.offer > 0) { %>
-                                        <!-- Display the original price (strikethrough) -->
-                                        <div class="price_old">₹<%= product.price %></div>
-                                        <!-- Display the final discounted price -->
+                                    <% if (product.discount> 0 || product.category.offer > 0) { %>
+                                        <div class="price_old">₹<%= product.price %>
+                                        </div>
                                         ₹<%= product.finalPrice %>
-                                    <% } else { %>
-                                        <!-- If no discount or offer, just show the original price -->
-                                        ₹<%= product.price %>
-                                    <% } %>
+                                            <% } else { %>
+                                                ₹<%= product.price %>
+                                                    <% } %>
                                 </div><!-- .price -->
-
                                 <div class="availability_sku">
                                     <div class="availability">
                                         Availability: <span>
@@ -82,12 +77,9 @@
                                         </span>
                                     </div>
                                     <div class="parameter_selection">
-
-
                                         Material: <span>
                                             <%= product.material %>
                                         </span>
-
                                     </div>
                                     <div class="quantity_selection">
                                         Quantity:
@@ -103,164 +95,56 @@
                                 </div><!-- .availability_sku -->
                                 <div class="clear"></div>
                             </div><!-- .ava_price -->
-
-
-
                             <div class="cart">
                                 <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"><img
                                         src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
                                 <a href="#" class="wishlist" data-id="<%= product._id %>"><span></span>Add
                                     to Wishlist</a>
-                                <a href="#" class="compare"><span></span>Add to Compare</a>
                             </div><!-- .cart -->
-
                         </div><!-- .entry_content -->
                     </div><!-- .grid_7 -->
                     <div class="clear"></div>
-
                     <!-- review and description tabs -->
                     <div class="grid_12">
                         <div id="wrapper_tab" class="tab1">
                             <a href="#" class="tab1 tab_link">Description</a>
                             <a href="#" class="tab2 tab_link">Reviews</a>
-
-
                             <div class="clear"></div>
-
                             <div class="tab1 tab_body">
                                 <h4>About This Item</h4>
                                 <p>
                                     <%= product.description %>
                                 </p>
-
-
                                 <div class="clear"></div>
                             </div><!-- .tab1 .tab_body -->
-
                             <div class="tab2 tab_body">
-                                <h4>Customer reviews</h4>
-
+                                <h4>Customer Reviews</h4>
                                 <ul class="comments">
-                                    <li>
-                                        <div class="autor">Mike Example</div>, <time
-                                            datetime="2012-11-03">03.11.2012</time>
-
-                                        <div class="evaluation">
-                                            <div class="quality">
-                                                <span>Quality</span>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a href="#"></a>
-                                                <a href="#"></a>
-                                            </div>
-                                            <div class="price">
-                                                <span>Price</span>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus_minus" href="#"></a>
-                                                <a href="#"></a>
-                                            </div>
-                                            <div class="clear"></div>
-                                        </div><!-- .evaluation -->
-
-                                        <p>Suspendisse at placerat turpis. Duis luctus erat vel magna pharetra aliquet.
-                                            Maecenas tincidunt feugiat ultricies. Phasellus et dui risus. Vestibulum
-                                            adipiscing, eros quis lobortis dictum. It enim ad minim veniam, quis nostrud
-                                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                    </li>
-
-                                    <li>
-                                        <div class="autor">Mike Example</div>, <time
-                                            datetime="2012-11-03">01.11.2012</time>
-
-                                        <div class="evaluation">
-                                            <div class="quality">
-                                                <span>Quality</span>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus_minus" href="#"></a>
-                                            </div>
-                                            <div class="price">
-                                                <span>Price</span>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a class="plus" href="#"></a>
-                                                <a href="#"></a>
-                                            </div>
-                                            <div class="clear"></div>
-                                        </div><!-- .evaluation -->
-
-                                        <p>Etiam mollis volutpat odio, id euismod justo gravida a. Aliquam erat
-                                            volutpat. Phasellus faucibus venenatis lorem, vitae commodo elit pretium et.
-                                            Duis rhoncus lobortis congue. Vestibulum et purus dui, vel porta lectus. Sed
-                                            vulputate pulvinar adipiscing. It enim ad minim veniam, quis nostrud
-                                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                    </li>
+                                    <% if (reviews.length === 0) { %>
+                                        <li><p>No reviews yet.</p></li>
+                                    <% } else { %>
+                                        <% reviews.forEach(review => { %>
+                                            <li>
+                                                <div class="autor"><%= review.userId.name %></div>, <time datetime="<%= review.createdAt.toISOString() %>"><%= new Date(review.createdAt).toLocaleDateString() %></time>
+                                                <div class="evaluation">
+                                                    <div class="quality">
+                                                        <% for (let i = 0; i < 5; i++) { %>
+                                                            <% if (i < review.rating) { %>
+                                                                <a class="plus" href="#"></a> <!-- Star filled -->
+                                                            <% } else { %>
+                                                                <a href="#"></a> <!-- Star empty -->
+                                                            <% } %>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="clear"></div>
+                                                </div><!-- .evaluation -->
+                                                <p><%= review.reviewText %></p>
+                                            </li>
+                                        <% }); %>
+                                    <% } %>
                                 </ul><!-- .comments -->
-
-                                <form class="add_comments">
-                                    <h4>Write Your Own Review</h4>
-
-                                    <div class="evaluation">
-                                        <div class="quality">
-                                            Quality<sup>*</sup>
-                                            <input class="niceRadio" type="radio" name="quality" value="1"><span
-                                                class="eva_num">1</span>
-                                            <input class="niceRadio" type="radio" name="quality" value="2"><span
-                                                class="eva_num">2</span>
-                                            <input class="niceRadio" type="radio" name="quality" value="3"><span
-                                                class="eva_num">3</span>
-                                            <input class="niceRadio" type="radio" name="quality" value="4"><span
-                                                class="eva_num">4</span>
-                                            <input class="niceRadio" type="radio" name="quality" value="5"><span
-                                                class="eva_num">5</span>
-                                        </div>
-                                        <div class="price">
-                                            Price<sup>*</sup>
-                                            <input class="niceRadio" type="radio" name="price" value="1"><span
-                                                class="eva_num">1</span>
-                                            <input class="niceRadio" type="radio" name="price" value="2"><span
-                                                class="eva_num">2</span>
-                                            <input class="niceRadio" type="radio" name="price" value="3"><span
-                                                class="eva_num">3</span>
-                                            <input class="niceRadio" type="radio" name="price" value="4"><span
-                                                class="eva_num">4</span>
-                                            <input class="niceRadio" type="radio" name="price" value="5"><span
-                                                class="eva_num">5</span>
-                                        </div>
-                                        <div class="clear"></div>
-                                    </div><!-- .evaluation -->
-
-                                    <div class="nickname">
-                                        <strong>Nickname</strong><sup>*</sup><br>
-                                        <input type="text" name="" class="" value="">
-                                    </div><!-- .nickname -->
-
-                                    <div class="your_review">
-                                        <strong>Summary of Your Review</strong><sup>*</sup><br>
-                                        <input type="text" name="" class="" value="">
-                                    </div><!-- .your_review -->
-
-                                    <div class="text_review">
-                                        <strong>Review</strong><sup>*</sup><br>
-                                        <textarea name="text"></textarea><br>
-                                        <i>Note: HTML is not translated!</i>
-                                    </div><!-- .text_review -->
-
-                                    <div class="clear"></div>
-
-
-
-                                    <input type="submit" value="Submit Review">
-                                </form><!-- .add_comments -->
                                 <div class="clear"></div>
                             </div><!-- .tab2 .tab_body -->
-
                             <div class="tab3 tab_body">
                                 <h4>Custom Tab</h4>
                                 <div class="clear"></div>
@@ -270,13 +154,7 @@
                         <div class="clear"></div>
                     </div><!-- .grid_12 -->
                     <div class="clear"></div>
-
                     <!-- //review and description tab -->
-
-
-
-
-
                 </article><!-- .product_page -->
                 <!-- related products -->
                 <div class="related negative-grid">
@@ -284,13 +162,11 @@
                         <div class="grid_10">
                             <h2>Related Products</h2>
                         </div><!-- .grid_10 -->
-
                         <div class="grid_2">
                             <a id="next_c1" class="next arows" href="#"><span>Next</span></a>
                             <a id="prev_c1" class="prev arows" href="#"><span>Prev</span></a>
                         </div><!-- .grid_2 -->
                     </div><!-- .c_header -->
-
                     <div class="related_list">
                         <% if (relatedProducts.length> 0) { %>
                             <ul id="listing" class="products">
@@ -305,7 +181,6 @@
                                                                 src="/uploads/products/<%= product.images[0] %>"
                                                                 alt="<%= product.name %>" title=""></a>
                                                     </div><!-- .prev -->
-
                                                     <h3 class="title">
                                                         <%= product.name %>
                                                     </h3>
@@ -319,13 +194,10 @@
                                                                         </div>
                                                                 </div>
                                                                 <% } else { %>
-                                                                    <div class="vert">$<%= product.price %>
+                                                                    <div class="vert">₹<%= product.price %>
                                                                     </div>
                                                                     <% } %>
                                                         </div>
-                                                        <!--                 <a href="#" class="compare"></a>
-                <a href="#" class="wishlist"></a>
-                <a href="#" class="bay"><img src="/img/bg_cart.png" alt="Buy" title=""></a> -->
                                                     </div><!-- .cart -->
                                         </article><!-- .grid_3.article -->
                                     </li>
@@ -335,12 +207,10 @@
                                 <p class="text-danger">No related products available at the moment.</p>
                                 <% } %>
                     </div><!-- .brands_list -->
-
                 </div><!-- .related --> <!-- .related products -->
-
-
-
-
+                <div class="clear"></div>
+                <div class="clear"></div>
+                <br><br>
             </div><!-- #content -->
         </div><!-- .container_12 -->
     </section><!-- #main -->
@@ -368,6 +238,7 @@
                             icon: "success",
                             button: "OK",
                         });
+                        updateCartDisplay(data.headerData.totalPrice, data.headerData.recentItems);
                     } else {
                         swal({
                             title: "Error!",
@@ -381,30 +252,24 @@
                     console.error('Error:', error);
                     swal({
                         title: "Error!",
-                        text: "An unexpected error occurred",
+                        text: "Login to add items to cart",
                         icon: "error",
                         button: "OK",
                     });
                 });
         });
-
-        //add to wishlist script
         document.querySelector('.wishlist').addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent default form submission
-
-            const productId = this.getAttribute('data-id'); // Replace with actual product ID
-
-            // Send an AJAX request to add the product to the wishlist
+            e.preventDefault();
+            const productId = this.getAttribute('data-id');
             fetch('/wishlist/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ productId: productId }), // Use product key
+                body: JSON.stringify({ productId: productId }),
             })
                 .then(response => response.json())
                 .then(data => {
-                    // Show SweetAlert based on the response
                     if (data.message === 'Added to wishlist') {
                         Swal.fire({
                             icon: 'success',
@@ -440,5 +305,41 @@
                     });
                 });
         });
+
+        function updateCartDisplay(totalPrice, recentItems) {
+            // Update total price in the cart
+            document.querySelector('#cart_nav span').textContent = `₹${totalPrice.toFixed(2)}`;
+
+            // Clear existing recent items, but keep the heading and buttons
+            const recentItemsContainer = document.querySelector('.cart_cont');
+            const heading = recentItemsContainer.querySelector('.recently');
+            recentItemsContainer.querySelectorAll('li:not(.no_border):not(.recently)').forEach(item => item.remove());
+
+            // Populate recent items
+            recentItems.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+            <a href="/product_page/${item.product._id}" class="prev_cart">
+                <div class="cart_vert">
+                    <img src="/uploads/products/${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
+                </div>
+            </a>
+            <div class="cont_cart">
+                <h4>${item.product.name}</h4>
+                <div class="price">
+                    ${item.quantity} x <span>₹${item.finalPrice}</span>
+                </div>
+            </div>
+           
+            <div class="clear"></div>
+        `;
+                recentItemsContainer.insertBefore(li, recentItemsContainer.querySelector('.no_border:last-child'));
+            });
+
+            // Update no items message
+            if (recentItems.length === 0) {
+                recentItemsContainer.innerHTML += '<li class="no_items">No items in the cart</li>';
+            }
+        }   
     </script>
     <%- include("../../views/partials/user/footer") %>

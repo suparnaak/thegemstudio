@@ -9,11 +9,13 @@ const wishlistController = require('../controllers/user/wishlistController');
 const walletController = require('../controllers/user/walletController');
 const invoiceController = require('../controllers/user/invoiceController');
 const paymentController = require('../controllers/user/paymentController');
+const miscellaneousController = require('../controllers/user/miscellaneousController');
+const reviewController = require('../controllers/user/reviewController');
 const passport = require('../config/passport');
 const { userAuth,isLoggedIn } = require("../middlewares/auth");
 const { fetchCartData } = require("../middlewares/fetchCartData");
 
-router.get('/pageNotFound', userController.pageNotFound)
+router.get('/pageNotFound', fetchCartData,miscellaneousController.pageNotFound)
 
 router.get('/', fetchCartData,userController.loadHomepage);
 
@@ -62,12 +64,13 @@ router.post('/add-address', userAuth,fetchCartData, addressController.addAddress
 router.post('/checkout/placeOrder', userAuth,fetchCartData, orderController.placeOrder);
 router.post('/checkout/confirmOrder', userAuth,fetchCartData, orderController.confirmOrder);
 router.get('/payment/verify', userAuth,fetchCartData, orderController.verifyPayment);
-//invoice download
-router.get('/download-invoice/:orderId',userAuth,fetchCartData, invoiceController.downloadInvoice)
+
 
 //account management
 router.get('/account',userAuth,fetchCartData,userProfileController.loadMyAccount);
 router.post('/update-profile',userAuth,fetchCartData, userProfileController.updateProfile);
+router.get('/change-password',userAuth,fetchCartData,userProfileController.loadChangePassword);
+router.post('/change-password',userAuth,fetchCartData,userProfileController.changePassword);
 router.get('/manage-addresses',userAuth,fetchCartData,addressController.loadManageAddresses);
 router.get('/manage-addresses/add-address',userAuth,fetchCartData,addressController.loadAddAddress);
 router.post('/manage-addresses/add-address',userAuth,fetchCartData,addressController.addAddress);
@@ -80,6 +83,11 @@ router.get('/my-orders',userAuth,fetchCartData,userProfileController.loadMyOrder
 router.get('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.loadCancelOrder);
 router.post('/my-orders/cancel-order/:orderId/:productId',userAuth,fetchCartData,orderController.cancelOrder);
 router.get('/my-orders/cancel-confirmation/:orderId/:productId', userAuth,fetchCartData, orderController.loadCancelConfirmation);
+//invoice download
+router.get('/my-orders/download-invoice/:orderId/:productId',userAuth,fetchCartData, invoiceController.downloadInvoice)
+//review
+router.get('/products/:productId/review',fetchCartData, reviewController.loadReview);
+router.post('/products/:productId/review',fetchCartData, reviewController.submitReview);
 
 // Payment retry routes
 router.post('/retry-payment', userAuth, fetchCartData, paymentController.retryPayment);
@@ -101,4 +109,14 @@ router.post('/wishlist/add-to-cart', userAuth,fetchCartData, wishlistController.
 router.get('/wallet',userAuth,fetchCartData,walletController.loadWallet);
 router.post('/add-money-to-wallet',userAuth,fetchCartData, walletController.addMoneyToWallet);
 router.post('/verify-wallet-payment',userAuth,fetchCartData, walletController.verifyWalletPayment);
+
+//miscellaneous
+router.get('/aboutus', fetchCartData,miscellaneousController.loadAboutUs);
+router.get('/privacy-policy', fetchCartData,miscellaneousController.loadPrivacyPolicy);
+router.get('/terms-and-conditions', fetchCartData,miscellaneousController.loadTermsAndconditions);
+router.get('/return-policy', fetchCartData,miscellaneousController.loadReturnPolicy);
+router.get('/contact-us', fetchCartData,miscellaneousController.loadContactUs);
+
+//router.get('*', fetchCartData, miscellaneousController.pageNotFound);
+
 module.exports = router;

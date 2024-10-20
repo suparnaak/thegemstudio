@@ -3,7 +3,7 @@ const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
 const path = require("path");
 const fs = require("fs");
-const sharp = require("sharp");
+//const sharp = require("sharp");
 
 // List all products
 const listProducts = async (req, res) => {
@@ -50,10 +50,18 @@ const loadAddProducts = async (req, res) => {
 //add product
 const addProduct = async (req, res) => {
   try {
-    if (req.files.length < 3) {
-      return res.status(400).send("Please upload at least 3 images.");
+    // Validate minimum image requirement
+    if (!req.files || req.files.length < 3) {
+      return res.status(400).json({
+        status: 'failure',
+        message: 'Please upload at least 3 images.'
+      });
     }
+
+    // Log uploaded files for debugging
     console.log("Files uploaded:", req.files);
+
+    // Extract product details from request body
     const {
       name,
       description,
@@ -65,15 +73,16 @@ const addProduct = async (req, res) => {
       color,
       material,
     } = req.body;
-    let images = [];
-    if (req.files) {
-      images = req.files.map((file) => file.filename);
-    }
+
+    // Process uploaded images
+    const images = req.files.map((file) => file.filename);
+
+    // Create new product instance
     const product = new Product({
       name,
       description,
-      brand, // No conversion needed
-      category, // No conversion needed
+      brand,
+      category,
       price,
       discount,
       quantity,
@@ -82,14 +91,28 @@ const addProduct = async (req, res) => {
       status: "Available",
       images,
     });
+
     console.log("Product to be saved:", product);
     await product.save();
-    res.redirect("/admin/products");
+
+    // Send success response for fetch request
+    res.status(200).json({
+      status: 'success',
+      message: 'Product has been added successfully',
+      product: product
+    });
+
   } catch (error) {
     console.log("Error adding product:", error);
-    res.redirect("/admin/pageerror");
+    
+    // Send error response for fetch request
+    res.status(500).json({
+      status: 'failure',
+      message: error.message || 'Error occurred while adding the product'
+    });
   }
 };
+
 
 // Load all categories
 const loadCategories = async () => {
@@ -203,10 +226,10 @@ const editProduct = async (req, res) => {
 
     await Product.findByIdAndUpdate(id, { $set: updatedProduct });
 
-    res.redirect("/admin/products");
+    res.redirect('/admin/products?status=success&message=Product has been updated successfully.');
   } catch (error) {
-    console.error("Error editing product:", error);
-    res.redirect("/admin/pageerror");
+    console.log("Error editing product:", error);
+    res.redirect(`/admin/products?status=failure&message=Error occurred while updating the product.`);
   }
 };
 
@@ -215,20 +238,20 @@ const blockProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await Product.findByIdAndUpdate(id, { isListed: false });
-    res.redirect("/admin/products");
+    res.redirect('/admin/products?status=success&message=Product has been blocked successfully.');
   } catch (error) {
     console.log("Error deleting product:", error);
-    res.redirect("/admin/pageerror");
+    res.redirect(`/admin/products?status=failure&message=Error occurred while blocking the product.`);
   }
 };
 const unblockProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await Product.findByIdAndUpdate(id, { isListed: true });
-    res.redirect("/admin/products");
+    res.redirect('/admin/products?status=success&message=Product has been unblocked successfully.');
   } catch (error) {
     console.log("Error unblocking product:", error);
-    res.redirect("/admin/pageerror");
+    res.redirect(`/admin/products?status=failure&message=Error occurred while unblocking the product.`);
   }
 };
 module.exports = {

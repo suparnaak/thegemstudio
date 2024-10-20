@@ -209,26 +209,91 @@ const loadMyAccount = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+//load chnage passwords
+const loadChangePassword = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (user) {
+      res.render("change-password", { user: user });
+    }
+  } catch (error) {
+    console.log("Change Password not found:", error);
+    res.status(500).send("Server Error");
+  }
+};
+//change password
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.session.user._id; // Get the user ID from the session
+
+    // Fetch the user from the database using the ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Check if the current password matches the one in the database
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    // Check if new password and confirm password are the same
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'New password and confirm password do not match' });
+    }
+
+    // Check if the new password is the same as the current password
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ success: false, message: 'New password cannot be the same as the current password' });
+    }
+
+    // Hash the new password and update it in the database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    // If everything is fine, send success response
+    return res.status(200).json({ success: true, message: 'Password changed successfully!' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    return res.status(500).json({ success: false, message: 'An error occurred while changing the password' });
+  }
+};
 //load orders
 const loadMyOrders = async (req, res) => {
   try {
     const user = req.session.user;
     if (user) {
+      const page = parseInt(req.query.page) || 1; 
+      const limit = 2; 
+      const skip = (page - 1) * limit; 
+
+      
+      const totalOrders = await Order.countDocuments({ userId: user._id });
+
       const orders = await Order.find({ userId: user._id })
         .populate({
-          path: "items.productId", // Populating the product in each item
+          path: "items.productId", 
           populate: {
-            path: "brand", // Populating the brand field in the product
-            select: "brandName" // Selecting only the brandName field
+            path: "brand", 
+            select: "brandName" 
           }
         })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .skip(skip) 
+        .limit(limit); 
+
+      const totalPages = Math.ceil(totalOrders / limit);
 
       res.render("myorders-page", {
         orders: orders,
-        razorpayKey: process.env.RAZORPAY_KEY_ID, // Add this line
-        user: req.user
-    });
+        razorpayKey: process.env.RAZORPAY_KEY_ID,
+        user: req.user,
+        currentPage: page,
+        totalPages: totalPages,
+      });
     } else {
       res.redirect("/login");
     }
@@ -261,6 +326,8 @@ const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 module.exports = {
   loadForgotPassword,
   forgotPassword,
@@ -271,4 +338,6 @@ module.exports = {
   loadMyAccount,
   loadMyOrders,
   updateProfile,
+  loadChangePassword,
+  changePassword,
 };

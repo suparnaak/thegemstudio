@@ -2152,7 +2152,9 @@ h1.page_title {
     height: 740px;
     overflow: hidden;
     position: relative;
+
 }
+
 
 /* Grid Products */
 .products.catalog {
@@ -5138,4 +5140,29 @@ ul.f_contact li+li+li {
 /* Make sure the custom styles don't interfere with other styles */
 #checkout-content {
     margin-top: 20px;
+}
+/* eye icon password */
+.position-relative {
+    position: relative;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.eye-icon i {
+    font-size: 18px;
+}
+
+.eye-icon:hover {
+    color: #000;
+}
+
+.form-control-rounded {
+    padding-right: 40px; /* Leave space for the eye icon */
 }

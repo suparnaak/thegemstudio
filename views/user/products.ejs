@@ -1,28 +1,15 @@
 <%- include("../../views/partials/user/header") %>
-
     <div class="breadcrumbs">
         <div class="container_12">
             <div class="grid_12">
                 <a href="/">Home</a><span></span><span class="current">Shop</span>
             </div><!-- .grid_12 -->
-            <!-- search -->
-            <form class="search" action="/products" method="GET">
-                <input type="submit" class="search_button" value="" />
-                <input type="text" name="search" class="search_form" value="<%= searchQuery %>"
-                    placeholder="Search entire store here..." />
-            </form>
-
-
-            <!-- search -->
         </div><!-- .container_12 -->
-
     </div><!-- .breadcrumbs -->
-
     <section id="main">
         <div class="container_12">
             <div id="content" class="grid_9">
                 <h1 class="page_title">Product List</h1>
-
                 <div class="options">
                     <div class="show">
                         <span>Show</span>
@@ -31,7 +18,6 @@
                         </select>
                         <span>per page</span>
                     </div><!-- .show -->
-
                     <div class="sort">
                         <span>Sort By</span>
                         <select id="sort-options" onchange="sortProducts()">
@@ -42,14 +28,11 @@
                                 Low</option>
                         </select>
                     </div><!-- .sort -->
-
                     <div class="grid-list">
-                        <a class="grid current" href="/"><span></span></a>
-                        <a class="list" href="/catalog_list.html"><span></span></a>
+
                     </div><!-- .grid-list -->
                 </div><!-- .options -->
                 <div class="clear"></div>
-
                 <div class="products catalog negative-grid">
                     <% if (products.length> 0) { %>
                         <% products.forEach(product=> { %>
@@ -76,14 +59,12 @@
                                                     </div>
                                                     <% } %>
                                         </div>
-
                                     </div>
                                     <a href="#" class="compare"></a>
                                     <a href="#" class="wishlist"></a>
                                     <a href="#" class="buy">
                                         <img src="img/bg_cart.png" alt="Buy" title="">
                                     </a>
-
                                 </div>
                             </article>
                             <% }) %>
@@ -93,12 +74,12 @@
                                         <div class="clear"></div>
                 </div><!-- .products -->
                 <div class="clear"></div>
-
                 <!-- Pagination -->
                 <div class="pagination">
                     <ul>
                         <% if (currentPage> 1) { %>
-                            <li class="prev"><a
+                            <li class="prev">
+                                <a
                                     href="?page=<%= currentPage - 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8592;</a>
                             </li>
                             <% } else { %>
@@ -111,28 +92,35 @@
                                                     <%= i %>
                                                 </span></li>
                                             <% } else { %>
-                                                <li><a
+                                                <li>
+                                                    <a
                                                         href="?page=<%= i %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">
                                                         <%= i %>
-                                                    </a></li>
+                                                    </a>
+                                                </li>
                                                 <% } %>
                                                     <% } %>
 
                                                         <% if (currentPage < totalPages) { %>
-                                                            <li class="next"><a
+                                                            <li class="next">
+                                                                <a
                                                                     href="?page=<%= currentPage + 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8594;</a>
                                                             </li>
                                                             <% } else { %>
                                                                 <li class="next"><span>&#8594;</span></li>
-                                                                <% } %>
+                                                        <% } %>
                     </ul>
                 </div>
-
-
                 <div class="clear"></div>
             </div>
-
+            <form class="search" action="/products" method="GET">
+                <input type="submit" class="search_button" value="" /><a href="#" id="clearSearch" class="clear-link"
+                    style="color: #444; font: normal 12px / 33px 'PT Sans', Arial, Verdana, sans-serif;">Clear</a>
+                <input type="text" name="search" class="search_form" value="<%= searchQuery %>"
+                    placeholder="Search entire store here..." />
+            </form>
             <div id="sidebar" class="grid_3">
+
                 <aside id="categories_nav">
                     <header class="aside_title">
                         <h3>Categories</h3>
@@ -146,30 +134,49 @@
                                     </a>
                                 </li>
                                 <% }) %>
+                                    <a href="#" id="clearCategory" class="clear-link"
+                                        style="color: #444; font: normal 12px / 33px 'PT Sans', Arial, Verdana, sans-serif;">Clear</a>
                         </ul>
                     </nav><!-- .right_menu -->
                 </aside><!-- #categories_nav -->
             </div><!-- .sidebar -->
-
             <div class="clear"></div>
         </div><!-- .container_12 -->
     </section><!-- #main -->
-
     <div class="clear"></div>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const clearSearchButton = document.getElementById('clearSearch');
+            const clearCategoryButton = document.getElementById('clearCategory');
+
+            clearSearchButton.addEventListener('click', function () {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('search');
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            });
+
+            clearCategoryButton.addEventListener('click', function () {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('category');
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            });
+        });
         function sortProducts() {
             const selectedOption = document.getElementById('sort-options').value;
             const url = new URL(window.location.href);
-            url.searchParams.set('sort', selectedOption); // Set the sort parameter
-            url.searchParams.set('page', 1); // Reset to the first page
-
-            const searchInput = document.querySelector('.search_form').value; // Get the current search term
+            url.searchParams.set('sort', selectedOption);
+            url.searchParams.set('page', 1);
+            const searchInput = document.querySelector('.search_form').value;
             if (searchInput) {
-                url.searchParams.set('search', searchInput); // Retain the search term in the query
+                url.searchParams.set('search', searchInput);
             }
-
-            window.location.href = url.toString(); // Redirect to the updated URL
+            const selectedCategory = url.searchParams.get('category');
+            if (selectedCategory) {
+                url.searchParams.set('category', selectedCategory);
+            }
+            window.location.href = url.toString();
         }
-
     </script>
     <%- include("../../views/partials/user/footer") %>

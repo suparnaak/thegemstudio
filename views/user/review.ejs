@@ -1,0 +1,146 @@
+<%- include("../../views/partials/user/header") %>
+
+    <div class="breadcrumbs">
+        <div class="container_12">
+            <div class="grid_12">
+                <a href="/">Home</a><span></span><span class="current">Review</span>
+            </div><!-- .grid_12 -->
+        </div><!-- .container_12 -->
+    </div><!-- .breadcrumbs -->
+
+    <section id="main">
+        <div class="container_12">
+            <div class="row">
+                <!-- Sidebar -->
+                <%- include("../../views/partials/user/sidebar") %>
+                    <div id="content" class="grid_9">
+                        <header>
+                            <h1 class="page_title">Write a Review</h1>
+                        </header>
+
+                        <!-- Product Details Section -->
+                        <div class="product-details mb-4">
+                            <div class="d-flex align-items-center">
+                                <img src="/uploads/products/<%= product.images[0] %>" alt="<%= product.name %>"
+                                    class="img-thumbnail" style="width: 150px; height: auto;">
+                                <div class="ml-3">
+                                    <h5>
+                                        <%= product.name %>
+                                    </h5>
+                                    <p>Brand: <%= product.brand.brandName %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <% if (!existingReview) { %>
+                            <form id="reviewForm" method="POST">
+                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                <input type="hidden" name="orderId" value="<%= orderId %>">
+                                <div class="form-group">
+                                    <label for="rating">Rating (1 to 5 Stars):</label>
+                                    <select id="rating" name="rating" class="form-control" required>
+                                        <option value="">Select rating</option>
+                                        <option value="1">1 Star</option>
+                                        <option value="2">2 Stars</option>
+                                        <option value="3">3 Stars</option>
+                                        <option value="4">4 Stars</option>
+                                        <option value="5">5 Stars</option>
+                                    </select>
+                                    <span id="starsError" class="error text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reviewText">Review:</label>
+                                    <textarea id="reviewText" name="reviewText" rows="5" class="form-control"
+                                        placeholder="Write your review here..." required></textarea>
+                                    <span id="reviewTextError" class="error text-danger"></span>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit Review</button>
+                            </form>
+                            <% } else { %>
+                                <div class="alert alert-info">
+                                    <p>You have already submitted a review for this product.</p>
+                                </div>
+                                <% } %>
+                    </div><!-- #content -->
+                    <div class="clear"></div>
+            </div><!-- .container_12 -->
+        </div>
+    </section><!-- #main -->
+    <div class="clear"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Include SweetAlert2 -->
+    <script>
+        document.getElementById('reviewForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Validation
+            const reviewText = document.getElementById('reviewText').value.trim();
+            const rating = document.getElementById('rating').value;
+            let isValid = true;
+
+            // Clear previous error messages
+            document.getElementById('reviewTextError').innerText = '';
+            document.getElementById('starsError').innerText = '';
+
+            // Validate review text length
+            if (reviewText.length < 10) {
+                document.getElementById('reviewTextError').innerText = 'Review must be at least 10 characters long.';
+                isValid = false;
+            }
+
+            // Validate rating selection
+            if (!rating || rating < 1 || rating > 5) {
+                document.getElementById('starsError').innerText = 'Please select a valid rating between 1 and 5.';
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            const productId = document.querySelector('input[name="productId"]').value;
+
+            try {
+                const response = await fetch(`/products/${productId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating: parseInt(rating),
+                        reviewText: reviewText
+                    })
+                });
+
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Submission failed');
+                    } else {
+                        throw new Error('Server error occurred');
+                    }
+                }
+
+                const result = await response.json();
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: result.message,
+                    icon: 'success',
+                    confirmButtonText: 'Okay'
+                });
+
+                window.location.reload();
+            } catch (error) {
+                console.error("Error submitting the review:", error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || "An error occurred while submitting your review.",
+                    icon: 'error',
+                    confirmButtonText: 'Okay'
+                });
+            }
+        });
+    </script>
+    <%- include("../../views/partials/user/footer") %>

@@ -68,6 +68,8 @@ router.get("/sales-report", adminAuth, salesReportController.getSalesReport);
 router.post("/filter-sales", adminAuth, salesReportController.filterSalesReport);
 router.post("/download-report", adminAuth, salesReportController.downloadReport);
 
-
+//dashboard data
+router.get('/sales-data', adminAuth, adminController.getSalesData);
+router.get('/payment-data', adminAuth, adminController.getPaymentData);
 
 module.exports = router;

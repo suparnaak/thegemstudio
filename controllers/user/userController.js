@@ -1,35 +1,38 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productsSchema");
 const Category = require("../../models/categorySchema");
-const Brand = require("../../models/brandSchema");
+const Review = require("../../models/reviewSchema");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
-
-// Page not found
-const pageNotFound = async (req, res) => {
-  try {
-    res.render("page-404");
-  } catch (error) {
-    res.redirect("/pageNotFound");
-  }
-};
-
 // Load home page
 const loadHomepage = async (req, res) => {
   try {
     const user = req.session.user;
-    if (user) {
-      res.render("home", { user: user });
-    } else {
-      res.render("home", { user: null });
-    }
+    const featuredProducts = await Product.find({ isListed: true })
+      .sort({ createdOn: -1 })  
+      .limit(6)
+      .populate('category');  
+    const productsWithFinalPrice = featuredProducts.map(product => {
+      const productDiscount = product.discount || 0; 
+      const categoryOffer = product.category.offer || 0; 
+      const maxDiscount = Math.max(productDiscount, categoryOffer);
+      const discountedPrice = product.price - (product.price * (maxDiscount / 100));
+      return {
+        ...product.toObject(),  
+        finalPrice: discountedPrice.toFixed(2),  
+        maxDiscount  
+      };
+    });
+    res.render("home", { 
+      user: user || null, 
+      featuredProducts: productsWithFinalPrice 
+    });
   } catch (error) {
     console.log("Home page not found:", error);
     res.status(500).send("Server Error");
   }
 };
-
 // Load signup page
 const loadSignup = async (req, res) => {
   try {
@@ -240,7 +243,6 @@ const logout = async (req, res) => {
     res.status(500).send("An unexpected error occurred. Please try again.");
   }
 };
-
 const loadProducts = async (req, res) => {
   try {
     const user = req.session.user;
@@ -269,50 +271,27 @@ const loadProducts = async (req, res) => {
       productQuery.category = selectedCategory;
     }
 
-    // Sort criteria
-    let sortCriteria;
-    switch (sortOption) {
-      case "price-asc":
-        sortCriteria = { price: 1 };
-        break;
-      case "price-desc":
-        sortCriteria = { price: -1 };
-        break;
-      case "newest":
-        sortCriteria = { createdAt: -1 };
-        break;
-      default:
-        sortCriteria = { createdAt: -1 };
-        break;
-    }
-
-    // Count total products before pagination
-    const totalProducts = await Product.countDocuments(productQuery);
-
-    // Fetch products with populated category and brand, applying pagination and sorting
-    const products = await Product.find(productQuery)
-      .sort(sortCriteria)
-      .skip((page - 1) * itemsPerPage)
-      .limit(itemsPerPage)
+    // Fetch products with populated category and brand
+    let products = await Product.find(productQuery)
       .populate({
         path: "category",
-        match: { isListed: true },  // Ensure only listed categories
+        match: { isListed: true },
       })
       .populate({
         path: "brand",
-        match: { isListed: true },  // Ensure only listed brands
+        match: { isListed: true },
       });
 
     // Filter out products with unlisted categories or brands
-    const productsWithFinalPrice = products.filter((product) => {
-      return product.category && product.brand;  // Only include products with valid category and brand
-    }).map((product) => {
+    products = products.filter((product) => product.category && product.brand);
+
+    // Calculate final prices
+    const productsWithFinalPrice = products.map((product) => {
       const productDiscount = product.discount || 0;
       const categoryOffer = product.category.offer || 0;
       const brandOffer = product.brand.offer || 0;
 
       const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
-
       const finalPrice = product.price - product.price * (maxDiscount / 100);
 
       return {
@@ -322,10 +301,28 @@ const loadProducts = async (req, res) => {
       };
     });
 
+    // Sort the products based on selected option
+    switch (sortOption) {
+      case "price-asc":
+        productsWithFinalPrice.sort((a, b) => a.finalPrice - b.finalPrice);
+        break;
+      case "price-desc":
+        productsWithFinalPrice.sort((a, b) => b.finalPrice - a.finalPrice);
+        break;
+      case "newest":
+      default:
+        productsWithFinalPrice.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+        break;
+    }
+
+    // Pagination logic
+    const totalProducts = productsWithFinalPrice.length;
+    const paginatedProducts = productsWithFinalPrice.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
     // Render the products page with pagination and other filters
     res.render("products", {
       user: user || null,
-      products: productsWithFinalPrice,
+      products: paginatedProducts,
       categories: categories,
       currentPage: page,
       totalPages: Math.ceil(totalProducts / itemsPerPage),
@@ -349,25 +346,30 @@ const loadProductPage = async (req, res) => {
     if (!product) {
       return res.status(404).send("Product not found");
     }
+
     const productDiscount = product.discount || 0;
     const categoryOffer = product.category.offer || 0;
     const brandOffer = product.brand.offer || 0;
     const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
     const finalPrice = product.price - product.price * (maxDiscount / 100);
+    
     const productWithFinalPrice = {
       ...product._doc,
       finalPrice: finalPrice.toFixed(2),
       maxDiscount,
-      brandName: product.brand.name, // Add brand name to the product object
+      brandName: product.brand.name,
     };
+
     const relatedProducts = await Product.find({
       category: product.category._id,
       _id: { $ne: product._id },
     }).limit(4);
+    const reviews = await Review.find({ productId: productId }).populate("userId", "name");
     res.render("product-page", {
       user: user || null,
       product: productWithFinalPrice,
       relatedProducts,
+      reviews, 
     });
   } catch (error) {
     console.log("Product page not found:", error);
@@ -376,7 +378,6 @@ const loadProductPage = async (req, res) => {
 };
 
 module.exports = {
-  pageNotFound,
   loadHomepage,
   loadSignup,
   signup,

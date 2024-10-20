@@ -4,7 +4,11 @@
     <div class="row">
         <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
             <h2 class="text-center mb-4">Sales Report</h2>
-
+            <% if (locals.error) { %>
+                <div class="alert alert-danger mb-4" role="alert">
+                    <%= error %>
+                </div>
+            <% } %>
             <!-- Date Filter Form - Unchanged -->
             <div class="row mb-4">
                 <form action="/admin/filter-sales" method="POST" class="row g-3">
@@ -22,14 +26,14 @@
 
                     <div class="col-md-3 custom-date" style="display: none;">
                         <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate">
+                        <input type="date" class="form-control" id="startDate" name="startDate" max="<%= new Date().toISOString().split('T')[0] %>">
                     </div>
-
+                    
                     <div class="col-md-3 custom-date" style="display: none;">
                         <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate">
+                        <input type="date" class="form-control" id="endDate" name="endDate" max="<%= new Date().toISOString().split('T')[0] %>">
                     </div>
-
+                    
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary">Apply</button>
                     </div>
@@ -145,8 +149,57 @@
         });
     }
 
-    // Call this on page load to ensure correct display
-    document.addEventListener('DOMContentLoaded', toggleCustomDateInputs);
+    function validateDates() {
+        const dateFilter = document.getElementById('dateFilter');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        if (dateFilter.value === 'custom') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (!startDate.value || !endDate.value) {
+                alert('Please select both start and end dates');
+                return false;
+            }
+
+            const selectedStart = new Date(startDate.value);
+            const selectedEnd = new Date(endDate.value);
+
+            if (selectedStart > today) {
+                alert('Start date cannot be in the future');
+                return false;
+            }
+
+            if (selectedEnd > today) {
+                alert('End date cannot be in the future');
+                return false;
+            }
+
+            if (selectedStart > selectedEnd) {
+                alert('Start date must be before end date');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleCustomDateInputs();
+
+        // Set max date attribute for date inputs to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').max = today;
+        document.getElementById('endDate').max = today;
+
+        // Add form submit handler
+        document.querySelector('form[action="/admin/filter-sales"]').addEventListener('submit', function(e) {
+            if (!validateDates()) {
+                e.preventDefault();
+            }
+        });
+    });
 </script>
 
 <%- include("../partials/admin/footer") %>

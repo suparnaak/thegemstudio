@@ -50,7 +50,11 @@
                             <button type="button" class="btn btn-success save-btn" style="width: 100px;">Save</button>
                         </div>
                     </form>
-
+                    
+                    <% if (!user.googleId) { %>
+                        <a href="/change-password">Click here to Change your Password</a>
+                      <% }  %>
+                        
                 </div>
 
                 <script>

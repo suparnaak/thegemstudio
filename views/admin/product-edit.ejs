@@ -6,115 +6,100 @@
       <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
         <div class="container mt-4">
           <h2>Edit Product</h2>
-
-          <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data"
-            onsubmit="return validateForm()">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="name">Product Name</label>
-                  <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
-                  <small id="nameError" class="text-danger" style="display:none;">Product name cannot contain only
-                    spaces.</small>
-                </div>
-                <div class="form-group">
-                  <label for="description">Description</label>
-                  <textarea class="form-control" id="description" name="description"
-                    required><%= product.description %></textarea>
-                  <small id="descriptionError" class="text-danger" style="display:none;">Description cannot contain only
-                    spaces.</small>
-                </div>
-
-                <div class="form-group">
-                  <label for="brand">Brand</label>
-  
-                  <select class="form-control same-width" id="brand" name="brand" required>
-                    <% brands.forEach(brand=> { %>
-                      <option value="<%= brand._id %>" <%=product.brand._id.equals(brand._id) ? 'selected' : ''
-                        %>><%= brand.brandName %>
-                      </option>
-                      <% }) %>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="category">Category</label>
-
-                <select class="form-control same-width" id="category" name="category" required>
-                  <% categories.forEach(category=> { %>
-                    <option value="<%= category._id %>" <%=product.category._id.equals(category._id) ? 'selected' : ''
-                      %>><%= category.name %>
-                    </option>
-                    <% }) %>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="color">Color</label>
-                <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
-                <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only
-                  spaces.</small>
-              </div>
-
-              <div class="form-group">
-                <label for="material">Material</label>
-                <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>"
-                  required>
-                <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only
-                  spaces.</small>
+        
+          <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+            <div class="form-group">
+              <label for="name">Product Name</label>
+              <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
+              <small id="nameError" class="text-danger" style="display:none;">Product name cannot contain only spaces.</small>
+            </div>
+        
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea class="form-control" id="description" name="description" required><%= product.description %></textarea>
+              <small id="descriptionError" class="text-danger" style="display:none;">Description cannot contain only spaces.</small>
+            </div>
+        
+            <div class="form-group">
+              <label for="brand">Brand</label>
+              <select class="form-control same-width" id="brand" name="brand" required>
+                <% brands.forEach(brand => { %>
+                  <option value="<%= brand._id %>" <%= product.brand._id.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option>
+                <% }) %>
+              </select>
+            </div>
+        
+            <!-- Category, Color, and Material placed together above image upload -->
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select class="form-control same-width" id="category" name="category" required>
+                <% categories.forEach(category => { %>
+                  <option value="<%= category._id %>" <%= product.category._id.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                <% }) %>
+              </select>
+            </div>
+        
+            <div class="form-group">
+              <label for="color">Color</label>
+              <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
+              <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only spaces.</small>
+            </div>
+        
+            <div class="form-group">
+              <label for="material">Material</label>
+              <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>" required>
+              <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only spaces.</small>
+            </div>
+        
+            <!-- Continue with other form fields -->
+            <div class="form-group">
+              <label for="price">Price</label>
+              <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>" required min="0">
+            </div>
+        
+            <div class="form-group">
+              <label for="discount">Discount (%)</label>
+              <input type="number" class="form-control" id="discount" name="discount" value="<%= product.discount %>" min="0" max="90">
+            </div>
+        
+            <div class="form-group">
+              <label for="quantity">Quantity</label>
+              <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product.quantity %>" required min="0">
+            </div>
+        
+            <div class="form-group">
+              <label for="status">Stock Status</label>
+              <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" required readonly>
+            </div>
+        
+            <!-- Image Upload Section -->
+            <div class="form-group">
+              <label for="existingImages">Current Product Images</label>
+              <div class="d-flex flex-wrap">
+                <% if (product.images && product.images.length > 0) { %>
+                  <% product.images.forEach(function(image, index) { %>
+                    <div class="me-2">
+                      <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
+                      <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
+                    </div>
+                  <% }) %>
+                <% } else { %>
+                  <p>No images available for this product.</p>
+                <% } %>
               </div>
             </div>
-
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="price">Price</label>
-                <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>" required
-                  min="0">
-              </div>
-              <div class="form-group">
-                <label for="discount">Discount (%)</label>
-                <input type="number" class="form-control" id="discount" name="discount" value="<%= product.discount %>"
-                  min="0" max="90">
-              </div>
-
-              <div class="form-group">
-                <label for="quantity">Quantity</label>
-                <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product.quantity %>"
-                  required min="0">
-              </div>
-              <div class="form-group">
-                <label for="status">Stock Status</label>
-                <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" required
-                  readonly>
-              </div>
+        
+            <div class="form-group">
+              <label for="images">Upload New Images (min 3)</label>
+              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
             </div>
+        
+            <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+        
+            <button type="submit" class="btn btn-success">Update Product</button><br><br>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="existingImages">Current Product Images</label>
-          <div class="d-flex flex-wrap">
-            <% if (product.images && product.images.length> 0) { %>
-              <% product.images.forEach(function(image, index) { %>
-                <div class="me-2">
-                  <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt ="Product Image"
-                    style="max-width: 150px;">
-                  <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
-                </div>
-                <% }); %>
-                  <% } else { %>
-                    <p>No images available for this product.</p>
-                    <% } %>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="images">Upload New Images (min 3)</label>
-          <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
-        </div>
-
-        <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
-
-        <button type="submit" class="btn btn-success">Update Product</button><br><br>
-        </form>
-      </div>
-    </div>
+        
   </div>
   </div>
   <script>

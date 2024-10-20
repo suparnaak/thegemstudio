@@ -16,6 +16,11 @@ const orderSchema = new Schema(
         return `OD${Date.now()}${Math.floor(100000 + Math.random() * 900000)}`;
       },
     },
+    invoiceNumber: {
+      type: String,
+      unique: true,
+      required: true
+    },
     address: {
       name: { type: String, required: true },
       houseName: { type: String, required: true },
@@ -65,6 +70,11 @@ const orderSchema = new Schema(
     "Returned"],
           default: "Pending",
         },
+        deliveryDate: {
+          type: Date,  // Adding the delivery date for each product
+          default: null, // Initially null, can be updated when product is delivered
+        },
+        
         cancelReason: {
           type: String,
           default: null,

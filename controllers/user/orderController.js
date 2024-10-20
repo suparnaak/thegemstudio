@@ -14,7 +14,9 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
-
+const generateInvoiceNumber = () => {
+  return 'KOLK-' + crypto.randomBytes(8).toString('hex').toUpperCase();
+};
 //checkout
 const loadCheckout = async (req, res) => {
   try {
@@ -188,8 +190,6 @@ const placeOrder = async (req, res) => {
         discount_rs: couponDetails.discount_rs,
       };
     }
-
-    // Render the confirmation page and send it as a response
     res.render("confirmOrder", renderData);
   } catch (error) {
     console.error("Error placing order:", error);
@@ -262,6 +262,9 @@ const confirmOrder = async (req, res) => {
     if (orderItems.length === 0) {
       return res.status(400).json({ message: "No products are available" });
     }
+
+    const invoiceNumber = generateInvoiceNumber();
+
     const newOrder = new Order({
       userId,
       address: {
@@ -288,6 +291,7 @@ const confirmOrder = async (req, res) => {
         appliedCoupon && typeof appliedCoupon.code === "string"
           ? appliedCoupon.code
           : null,
+      invoiceNumber: invoiceNumber,
     });
 
     await newOrder.save();

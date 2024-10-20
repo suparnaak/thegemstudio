@@ -1,21 +1,47 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productsSchema");
 const Order = require("../../models/orderSchema");
+const Coupon = require("../../models/couponSchema")
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
 const downloadInvoice = async (req, res) => {
     try {
-        const orderId = req.params.orderId;
-        
-        const order = await Order.findOne({ orderId }).populate('items.productId');
-        
+        const { orderId, productId } = req.params;
+        console.log('orderid:', orderId);
+
+        const order = await Order.findOne({ _id: orderId }).populate('items.productId');
+        console.log('order', order);
+
         if (!order) {
             return res.status(404).send('Order not found');
         }
-        
-        const invoiceNumber = generateRandomInvoiceNumber();
-        
+
+        const item = order.items.find(item => item.productId._id.toString() === productId);
+        if (!item) {
+            return res.status(404).send('Product not found in this order');
+        }
+
+        const invoiceNumber = order.invoiceNumber;
+
+        let coupon = null;
+        let discountAmount = 0;
+        if (order.coupons) {
+            coupon = await Coupon.findOne({ code: order.coupons });
+            if (coupon) {
+                discountAmount = coupon.discount_rs;
+            }
+        }
+
+        // Calculate the total number of items in the order
+        const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+        // Calculate the discount per item
+        const discountPerItem = discountAmount / totalItems;
+
+        // Calculate the discount for this specific item
+        const itemDiscount = discountPerItem * item.quantity;
+
         const doc = new PDFDocument({ margin: 50 });
         let filename = `invoice_${invoiceNumber}.pdf`;
         res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
@@ -35,9 +61,8 @@ const downloadInvoice = async (req, res) => {
 
         // Invoice details
         const detailsStartY = doc.y;
-        
-        // Left column with bold labels
         doc.fontSize(10);
+
         drawBoldLabel('Invoice Number:', 50, detailsStartY);
         doc.text(invoiceNumber, 150, detailsStartY);
         
@@ -47,15 +72,10 @@ const downloadInvoice = async (req, res) => {
         drawBoldLabel('Order Date:', 50, detailsStartY + 40);
         doc.text(order.orderDate.toLocaleDateString(), 150, detailsStartY + 40);
 
-        // Right column - Payment details with proper wrapping and bold labels
+        // Payment details
         const paymentIdY = detailsStartY;
         drawBoldLabel('Payment Transaction ID:', 300, paymentIdY);
-        
-        const maxWidth = 240;
-        doc.text(order.razorpayPaymentId || 'N/A', 300, paymentIdY + 15, {
-            width: maxWidth,
-            align: 'left'
-        });
+        doc.text(order.razorpayPaymentId || 'N/A', 300, paymentIdY + 15, { width: 240 });
 
         const paymentMethodY = Math.max(doc.y + 10, paymentIdY + 40);
         drawBoldLabel('Payment Method:', 300, paymentMethodY);
@@ -63,7 +83,7 @@ const downloadInvoice = async (req, res) => {
         
         drawBoldLabel('Payment Status:', 300, paymentMethodY + 20);
         doc.text(order.paymentStatus, 400, paymentMethodY + 20);
-
+        
         doc.moveDown(4);
 
         // Addresses with bold headers
@@ -82,17 +102,15 @@ const downloadInvoice = async (req, res) => {
 
         doc.moveDown(2);
 
-        // Order Details Table
         doc.font('Helvetica-Bold').fontSize(12).text('Order Details:', { underline: true });
         doc.moveDown();
 
-        // Table configuration
         const tableTop = doc.y;
-        const tableHeaders = ['Sl No.', 'Product', 'Quantity', 'Unit Price', 'Offer Subtotal'];
-        const tableWidths = [40, 220, 70, 70, 100];
-        const colStartX = [50, 90, 310, 380, 450];
+        const tableHeaders = ['Sl No.', 'Product', 'Quantity', 'Unit Price', 'Subtotal'];
+        const tableWidths = [30, 150, 50, 70, 70, 70, 70];
+        const colStartX = [50, 80, 230, 280, 350, 420, 490];
 
-        // Draw table headers with bold font
+        // Draw table headers
         tableHeaders.forEach((header, i) => {
             doc.font('Helvetica-Bold').fontSize(10)
                .text(header, colStartX[i], tableTop, { 
@@ -101,134 +119,45 @@ const downloadInvoice = async (req, res) => {
                });
         });
 
-        // Reset to regular font for table content
+        // Draw table row for the single product
+        let tableRowY = tableTop + 20;
         doc.font('Helvetica');
 
-        // Draw table rows
-        let tableRowY = tableTop + 20;
+        doc.text("1", colStartX[0], tableRowY, { width: tableWidths[0], align: 'left' });
+        doc.text(item.productId.name, colStartX[1], tableRowY, { width: tableWidths[1], align: 'left' });
+        doc.text(item.quantity.toString(), colStartX[2], tableRowY, { width: tableWidths[2], align: 'right' });
+        doc.text(`₹${item.price.toFixed(2)}`, colStartX[3], tableRowY, { width: tableWidths[3], align: 'right' });
+        doc.text(`₹${item.subtotal.toFixed(2)}`, colStartX[4], tableRowY, { width: tableWidths[4], align: 'right' });
         
-        order.items.forEach((item, index) => {
-            const rowHeight = 20;
-            
-            doc.text((index + 1).toString(), colStartX[0], tableRowY, {
-                width: tableWidths[0],
-                align: 'left'
-            });
-            
-            const productNameHeight = doc.heightOfString(item.productId.name, {
-                width: tableWidths[1],
-                align: 'left'
-            });
-            doc.text(item.productId.name, colStartX[1], tableRowY, {
-                width: tableWidths[1],
-                align: 'left'
-            });
-            
-            doc.text(item.quantity.toString(), colStartX[2], tableRowY, {
-                width: tableWidths[2],
-                align: 'right'
-            });
-            
-            doc.text(`₹${item.price.toFixed(2)}`, colStartX[3], tableRowY, {
-                width: tableWidths[3],
-                align: 'right'
-            });
-            
-            doc.text(`₹${item.subtotal.toFixed(2)}`, colStartX[4], tableRowY, {
-                width: tableWidths[4],
-                align: 'right'
-            });
-            
-            tableRowY += Math.max(productNameHeight, rowHeight);
-        });
 
-        // Totals section
         doc.moveDown(2);
 
-        // Calculate totals
-        const totalBeforeDiscount = order.items.reduce((sum, item) => sum + item.subtotal, 0);
-        const couponDiscount = totalBeforeDiscount - order.grandTotal;
-
-        // Configure totals section
+        // Totals section
         const totalsStartX = 350;
-        const totalsValueX = 550;
-        const totalsWidth = 200;
         let currentY = doc.y;
 
-        // Helper function for drawing total lines
-        const drawTotalLine = (label, value, options = {}) => {
-            const defaultOptions = {
-                labelFontSize: 10,
-                valueFontSize: 10,
-                isBold: false,
-                drawLine: false,
-                moveDown: true
-            };
-            const finalOptions = { ...defaultOptions, ...options };
-
-            if (finalOptions.drawLine) {
-                doc.moveTo(totalsStartX, currentY).lineTo(totalsValueX, currentY).stroke();
-                currentY += 10;
-            }
-
-            if (finalOptions.isBold) {
+        const drawTotalLine = (label, value, isBold = false) => {
+            if (isBold) {
                 doc.font('Helvetica-Bold');
             } else {
                 doc.font('Helvetica');
             }
-
-            // Draw label
-            doc.fontSize(finalOptions.labelFontSize)
-               .text(label, totalsStartX, currentY, { 
-                   width: totalsWidth, 
-                   align: 'left'
-               });
-
-            // Draw value
-            doc.fontSize(finalOptions.valueFontSize)
-               .text(value, totalsStartX, currentY, { 
-                   width: totalsWidth, 
-                   align: 'right'
-               });
-
-            if (finalOptions.moveDown) {
-                currentY += 20;
-            }
-
-            doc.font('Helvetica');
+            doc.text(label, totalsStartX, currentY, { width: 100, align: 'left' });
+            doc.text(value, totalsStartX + 100, currentY, { width: 100, align: 'right' });
+            currentY += 20;
         };
 
-        // Draw totals
-        drawTotalLine('Total:', `₹${totalBeforeDiscount.toFixed(2)}`, {
-            isBold: true,
-            drawLine: true
-        });
-
-        drawTotalLine('Coupon Discount:', `-₹${couponDiscount.toFixed(2)}`, {
-            isBold: true
-        });
-
-        drawTotalLine('', '', {
-            drawLine: true,
-            moveDown: false
-        });
-
-        // Grand Total
-        drawTotalLine('Grand Total:', `₹${order.grandTotal.toFixed(2)}`, {
-            isBold: true,
-            labelFontSize: 12,
-            valueFontSize: 12
-        });
+        drawTotalLine('Subtotal:', `₹${item.subtotal.toFixed(2)}`, false);
+        if (itemDiscount > 0) {
+            drawTotalLine('Coupon Discount:', `-₹${itemDiscount.toFixed(2)}`, false);
+        }
+        drawTotalLine('Grand Total:', `₹${(item.subtotal - itemDiscount).toFixed(2)}`, true);
 
         doc.end();
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while generating the invoice');
     }
-};
-const generateRandomInvoiceNumber = () => {
-    const randomNum = Math.floor(100000 + Math.random() * 900000); 
-    return `KOLK-${randomNum}`;
 };
 
 module.exports = {

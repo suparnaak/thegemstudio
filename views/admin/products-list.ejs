@@ -12,7 +12,7 @@
         <div class="col-md-6">
           <form action="/admin/products" method="get">
             <input type="search" name="search" class="form-control" placeholder="Search products..."
-              value="<%= search %>">
+              value="<%= search %>" id="search-input">
             <br>
             <button type="submit" class="btn btn-primary">Search</button>
           </form>
@@ -53,19 +53,15 @@
               <td>
                 <a href="/admin/products/edit/<%= product._id %>" class="btn btn-warning btn-sm">Edit</a>
                 <% if (!product.isListed) { %>
-               
-                <form action="/admin/products/unblock/<%= product._id %>" method="POST" class="d-inline"
-                    onsubmit="return confirm('Are you sure you want to unblock this product?');">
-                    <button type="submit" class="btn btn-success btn-sm">Unblock</button>
-                </form>
+                  <form action="/admin/products/unblock/<%= product._id %>" method="POST" class="d-inline" id="unblockForm-<%= product._id %>">
+                    <button type="button" class="btn btn-success btn-sm unblock-button" data-id="<%= product._id %>">Unblock</button>
+                  </form>
                 <% } else { %>
-                <!-- Block with confirmation -->
-                <form action="/admin/products/block/<%= product._id %>" method="POST" class="d-inline"
-                    onsubmit="return confirm('Are you sure you want to block this product?');">
-                    <button type="submit" class="btn btn-danger btn-sm">Block</button>
-                </form>
+                  <form action="/admin/products/block/<%= product._id %>" method="POST" class="d-inline" id="blockForm-<%= product._id %>">
+                    <button type="button" class="btn btn-danger btn-sm block-button" data-id="<%= product._id %>">Block</button>
+                  </form>
                 <% } %>
-            </td>
+              </td>
             </tr>
           <% }) %>
         </tbody>
@@ -102,11 +98,85 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  const searchInput = document.querySelector('input[type="search"]');
-  searchInput.addEventListener('search', (e) => {
-    if (e.target.value === '') {
-      searchInput.value = '';
-      searchInput.form.submit();
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('status');
+  const message = urlParams.get('message'); // Get the custom message
+
+  if (status === 'success') {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: message,  // Display the message from the query parameters
+      confirmButtonText: 'OK'
+    }).then(() => {
+      // Remove the query params from the URL without refreshing the page
+      window.history.replaceState(null, null, window.location.pathname);
+    });
+  } else if (status === 'failure') {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: message,  // Display the message from the query parameters
+      confirmButtonText: 'OK'
+    }).then(() => {
+      // Remove the query params from the URL without refreshing the page
+      window.history.replaceState(null, null, window.location.pathname);
+    });
+  }
+</script>
+
+<script>
+  document.querySelectorAll('.unblock-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const form = document.getElementById(`unblockForm-${productId}`);
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to unblock this product!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, unblock it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit(); // Submit the form if confirmed
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll('.block-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const form = document.getElementById(`blockForm-${productId}`);
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to block this product!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, block it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit(); // Submit the form if confirmed
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  // Clear search input when it is empty
+  const searchInput = document.getElementById('search-input');
+
+  searchInput.addEventListener('input', function() {
+    if (this.value === '') {
+      // Redirect to the product listing page without any search parameters
+      window.location.href = '/admin/products';
     }
   });
 </script>

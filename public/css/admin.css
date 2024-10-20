@@ -121,3 +121,60 @@
   .btn-download {
     margin-top: 15px;
   }
+  /* dashboard */
+  #adminDashboard {
+    background-color: #f8f9fa;
+}
+#adminDashboard .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+#adminDashboard .card:hover {
+    transform: translateY(-5px);
+}
+#adminDashboard .card-header {
+    background-color: #007bff;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+#adminDashboard .list-group-item {
+    background-color: #ffffff;
+    border: none;
+}
+#adminDashboard .list-group-item:hover {
+    background-color: #f1f1f1;
+}
+#adminDashboard .filter-select {
+    width: 150px;
+}
+/* image cropping modal */
+.modal-backdrop {
+  opacity: 0.5 !important;
+}
+
+.modal {
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1050 !important;
+}
+
+.modal-dialog {
+  z-index: 1051 !important;
+}
+
+.cropper-container {
+  width: 100% !important;
+  height: 400px !important;
+}
+
+#cropImage {
+  max-width: 100%;
+  display: block;
+}
+
+.img-container {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+}

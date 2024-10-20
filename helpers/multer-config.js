@@ -7,30 +7,26 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueString = Math.random().toString(36).substr(2, 4);
-    const filename = `${Date.now()}${uniqueString}${path.extname(
-      file.originalname
-    )}`;
+    const filename = `${Date.now()}${uniqueString}${path.extname(file.originalname)}`;
     cb(null, filename);
   },
 });
 
 const fileFilter = (req, file, cb) => {
+  // Accept cropped images which might be sent as image/jpeg or image/png
   const allowedFileTypes = /jpeg|jpg|png/;
-  const extname = allowedFileTypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
   const mimetype = allowedFileTypes.test(file.mimetype);
 
-  if (mimetype && extname) {
+  if (mimetype) {
     return cb(null, true);
   } else {
-    cb("Error: Only images (jpg, jpeg, png) are allowed!");
+    cb(new Error("Error: Only images (jpg, jpeg, png) are allowed!"));
   }
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, 
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: fileFilter,
 });
 

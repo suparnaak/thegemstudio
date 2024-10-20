@@ -1,11 +1,9 @@
 const User = require("../../models/userSchema");
 const Address = require("../../models/addressSchema");
-
 const loadManageAddresses = async (req, res) => {
   try {
     const user = req.session.user;
     const addresses = await Address.find({ userId: user._id });
-
     if (!addresses || addresses.length === 0) {
       return res.render("addresses-page", {
         message: "No addresses added. Add a new address to get started!",
@@ -13,7 +11,6 @@ const loadManageAddresses = async (req, res) => {
         user: req.session.user,
       });
     }
-
     res.render("addresses-page", {
       addresses,
       user: user,
@@ -28,7 +25,6 @@ const loadManageAddresses = async (req, res) => {
     });
   }
 };
-
 //add address 
 const loadAddAddress = async (req, res) => {
   try {
@@ -139,7 +135,6 @@ const deleteAddress = async (req, res) => {
     res.status(500).json({ message: "Failed to delete address" });
   }
 };
-
 module.exports = {
   loadManageAddresses,
   loadAddAddress,
