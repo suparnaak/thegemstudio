@@ -69,7 +69,15 @@
                             </article>
                             <% }) %>
                                 <% } else { %>
-                                    <p>No products available.</p>
+                                    <div style="text-align: center; padding: 40px;">
+                                        <p>No products found matching your criteria.</p>
+                                        <% if (searchQuery || selectedCategory) { %>
+                                            <button onclick="clearAllFilters()"
+                                                style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                Clear All Filters
+                                            </button>
+                                            <% } %>
+                                    </div>
                                     <% } %>
                                         <div class="clear"></div>
                 </div><!-- .products -->
@@ -80,7 +88,7 @@
                         <% if (currentPage> 1) { %>
                             <li class="prev">
                                 <a
-                                    href="?page=<%= currentPage - 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8592;</a>
+                                    href="?page=<%= currentPage - 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory || '' %>&search=<%= searchQuery || '' %>">&#8592;</a>
                             </li>
                             <% } else { %>
                                 <li class="prev"><span>&#8592;</span></li>
@@ -94,7 +102,7 @@
                                             <% } else { %>
                                                 <li>
                                                     <a
-                                                        href="?page=<%= i %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">
+                                                        href="?page=<%= i %>&sort=<%= sortOption %>&category=<%= selectedCategory || '' %>&search=<%= searchQuery || '' %>">
                                                         <%= i %>
                                                     </a>
                                                 </li>
@@ -104,36 +112,54 @@
                                                         <% if (currentPage < totalPages) { %>
                                                             <li class="next">
                                                                 <a
-                                                                    href="?page=<%= currentPage + 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory %>&search=<%= searchQuery %>">&#8594;</a>
+                                                                    href="?page=<%= currentPage + 1 %>&sort=<%= sortOption %>&category=<%= selectedCategory || '' %>&search=<%= searchQuery || '' %>">&#8594;</a>
                                                             </li>
                                                             <% } else { %>
                                                                 <li class="next"><span>&#8594;</span></li>
-                                                        <% } %>
+                                                                <% } %>
                     </ul>
                 </div>
                 <div class="clear"></div>
             </div>
-            <form class="search" action="/products" method="GET">
-                <input type="submit" class="search_button" value="" /><a href="#" id="clearSearch" class="clear-link"
+
+            <!-- Updated Search Form -->
+            <form class="search" action="/products" method="GET" id="searchForm">
+                <!-- Hidden inputs to preserve current filters -->
+                <input type="hidden" name="category" value="<%= selectedCategory || '' %>">
+                <input type="hidden" name="sort" value="<%= sortOption %>">
+                <input type="hidden" name="page" value="1">
+
+                <input type="submit" class="search_button" value="" />
+                <a href="#" id="clearSearch" class="clear-link"
                     style="color: #444; font: normal 12px / 33px 'PT Sans', Arial, Verdana, sans-serif;">Clear</a>
                 <input type="text" name="search" class="search_form" value="<%= searchQuery %>"
                     placeholder="Search entire store here..." />
             </form>
-            <div id="sidebar" class="grid_3">
 
+            <div id="sidebar" class="grid_3">
                 <aside id="categories_nav">
                     <header class="aside_title">
                         <h3>Categories</h3>
                     </header>
                     <nav class="right_menu">
                         <ul>
+                            <!-- All Categories option -->
+                            <li class="<%= !selectedCategory ? 'current' : '' %>">
+                                <a
+                                    href="?<%= searchQuery ? 'search=' + encodeURIComponent(searchQuery) + '&' : '' %>sort=<%= sortOption %>&page=1">
+                                    All Categories
+                                </a>
+                            </li>
+
                             <% categories.forEach(category=> { %>
-                                <li class="<%= category._id == selectedCategory ? 'current' : '' %>">
-                                    <a href="?category=<%= category._id %>&sort=<%= sortOption %>">
+                                <li class="<%= category._id.toString() === selectedCategory ? 'current' : '' %>">
+                                    <a
+                                        href="?<%= searchQuery ? 'search=' + encodeURIComponent(searchQuery) + '&' : '' %>category=<%= category._id %>&sort=<%= sortOption %>&page=1">
                                         <%= category.name %>
                                     </a>
                                 </li>
                                 <% }) %>
+
                                     <a href="#" id="clearCategory" class="clear-link"
                                         style="color: #444; font: normal 12px / 33px 'PT Sans', Arial, Verdana, sans-serif;">Clear</a>
                         </ul>
@@ -144,39 +170,75 @@
         </div><!-- .container_12 -->
     </section><!-- #main -->
     <div class="clear"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const clearSearchButton = document.getElementById('clearSearch');
             const clearCategoryButton = document.getElementById('clearCategory');
 
-            clearSearchButton.addEventListener('click', function () {
+            // Clear search but maintain category and sort
+            clearSearchButton.addEventListener('click', function (e) {
+                e.preventDefault();
                 const url = new URL(window.location.href);
                 url.searchParams.delete('search');
-                url.searchParams.set('page', 1);
+                url.searchParams.set('page', '1');
                 window.location.href = url.toString();
             });
 
-            clearCategoryButton.addEventListener('click', function () {
+            // Clear category but maintain search and sort
+            clearCategoryButton.addEventListener('click', function (e) {
+                e.preventDefault();
                 const url = new URL(window.location.href);
                 url.searchParams.delete('category');
-                url.searchParams.set('page', 1);
+                url.searchParams.set('page', '1');
                 window.location.href = url.toString();
             });
         });
+
+        // Updated sort function to preserve all filters
         function sortProducts() {
             const selectedOption = document.getElementById('sort-options').value;
             const url = new URL(window.location.href);
             url.searchParams.set('sort', selectedOption);
-            url.searchParams.set('page', 1);
-            const searchInput = document.querySelector('.search_form').value;
-            if (searchInput) {
-                url.searchParams.set('search', searchInput);
+            url.searchParams.set('page', '1');
+
+            // Preserve existing search and category
+            const searchQuery = '<%= searchQuery %>';
+            const selectedCategory = '<%= selectedCategory %>';
+
+            if (searchQuery) {
+                url.searchParams.set('search', searchQuery);
             }
-            const selectedCategory = url.searchParams.get('category');
             if (selectedCategory) {
                 url.searchParams.set('category', selectedCategory);
             }
+
+            window.location.href = url.toString();
+        }
+
+        // Function to remove only search filter
+        function removeSearchFilter() {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('search');
+            url.searchParams.set('page', '1');
+            window.location.href = url.toString();
+        }
+
+        // Function to remove only category filter
+        function removeCategoryFilter() {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('category');
+            url.searchParams.set('page', '1');
+            window.location.href = url.toString();
+        }
+
+        // Function to clear all filters
+        function clearAllFilters() {
+            const url = new URL(window.location.pathname, window.location.origin);
+            url.searchParams.set('page', '1');
+            url.searchParams.set('sort', 'newest');
             window.location.href = url.toString();
         }
     </script>
+
     <%- include("../../views/partials/user/footer") %>

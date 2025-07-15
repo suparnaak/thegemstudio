@@ -9,6 +9,7 @@ const addToCart = async (req, res) => {
     const MAX_QUANTITY_PER_PRODUCT = 5;
     const { productId, quantity } = req.body;
     const userId = req.session.user;
+    console.log("user:", userId)
     if (!userId) {
       return res.status(401).json({ error: 'Please login to add items to cart' });
     }

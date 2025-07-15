@@ -62,7 +62,7 @@ const forgotPassword = async (req, res) => {
     req.session.resetPasswordEmail = email;
     console.log("OTP generated and stored in session:", otp);
     console.log("Session after storing OTP:", req.session);
-    res.render("forgotpassword-verify-otp");
+    res.render("forgotpassword-verify-otp", { user: null });
     console.log("Password Reset OTP sent", otp);
   } catch (error) {
     console.error("forgot password error", error);

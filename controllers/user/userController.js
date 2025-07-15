@@ -9,6 +9,7 @@ const env = require("dotenv").config();
 const loadHomepage = async (req, res) => {
   try {
     const user = req.session.user;
+    console.log("Aftersignup user",user)
     const featuredProducts = await Product.find({ isListed: true })
       .sort({ createdOn: -1 })  
       .limit(6)
@@ -130,7 +131,7 @@ const verifyOtp = async (req, res) => {
         password: passwordHash,
       });
       await saveUserData.save();
-      req.session.user = saveUserData._id;
+      req.session.user = saveUserData;
       return res.json({ success: true, redirectUrl: "/" });
     } else {
       return res
@@ -336,7 +337,7 @@ const loadProducts = async (req, res) => {
   }
 };
 
-const loadProductPage = async (req, res) => {
+/* const loadProductPage = async (req, res) => {
   try {
     const user = req.session.user;
     const productId = req.params.id;
@@ -373,6 +374,117 @@ const loadProductPage = async (req, res) => {
     });
   } catch (error) {
     console.log("Product page not found:", error);
+    res.status(500).send("Server Error");
+  }
+}; */
+const loadProductPage = async (req, res) => {
+  try {
+    const user = req.session.user;
+    const page = parseInt(req.query.page) || 1;
+    const sortOption = req.query.sort || "newest";
+    const selectedCategory = req.query.category || null;
+    const searchQuery = req.query.search || "";
+    const itemsPerPage = 9;
+
+    const categories = await Category.find({ isListed: true });
+
+    // Build query object
+    const productQuery = {
+      isListed: true,
+      category: { $exists: true, $ne: null },
+      brand: { $exists: true, $ne: null },
+    };
+
+    // Add search filter (ALWAYS apply if exists)
+    if (searchQuery.trim()) {
+      productQuery.name = { $regex: new RegExp(searchQuery.trim(), "i") };
+    }
+
+    // Add category filter (ALWAYS apply if exists)
+    if (selectedCategory && selectedCategory !== 'all') {
+      productQuery.category = selectedCategory;
+    }
+
+    // Build sort object
+    let sortQuery = {};
+    switch (sortOption) {
+      case "price-asc":
+        sortQuery = { price: 1 };
+        break;
+      case "price-desc":
+        sortQuery = { price: -1 };
+        break;
+      case "name-asc":
+        sortQuery = { name: 1 };
+        break;
+      case "name-desc":
+        sortQuery = { name: -1 };
+        break;
+      case "newest":
+      default:
+        sortQuery = { createdOn: -1 };
+        break;
+    }
+
+    // Get total count for pagination
+    const totalProducts = await Product.countDocuments(productQuery);
+
+    // Fetch products with filters, sorting, and pagination
+    const products = await Product.find(productQuery)
+      .populate({
+        path: "category",
+        match: { isListed: true },
+      })
+      .populate({
+        path: "brand",
+        match: { isListed: true },
+      })
+      .sort(sortQuery)
+      .skip((page - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+
+    // Filter out products with unlisted categories or brands
+    const validProducts = products.filter((product) => product.category && product.brand);
+
+    // Calculate final prices
+    const productsWithFinalPrice = validProducts.map((product) => {
+      const productDiscount = product.discount || 0;
+      const categoryOffer = product.category.offer || 0;
+      const brandOffer = product.brand.offer || 0;
+
+      const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
+      const finalPrice = product.price - product.price * (maxDiscount / 100);
+
+      return {
+        ...product._doc,
+        finalPrice: finalPrice.toFixed(2),
+        maxDiscount,
+      };
+    });
+
+    // For price sorting, we need to sort again after calculating final prices
+    if (sortOption === "price-asc" || sortOption === "price-desc") {
+      productsWithFinalPrice.sort((a, b) => {
+        const aPrice = parseFloat(a.finalPrice);
+        const bPrice = parseFloat(b.finalPrice);
+        return sortOption === "price-asc" ? aPrice - bPrice : bPrice - aPrice;
+      });
+    }
+
+    res.render("products", {
+      user: user || null,
+      products: productsWithFinalPrice,
+      categories: categories,
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / itemsPerPage),
+      sortOption: sortOption,
+      selectedCategory: selectedCategory,
+      searchQuery: searchQuery,
+      totalProducts: totalProducts
+    });
+
+  } catch (error) {
+    console.log("Products page not found:", error);
     res.status(500).send("Server Error");
   }
 };
