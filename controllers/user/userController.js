@@ -337,7 +337,7 @@ const loadProducts = async (req, res) => {
   }
 };
 
-/* const loadProductPage = async (req, res) => {
+const loadProductPage = async (req, res) => {
   try {
     const user = req.session.user;
     const productId = req.params.id;
@@ -376,8 +376,8 @@ const loadProducts = async (req, res) => {
     console.log("Product page not found:", error);
     res.status(500).send("Server Error");
   }
-}; */
-const loadProductPage = async (req, res) => {
+};
+/* const loadProductPage = async (req, res) => {
   try {
     const user = req.session.user;
     const page = parseInt(req.query.page) || 1;
@@ -395,13 +395,13 @@ const loadProductPage = async (req, res) => {
       brand: { $exists: true, $ne: null },
     };
 
-    // Add search filter (ALWAYS apply if exists)
-    if (searchQuery.trim()) {
-      productQuery.name = { $regex: new RegExp(searchQuery.trim(), "i") };
+    // Add search filter
+    if (searchQuery) {
+      productQuery.name = { $regex: new RegExp(searchQuery, "i") };
     }
 
-    // Add category filter (ALWAYS apply if exists)
-    if (selectedCategory && selectedCategory !== 'all') {
+    // Add category filter
+    if (selectedCategory) {
       productQuery.category = selectedCategory;
     }
 
@@ -487,7 +487,7 @@ const loadProductPage = async (req, res) => {
     console.log("Products page not found:", error);
     res.status(500).send("Server Error");
   }
-};
+}; */
 
 module.exports = {
   loadHomepage,
