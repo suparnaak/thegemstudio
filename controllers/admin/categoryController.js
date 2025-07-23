@@ -8,7 +8,6 @@ const listCategories = async (req, res) => {
     const limit = 3;
     const skip = (page - 1) * limit;
 
-    // Fetch all categories without checking for isListed field
     const categories = await Category.find({})
       .skip(skip)
       .limit(limit);
@@ -37,7 +36,6 @@ const loadAddCategory = async (req, res) => {
   }
 };
 
-// Add a new category
 const isValidCategoryName = (name) => /^[a-zA-Z0-9 ]+$/.test(name);
 
 const addCategory = async (req, res) => {
@@ -110,7 +108,6 @@ const blockCategory = async (req, res) => {
   try {
     const { id } = req.params;
     await Category.findByIdAndUpdate(id, { isListed: false });
-   // await Product.updateMany({ category: id }, { isListed: false });
     res.redirect("/admin/categories");
   } catch (error) {
     console.log("Error deleting category:", error);
@@ -122,7 +119,6 @@ const unblockCategory = async (req, res) => {
   try {
     const { id } = req.params;
     await Category.findByIdAndUpdate(id, { isListed: true });
-   // await Product.updateMany({ category: id }, { isListed: false });
     res.redirect("/admin/categories");
   } catch (error) {
     console.log("Error deleting category:", error);

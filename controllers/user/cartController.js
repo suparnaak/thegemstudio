@@ -30,17 +30,14 @@ const addToCart = async (req, res) => {
     const categoryDiscount = category.offer ? category.offer / 100 : 0;
     const productDiscount = product.discount ? product.discount / 100 : 0;
 
-    // Use the higher discount value between category and product
     const highestDiscount = Math.max(categoryDiscount, productDiscount);
     const finalPrice = originalPrice - originalPrice * highestDiscount;
 
-    // Find or create the user's cart
     let cart = await Cart.findOne({ userId });
     if (!cart) {
       cart = new Cart({ userId, items: [] });
     }
 
-    // Check if product is already in the cart
     const existingCartItem = cart.items.find(
       (item) => item.product.toString() === productId
     );
@@ -66,36 +63,32 @@ const addToCart = async (req, res) => {
       });
     }
 
-    // Update cart item or add new item
     if (existingCartItem) {
       existingCartItem.quantity = newQuantity;
-      existingCartItem.price = originalPrice; // Keep original unit price
-      existingCartItem.finalPrice = finalPrice; // Store the final price after applying discounts
+      existingCartItem.price = originalPrice; 
+      existingCartItem.finalPrice = finalPrice; 
     } else {
       cart.items.push({
         product: productId,
         quantity: newQuantity,
-        price: originalPrice, // Store original unit price
-        finalPrice: finalPrice, // Store final price after discounts
+        price: originalPrice,
+        finalPrice: finalPrice, 
       });
     }
 
-    // Calculate grand total
     let grandTotal = 0;
     cart.items.forEach((item) => {
       grandTotal += item.finalPrice * item.quantity;
     });
 
-    cart.grandTotal = grandTotal; // Add grand total to the cart
+    cart.grandTotal = grandTotal; 
 
     await cart.save();
-    // Fetch updated cart data for header
     const updatedCart = await Cart.findOne({ userId }).populate({
       path: 'items.product',
       select: 'name images'
     }).exec();
 
-    // Get recent items for header
     const recentItems = updatedCart.items.slice(-2);
 
     res.status(200).json({
@@ -126,8 +119,6 @@ const loadCart = async (req, res) => {
       },
     });
 
-    console.log("Initial cart items:", cart ? cart.items.length : 0);
-    console.log("Initial grandTotal in database:", cart ? cart.grandTotal : 0);
     const unavailableProducts = [];
     if (!cart || cart.items.length === 0) {
       console.log("Cart is empty");
@@ -143,15 +134,13 @@ const loadCart = async (req, res) => {
     
     let newGrandTotal = 0;
 
-    // Process each item in the cart
     for (let item of cart.items) {
       const product = item.product;
       
-      console.log(`Processing product: ${product ? product.name : 'Unknown'}`);
-      console.log(`Product details: isListed=${product?.isListed}, quantity=${product?.quantity}, requested=${item.quantity}`);
+    
 
       if (!product || !product.isListed || typeof product.quantity !== 'number' || product.quantity < item.quantity) {
-        console.log(`Adding to unavailable products: ${product?.name || 'Unknown Product'}`);
+        
         unavailableProducts.push({
           id: product ? product._id : null,
           name: product ? product.name : "Unknown Product",
@@ -171,7 +160,7 @@ const loadCart = async (req, res) => {
         const finalPrice = originalPrice - originalPrice * highestDiscount;
         const itemTotal = finalPrice * item.quantity;
 
-        console.log(`Valid product: ${product.name}, Final price: ${finalPrice}, Quantity: ${item.quantity}, Item total: ${itemTotal}`);
+       
         
         newGrandTotal += itemTotal;
         
@@ -184,22 +173,16 @@ const loadCart = async (req, res) => {
       }
     }
 
-    // Update cart.items to remove unavailable products
     const originalItemsCount = cart.items.length;
     cart.items = cart.items.filter(item => {
       const product = item.product;
       return product && product.isListed && typeof product.quantity === 'number' && product.quantity >= item.quantity;
     });
 
-    console.log(`Removed ${originalItemsCount - cart.items.length} unavailable items from cart`);
-    console.log(`New grand total: ${newGrandTotal}`);
-
-    // Update the cart's grandTotal in the database
     cart.grandTotal = newGrandTotal;
 
-    // Only save if the cart has changed
+   
     if (originalItemsCount !== cart.items.length || cart.grandTotal !== newGrandTotal) {
-      console.log("Saving updated cart with new grandTotal:", newGrandTotal);
       await cart.save();
     }
 
@@ -220,7 +203,6 @@ const updateCartItem = async (req, res) => {
     const { productId, quantity } = req.body;
     const userId = req.session.user;
 
-    console.log("Updating cart:", { productId, quantity, userId });
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -294,7 +276,6 @@ const removeFromCart = async (req, res) => {
     const { productId } = req.body;
     const userId = req.session.user;
 
-    // Step 1: Fetch the cart without populating
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -309,7 +290,6 @@ const removeFromCart = async (req, res) => {
       return res.status(404).json({ success: false, error: "Product not found in cart" });
     }
 
-    // Step 2: Remove the item from the cart
     cart.items.splice(cartItemIndex, 1);
 
     let grandTotal = 0;

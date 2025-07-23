@@ -6,7 +6,6 @@ const listBrands = async (req, res) => {
     const limit = 3;
     const skip = (page - 1) * limit;
 
-    // Fetch all brands without checking for isListed field
     const brands = await Brand.find({})
       .skip(skip)
       .limit(limit);
@@ -14,9 +13,8 @@ const listBrands = async (req, res) => {
     const totalBrands = await Brand.countDocuments({});
     const totalPages = Math.ceil(totalBrands / limit);
 
-    // Render the brands-list view with the brand data
     res.render("brands-list", {
-      brands,  // Changed from categories to brands
+      brands,  
       currentPage: page,
       totalPages,
     });
@@ -101,31 +99,29 @@ const loadEditBrand = async (req, res) => {
 };
 const editBrand = async(req,res)=> {
 try {
-  const brandId = req.params.id; // Get brand ID from URL
-  const { brandName, description } = req.body; // Get updated brand data from form
+  const brandId = req.params.id; 
+  const { brandName, description } = req.body; 
 
-  // Check if the brand name already exists (excluding the current brand being edited)
+  
   const existingBrand = await Brand.findOne({
     brandName: brandName,
-    _id: { $ne: brandId }, // Exclude the current brand
+    _id: { $ne: brandId },
   });
 
   if (existingBrand) {
     return res.json({ error: "Brand name already exists. Please choose a different name." });
   }
 
-  // Update the brand
   const updatedBrand = await Brand.findByIdAndUpdate(
     brandId,
     { brandName, description },
-    { new: true } // Return the updated brand
+    { new: true } 
   );
 
   if (!updatedBrand) {
     return res.status(404).json({ error: "Brand not found" });
   }
 
-  // Redirect to the brand list page after successful update
   res.json({ success: true });
 } catch (error) {
   console.error("Error editing brand:", error);

@@ -47,11 +47,10 @@ const loadReview = async (req, res) => {
   };
   const submitReview = async (req, res) => {
     try {
-        const productId = req.params.productId; // Get productId from URL params
+        const productId = req.params.productId; 
         const { rating, reviewText } = req.body;
         const user = req.session.user;
 
-        // Input validation
         if (!rating || rating < 1 || rating > 5) {
             return res.status(400).json({ message: "Please provide a valid rating between 1 and 5." });
         }
@@ -60,7 +59,6 @@ const loadReview = async (req, res) => {
             return res.status(400).json({ message: "Review must be at least 10 characters long." });
         }
 
-        // Check for existing review
         const existingReview = await Review.findOne({
             userId: user._id,
             productId: productId
@@ -70,7 +68,6 @@ const loadReview = async (req, res) => {
             return res.status(400).json({ message: "You have already submitted a review for this product." });
         }
 
-        // Verify purchase and delivery
         const order = await Order.findOne({
             userId: user._id,
             'items.productId': productId,
@@ -81,7 +78,6 @@ const loadReview = async (req, res) => {
             return res.status(403).json({ message: "You can only review products you have purchased and received." });
         }
 
-        // Create and save review
         const newReview = new Review({
             userId: user._id,
             productId: productId,

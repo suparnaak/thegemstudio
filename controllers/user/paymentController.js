@@ -13,7 +13,6 @@ const retryPayment = async (req, res) => {
         
         console.log('Retry payment request:', { orderId, amount });
 
-        // Verify if the order exists
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(400).json({ 
@@ -22,7 +21,6 @@ const retryPayment = async (req, res) => {
             });
         }
 
-        // Check payment method first
         if (order.paymentMethod === 'Cash On Delivery') {
             return res.status(400).json({ 
                 success: false, 
@@ -30,7 +28,6 @@ const retryPayment = async (req, res) => {
             });
         }
 
-        // Check payment status - allow retry for Failed or Pending
         if (!['Failed', 'Pending'].includes(order.paymentStatus)) {
             return res.status(400).json({ 
                 success: false, 
@@ -38,7 +35,6 @@ const retryPayment = async (req, res) => {
             });
         }
 
-        // Verify amount matches
         if (order.grandTotal !== amount) {
             return res.status(400).json({ 
                 success: false, 
@@ -46,9 +42,8 @@ const retryPayment = async (req, res) => {
             });
         }
 
-        // Create a new Razorpay order
         const razorpayOrder = await razorpay.orders.create({
-            amount: Math.round(amount * 100), // Razorpay expects amount in paise
+            amount: Math.round(amount * 100), 
             currency: 'INR',
             receipt: orderId,
         });
@@ -72,13 +67,11 @@ const verifyRetryPayment = async (req, res) => {
     try {
         const { payment, order } = req.body;
         
-        // Verify payment signature
         const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
         hmac.update(order.razorpayOrderId + '|' + payment.razorpay_payment_id);
         const generated_signature = hmac.digest('hex');
 
         if (generated_signature === payment.razorpay_signature) {
-            // Update order payment status
             await Order.findByIdAndUpdate(order.orderId, {
                 paymentStatus: 'Paid',
                 'payment.paymentId': payment.razorpay_payment_id,

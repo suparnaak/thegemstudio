@@ -33,13 +33,10 @@ const downloadInvoice = async (req, res) => {
             }
         }
 
-        // Calculate the total number of items in the order
         const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
-        // Calculate the discount per item
         const discountPerItem = discountAmount / totalItems;
 
-        // Calculate the discount for this specific item
         const itemDiscount = discountPerItem * item.quantity;
 
         const doc = new PDFDocument({ margin: 50 });
@@ -49,17 +46,14 @@ const downloadInvoice = async (req, res) => {
         
         doc.pipe(res);
 
-        // Helper function for bold labels
         const drawBoldLabel = (text, x, y) => {
             doc.font('Helvetica-Bold').text(text, x, y);
-            doc.font('Helvetica');  // Reset to regular font
+            doc.font('Helvetica');  
         };
 
-        // Header
         doc.fontSize(20).text('Invoice', { align: 'center' });
         doc.moveDown();
 
-        // Invoice details
         const detailsStartY = doc.y;
         doc.fontSize(10);
 
@@ -72,7 +66,6 @@ const downloadInvoice = async (req, res) => {
         drawBoldLabel('Order Date:', 50, detailsStartY + 40);
         doc.text(order.orderDate.toLocaleDateString(), 150, detailsStartY + 40);
 
-        // Payment details
         const paymentIdY = detailsStartY;
         drawBoldLabel('Payment Transaction ID:', 300, paymentIdY);
         doc.text(order.razorpayPaymentId || 'N/A', 300, paymentIdY + 15, { width: 240 });
@@ -86,7 +79,6 @@ const downloadInvoice = async (req, res) => {
         
         doc.moveDown(4);
 
-        // Addresses with bold headers
         const addressY = doc.y;
         doc.font('Helvetica-Bold').text('Sold By:', 50, addressY, { underline: true });
         doc.font('Helvetica')
@@ -110,7 +102,6 @@ const downloadInvoice = async (req, res) => {
         const tableWidths = [30, 150, 50, 70, 70, 70, 70];
         const colStartX = [50, 80, 230, 280, 350, 420, 490];
 
-        // Draw table headers
         tableHeaders.forEach((header, i) => {
             doc.font('Helvetica-Bold').fontSize(10)
                .text(header, colStartX[i], tableTop, { 
@@ -119,7 +110,6 @@ const downloadInvoice = async (req, res) => {
                });
         });
 
-        // Draw table row for the single product
         let tableRowY = tableTop + 20;
         doc.font('Helvetica');
 
@@ -132,7 +122,6 @@ const downloadInvoice = async (req, res) => {
 
         doc.moveDown(2);
 
-        // Totals section
         const totalsStartX = 350;
         let currentY = doc.y;
 

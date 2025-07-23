@@ -225,36 +225,31 @@ const loadChangePassword = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
-    const userId = req.session.user._id; // Get the user ID from the session
+    const userId = req.session.user._id; 
 
-    // Fetch the user from the database using the ID
+   
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Check if the current password matches the one in the database
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Current password is incorrect' });
     }
 
-    // Check if new password and confirm password are the same
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ success: false, message: 'New password and confirm password do not match' });
     }
 
-    // Check if the new password is the same as the current password
     if (currentPassword === newPassword) {
       return res.status(400).json({ success: false, message: 'New password cannot be the same as the current password' });
     }
 
-    // Hash the new password and update it in the database
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
-    // If everything is fine, send success response
     return res.status(200).json({ success: true, message: 'Password changed successfully!' });
   } catch (error) {
     console.error('Error changing password:', error);

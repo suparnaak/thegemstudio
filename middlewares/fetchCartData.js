@@ -1,4 +1,3 @@
-/* const Product = require("../models/productsSchema"); */
 const Cart = require("../models/cartSchema");
 const fetchCartData = async (req, res, next) => {
   try {

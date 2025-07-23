@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Accept cropped images which might be sent as image/jpeg or image/png
   const allowedFileTypes = /jpeg|jpg|png/;
   const mimetype = allowedFileTypes.test(file.mimetype);
 
@@ -26,7 +25,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, 
   fileFilter: fileFilter,
 });
 

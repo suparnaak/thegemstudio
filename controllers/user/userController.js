@@ -255,24 +255,20 @@ const loadProducts = async (req, res) => {
 
     const categories = await Category.find({ isListed: true });
 
-    // Base query for products
     const productQuery = {
       isListed: true,
       category: { $exists: true, $ne: null },
       brand: { $exists: true, $ne: null },
     };
 
-    // Search query
     if (searchQuery) {
       productQuery.name = { $regex: new RegExp(searchQuery, "i") };
     }
 
-    // Filter by selected category if provided
     if (selectedCategory) {
       productQuery.category = selectedCategory;
     }
 
-    // Fetch products with populated category and brand
     let products = await Product.find(productQuery)
       .populate({
         path: "category",
@@ -283,10 +279,8 @@ const loadProducts = async (req, res) => {
         match: { isListed: true },
       });
 
-    // Filter out products with unlisted categories or brands
     products = products.filter((product) => product.category && product.brand);
 
-    // Calculate final prices
     const productsWithFinalPrice = products.map((product) => {
       const productDiscount = product.discount || 0;
       const categoryOffer = product.category.offer || 0;
@@ -302,7 +296,6 @@ const loadProducts = async (req, res) => {
       };
     });
 
-    // Sort the products based on selected option
     switch (sortOption) {
       case "price-asc":
         productsWithFinalPrice.sort((a, b) => a.finalPrice - b.finalPrice);
@@ -316,11 +309,9 @@ const loadProducts = async (req, res) => {
         break;
     }
 
-    // Pagination logic
     const totalProducts = productsWithFinalPrice.length;
     const paginatedProducts = productsWithFinalPrice.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-    // Render the products page with pagination and other filters
     res.render("products", {
       user: user || null,
       products: paginatedProducts,
@@ -377,117 +368,6 @@ const loadProductPage = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
-/* const loadProductPage = async (req, res) => {
-  try {
-    const user = req.session.user;
-    const page = parseInt(req.query.page) || 1;
-    const sortOption = req.query.sort || "newest";
-    const selectedCategory = req.query.category || null;
-    const searchQuery = req.query.search || "";
-    const itemsPerPage = 9;
-
-    const categories = await Category.find({ isListed: true });
-
-    // Build query object
-    const productQuery = {
-      isListed: true,
-      category: { $exists: true, $ne: null },
-      brand: { $exists: true, $ne: null },
-    };
-
-    // Add search filter
-    if (searchQuery) {
-      productQuery.name = { $regex: new RegExp(searchQuery, "i") };
-    }
-
-    // Add category filter
-    if (selectedCategory) {
-      productQuery.category = selectedCategory;
-    }
-
-    // Build sort object
-    let sortQuery = {};
-    switch (sortOption) {
-      case "price-asc":
-        sortQuery = { price: 1 };
-        break;
-      case "price-desc":
-        sortQuery = { price: -1 };
-        break;
-      case "name-asc":
-        sortQuery = { name: 1 };
-        break;
-      case "name-desc":
-        sortQuery = { name: -1 };
-        break;
-      case "newest":
-      default:
-        sortQuery = { createdOn: -1 };
-        break;
-    }
-
-    // Get total count for pagination
-    const totalProducts = await Product.countDocuments(productQuery);
-
-    // Fetch products with filters, sorting, and pagination
-    const products = await Product.find(productQuery)
-      .populate({
-        path: "category",
-        match: { isListed: true },
-      })
-      .populate({
-        path: "brand",
-        match: { isListed: true },
-      })
-      .sort(sortQuery)
-      .skip((page - 1) * itemsPerPage)
-      .limit(itemsPerPage);
-
-    // Filter out products with unlisted categories or brands
-    const validProducts = products.filter((product) => product.category && product.brand);
-
-    // Calculate final prices
-    const productsWithFinalPrice = validProducts.map((product) => {
-      const productDiscount = product.discount || 0;
-      const categoryOffer = product.category.offer || 0;
-      const brandOffer = product.brand.offer || 0;
-
-      const maxDiscount = Math.max(productDiscount, categoryOffer, brandOffer);
-      const finalPrice = product.price - product.price * (maxDiscount / 100);
-
-      return {
-        ...product._doc,
-        finalPrice: finalPrice.toFixed(2),
-        maxDiscount,
-      };
-    });
-
-    // For price sorting, we need to sort again after calculating final prices
-    if (sortOption === "price-asc" || sortOption === "price-desc") {
-      productsWithFinalPrice.sort((a, b) => {
-        const aPrice = parseFloat(a.finalPrice);
-        const bPrice = parseFloat(b.finalPrice);
-        return sortOption === "price-asc" ? aPrice - bPrice : bPrice - aPrice;
-      });
-    }
-
-    res.render("products", {
-      user: user || null,
-      products: productsWithFinalPrice,
-      categories: categories,
-      currentPage: page,
-      totalPages: Math.ceil(totalProducts / itemsPerPage),
-      sortOption: sortOption,
-      selectedCategory: selectedCategory,
-      searchQuery: searchQuery,
-      totalProducts: totalProducts
-    });
-
-  } catch (error) {
-    console.log("Products page not found:", error);
-    res.status(500).send("Server Error");
-  }
-}; */
 
 module.exports = {
   loadHomepage,

@@ -3,7 +3,6 @@ const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
 const path = require("path");
 const fs = require("fs");
-//const sharp = require("sharp");
 
 // List all products
 const listProducts = async (req, res) => {
@@ -50,7 +49,6 @@ const loadAddProducts = async (req, res) => {
 //add product
 const addProduct = async (req, res) => {
   try {
-    // Validate minimum image requirement
     if (!req.files || req.files.length < 3) {
       return res.status(400).json({
         status: 'failure',
@@ -58,10 +56,8 @@ const addProduct = async (req, res) => {
       });
     }
 
-    // Log uploaded files for debugging
     console.log("Files uploaded:", req.files);
 
-    // Extract product details from request body
     const {
       name,
       description,
@@ -74,10 +70,8 @@ const addProduct = async (req, res) => {
       material,
     } = req.body;
 
-    // Process uploaded images
     const images = req.files.map((file) => file.filename);
 
-    // Create new product instance
     const product = new Product({
       name,
       description,
@@ -95,7 +89,6 @@ const addProduct = async (req, res) => {
     console.log("Product to be saved:", product);
     await product.save();
 
-    // Send success response for fetch request
     res.status(200).json({
       status: 'success',
       message: 'Product has been added successfully',
@@ -105,7 +98,6 @@ const addProduct = async (req, res) => {
   } catch (error) {
     console.log("Error adding product:", error);
     
-    // Send error response for fetch request
     res.status(500).json({
       status: 'failure',
       message: error.message || 'Error occurred while adding the product'
@@ -144,11 +136,11 @@ const loadEditProduct = async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id).populate("category").populate("brand");
     const categories = await loadCategories();
-    const brands = await loadBrands(); // Load all brands
+    const brands = await loadBrands(); 
     res.render("product-edit", {
       product,
       categories,
-      brands, // Pass brands to the view
+      brands, 
       admin: true,
       pageTitle: "Edit Product",
     });

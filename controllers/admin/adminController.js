@@ -49,7 +49,6 @@ const login = async (req, res) => {
 const loadDashboard = async (req, res) => {
   if (req.session.admin) {
     try {
-      // Fetch top 10 categories
       const topCategories = await Category.aggregate([
         {
           $lookup: {
@@ -64,74 +63,71 @@ const loadDashboard = async (req, res) => {
         { $limit: 10 },
       ]);
 
-      // Fetch top 10 products
       const topProducts = await Product.find()
         .sort({ salesCount: -1 })
         .limit(10);
 
-      // Fetch top 10 brands
       const topBrands = await Order.aggregate([
-        { $unwind: "$items" }, // Unwind the items array from Order schema
+        { $unwind: "$items" }, 
         {
           $lookup: {
-            from: "products", // Join with Product collection
-            localField: "items.productId", // Match the productId in Order with _id in Product
+            from: "products", 
+            localField: "items.productId", 
             foreignField: "_id",
             as: "productDetails",
           },
         },
-        { $unwind: "$productDetails" }, // Unwind product details
+        { $unwind: "$productDetails" }, 
         {
           $lookup: {
-            from: "brands", // Join with Brand collection
-            localField: "productDetails.brand", // Match the brand in Product with _id in Brand
+            from: "brands", 
+            localField: "productDetails.brand", 
             foreignField: "_id",
             as: "brandDetails",
           },
         },
-        { $unwind: "$brandDetails" }, // Unwind brand details
+        { $unwind: "$brandDetails" }, 
         {
           $group: {
-            _id: "$brandDetails._id", // Group by brand ID
-            brandName: { $first: "$brandDetails.brandName" }, // Get the brand name
-            salesCount: { $sum: 1 }, // Count the number of products associated with the brand
+            _id: "$brandDetails._id", 
+            brandName: { $first: "$brandDetails.brandName" }, 
+            salesCount: { $sum: 1 }, 
           },
         },
-        { $sort: { salesCount: -1 } }, // Sort by sales count in descending order
-        { $limit: 10 }, // Limit to top 10 brands
+        { $sort: { salesCount: -1 } }, 
+        { $limit: 10 }, 
       ]);
 
       const categorySales = await Order.aggregate([
-        { $unwind: "$items" }, // Unwind the items array from Order schema
+        { $unwind: "$items" }, 
         {
           $lookup: {
-            from: "products", // Lookup Product collection
-            localField: "items.productId", // Match productId in Order with _id in Product
+            from: "products", 
+            localField: "items.productId", 
             foreignField: "_id",
             as: "productDetails",
           },
         },
-        { $unwind: "$productDetails" }, // Unwind product details
+        { $unwind: "$productDetails" }, 
         {
           $lookup: {
-            from: "categories", // Lookup Category collection
-            localField: "productDetails.category", // Match category in Product with _id in Category
+            from: "categories", 
+            localField: "productDetails.category", 
             foreignField: "_id",
             as: "categoryDetails",
           },
         },
-        { $unwind: "$categoryDetails" }, // Unwind category details
+        { $unwind: "$categoryDetails" }, 
         {
           $group: {
-            _id: "$categoryDetails.name", // Group by category name
-            totalSales: { $sum: "$items.quantity" }, // Sum the total quantity sold per category
+            _id: "$categoryDetails.name", 
+            totalSales: { $sum: "$items.quantity" }, 
           },
         },
-        { $sort: { totalSales: -1 } }, // Sort by total sales in descending order
+        { $sort: { totalSales: -1 } }, 
       ]);
 
       console.log("Category Sales:", JSON.stringify(categorySales));
-      // Fetch payment method data
       const paymentMethods = await Order.aggregate([
         { $group: { _id: "$paymentMethod", count: { $sum: 1 } } },
         { $project: { method: "$_id", count: 1, _id: 0 } },
@@ -155,7 +151,6 @@ const loadDashboard = async (req, res) => {
   }
 };
 
-//dynamic filtering of data for graph
 const getSalesData = async (req, res) => {
   console.log("getSalesData called with filter:", req.query.filter);
   try {

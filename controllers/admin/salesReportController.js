@@ -1,6 +1,5 @@
 const Order = require("../../models/orderSchema");
 const ExcelJS = require("exceljs");
-//const PDFDocument = require("pdfkit");
 const PDFDocument = require("pdfkit-table");
 
 // Helper function for calculations
@@ -14,33 +13,32 @@ const calculateStats = async (startDate, endDate) => {
     .populate('items.productId', 'name');
 
   const stats = orders.reduce((acc, order) => {
-    // Count all orders
     acc.totalOrders++;
 
-    // Calculate original total (before any discounts)
+   
     const originalTotal = order.items.reduce((sum, item) => 
       sum + (item.price * item.quantity), 0);
     
-    // Add to total sales (original price * quantity)
+   
     acc.totalSales += originalTotal;
 
-    // Calculate actual items subtotal (after product discounts)
+    
     const itemsSubtotal = order.items.reduce((sum, item) => 
       sum + item.subtotal, 0);
     
-    // Add to product discount
+    
     acc.productDiscount += originalTotal - itemsSubtotal;
 
-    // Add to coupon discount if applicable
+    
     if (order.coupons) {
       acc.couponDiscount += itemsSubtotal - order.grandTotal;
     }
 
-    // Add to net sales if paid
+    
     if (order.paymentStatus === 'Paid') {
       acc.netSales += order.grandTotal;
 
-      // Calculate refunds for paid orders
+      
       const refundEligibleItems = order.items.filter(item => 
         ['Returned', 'Cancelled', 'Admin Cancelled'].includes(item.deliveryStatus)
       );
@@ -52,7 +50,7 @@ const calculateStats = async (startDate, endDate) => {
       }
     }
 
-    // Add order details to the accumulator
+    
     acc.orderDetails.push({
       orderId: order.orderId,
       orderDate: order.createdAt,
@@ -84,7 +82,7 @@ const calculateStats = async (startDate, endDate) => {
     orderDetails: []
   });
 
-  // Calculate remaining metrics
+  
   stats.netBeforeCoupons = stats.totalSales - stats.productDiscount;
   stats.netSalesAfterRefunds = stats.netSales - stats.refundAmount;
 
@@ -110,7 +108,6 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-// Filter results
 const filterSalesReport = async (req, res) => {
   try {
     const { dateFilter, startDate, endDate } = req.body;
@@ -147,11 +144,16 @@ const filterSalesReport = async (req, res) => {
     }
 
     const stats = await calculateStats(start, end);
-
-    res.render("sales-report", {
+    const renderData = {
       ...stats,
       dateRange: dateFilter,
-    });
+    };
+    if (dateFilter === 'custom') {
+      renderData.startDate = startDate;
+      renderData.endDate = endDate;
+    }
+    res.render("sales-report", renderData);
+ 
   } catch (error) {
     console.error("Error in filterSalesReport:", error);
     res.status(400).render("sales-report", {
@@ -172,13 +174,11 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Sales Report");
 
-  // Define columns for overall sales data
   worksheet.columns = [
     { header: "Metrics", key: "metric", width: 30 },
     { header: "Value", key: "value", width: 30 },
   ];
 
-  // Add overall summary at the top
   worksheet.addRow({ metric: "Total Orders", value: stats.totalOrders });
   worksheet.addRow({ metric: "Total Sales (Before Discounts)", value: `₹${stats.totalSales}` });
   worksheet.addRow({ metric: "Product Discount", value: `₹${stats.productDiscount}` });
@@ -188,11 +188,9 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
   worksheet.addRow({ metric: "Refund Amount", value: `₹${stats.refundAmount}` });
   worksheet.addRow({ metric: "Net Sales After Refunds", value: `₹${stats.netSalesAfterRefunds}` });
 
-  // Add some space between summary and order details
   worksheet.addRow([]);
   worksheet.addRow([]);
 
-  // Add order details table
   const orderDetailsHeaders = [
     "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
     "Payment Status", "Product Name", "Quantity", "Original Price",
@@ -201,7 +199,6 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
 
   worksheet.addRow(orderDetailsHeaders);
 
-  // Add order details data
   stats.orderDetails.forEach(order => {
     order.items.forEach((item, index) => {
       worksheet.addRow([
@@ -221,7 +218,6 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
     });
   });
 
-  // Style the table
   worksheet.eachRow((row, rowNumber) => {
     row.eachCell((cell) => {
       cell.border = {
@@ -241,7 +237,6 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
     }
   });
 
-  // Write Excel file
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", `attachment; filename=Sales_Report_${dateFilter}.xlsx`);
   await workbook.xlsx.write(res);
@@ -252,7 +247,6 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
   const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 30 });
   doc.pipe(res);
 
-  // Add sales summary at the top
   doc.fontSize(14).text("Sales Summary:", { underline: true });
   doc.fontSize(10);
   doc.text(`Total Orders: ${stats.totalOrders}`);
@@ -265,7 +259,6 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
   doc.text(`Net Sales After Refunds: ₹${stats.netSalesAfterRefunds}`);
   doc.moveDown();
 
-  // Prepare table data
   const tableData = {
     headers: [
       "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
@@ -294,7 +287,6 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
     });
   });
 
-  // Draw the table
   doc.table({
     title: "Order Details",
     subtitle: `Date Range: ${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,

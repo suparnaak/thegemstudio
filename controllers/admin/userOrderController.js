@@ -87,22 +87,17 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Handle status updates based on payment method and status
     if (['Admin Cancelled', 'Return Pending', 'Returned'].includes(newStatus)) {
 
       item.deliveryStatus = newStatus;
     } else {
-      // Regular status updates
       if (order.paymentMethod === 'Cash on Delivery') {
-        // For COD orders - allow all status changes
         item.deliveryStatus = newStatus;
-        // Update payment status to Paid when delivered
         if (newStatus === 'Delivered') {
           order.paymentStatus = 'Paid';
           item.deliveryDate = new Date();
         }
       } else {
-        // For non-COD orders
         if (order.paymentStatus !== 'Paid' && item.deliveryStatus === 'Pending') {
           return res.status(400).json({ 
             message: "Payment not completed. Cannot update delivery status." 
