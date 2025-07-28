@@ -1,20 +1,37 @@
 const User = require("../../models/userSchema");
 
-// List users with pagination
+// List users 
 const listUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
 
-    const users = await User.find({ isAdmin: false }).skip(skip).limit(limit);
-    const totalUsers = await User.countDocuments({ isAdmin: false });
+    const search = req.query.search?.trim(); 
+
+    let query = { isAdmin: false };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { mobile: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const users = await User.find(query)
+      .sort({ createdOn: -1 }) 
+      .skip(skip)
+      .limit(limit);
+
+    const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
     res.render("user-management", {
       users,
       currentPage: page,
       totalPages,
+      search,
     });
   } catch (error) {
     console.log("Error listing users", error);
@@ -22,15 +39,16 @@ const listUsers = async (req, res) => {
   }
 };
 
+
 // Block a user
 const blockUser = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { $set: { isBlocked: true } });
-    res.redirect("/admin/users");
+    res.json({ success: true, isBlocked: true });
   } catch (error) {
     console.log("Error blocking user", error);
-    res.redirect("/admin/pageerror");
+    res.status(500).json({ success: false });
   }
 };
 
@@ -39,10 +57,10 @@ const unblockUser = async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndUpdate(userId, { $set: { isBlocked: false } });
-    res.redirect("/admin/users");
+res.json({ success: true, isBlocked: false });
   } catch (error) {
     console.log("Error unblocking user", error);
-    res.redirect("/admin/pageerror");
+    res.status(500).json({ success: false });
   }
 };
 

@@ -9,7 +9,6 @@ const addToCart = async (req, res) => {
     const MAX_QUANTITY_PER_PRODUCT = 5;
     const { productId, quantity } = req.body;
     const userId = req.session.user;
-    console.log("user:", userId)
     if (!userId) {
       return res.status(401).json({ error: 'Please login to add items to cart' });
     }
@@ -121,7 +120,6 @@ const loadCart = async (req, res) => {
 
     const unavailableProducts = [];
     if (!cart || cart.items.length === 0) {
-      console.log("Cart is empty");
       return res.render("cart", {
         cart: null,
         grandTotal: 0,
@@ -137,8 +135,6 @@ const loadCart = async (req, res) => {
     for (let item of cart.items) {
       const product = item.product;
       
-    
-
       if (!product || !product.isListed || typeof product.quantity !== 'number' || product.quantity < item.quantity) {
         
         unavailableProducts.push({
@@ -159,9 +155,7 @@ const loadCart = async (req, res) => {
         const highestDiscount = Math.max(categoryDiscount, productDiscount);
         const finalPrice = originalPrice - originalPrice * highestDiscount;
         const itemTotal = finalPrice * item.quantity;
-
-       
-        
+           
         newGrandTotal += itemTotal;
         
         cartItems.push({

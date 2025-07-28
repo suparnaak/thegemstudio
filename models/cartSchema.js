@@ -32,7 +32,7 @@ const cartSchema = new Schema(
     ],
     grandTotal: {
       type: Number,
-      default: 0, // This should be calculated based on items and discount
+      default: 0, 
     },
     createdAt: {
       type: Date,

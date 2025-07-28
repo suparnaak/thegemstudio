@@ -2,8 +2,6 @@
 
 <div class="container-fluid">
   <div class="row">
-    <!-- Sidebar - in header -->
-
     <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
       <h1>Product Management</h1>
       <a href="/admin/products/add" class="btn btn-primary mb-3">Add New Product</a>
@@ -35,10 +33,10 @@
         </thead>
         <tbody>
           <% products.forEach(product => { %>
-            <tr>
+            <tr id="row-<%= product._id %>">
               <td>
                 <% if (product.images && product.images.length > 0) { %>
-                  <img src="/uploads/products/<%= product.images[0] %>" alt="Product Image" style="max-width: 100px;">
+                  <img src="<%= product.images[0] %>" alt="<%= product.name %>" title="<%= product.name %>" style="max-width: 100px;" />
                 <% } else { %>
                   <p>No image available</p>
                 <% } %>
@@ -49,18 +47,14 @@
               <td>₹<%= product.price.toFixed(2) %></td>
               <td><%= product.discount %></td>
               <td><%= product.quantity %></td>
-              <td><%= product.status %></td>
+              <td class="status-text"><%= product.status %></td>
               <td>
                 <a href="/admin/products/edit/<%= product._id %>" class="btn btn-warning btn-sm">Edit</a>
-                <% if (!product.isListed) { %>
-                  <form action="/admin/products/unblock/<%= product._id %>" method="POST" class="d-inline" id="unblockForm-<%= product._id %>">
-                    <button type="button" class="btn btn-success btn-sm unblock-button" data-id="<%= product._id %>">Unblock</button>
-                  </form>
-                <% } else { %>
-                  <form action="/admin/products/block/<%= product._id %>" method="POST" class="d-inline" id="blockForm-<%= product._id %>">
-                    <button type="button" class="btn btn-danger btn-sm block-button" data-id="<%= product._id %>">Block</button>
-                  </form>
-                <% } %>
+                <button type="button" 
+                  class="btn <%= product.isListed ? 'btn-danger block-button' : 'btn-success unblock-button' %> btn-sm action-button" 
+                  data-id="<%= product._id %>">
+                  <%= product.isListed ? 'Block' : 'Unblock' %>
+                </button>
               </td>
             </tr>
           <% }) %>
@@ -75,15 +69,11 @@
               <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">Previous</a>
             </li>
           <% } %>
-
           <% for (let i = 1; i <= totalPages; i++) { %>
             <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-              <a class="page-link" href="?page=<%= i %>&search=<%= search %>">
-                <%= i %>
-              </a>
+              <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
             </li>
           <% } %>
-
           <% if (currentPage < totalPages) { %>
             <li class="page-item">
               <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
@@ -98,84 +88,71 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get('status');
-  const message = urlParams.get('message'); // Get the custom message
+  function bindActionButton(button) {
+    const productId = button.getAttribute('data-id');
+    const isBlock = button.classList.contains('block-button');
+    const action = isBlock ? 'block' : 'unblock';
+    const oppositeAction = isBlock ? 'unblock' : 'block';
 
-  if (status === 'success') {
-    Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: message,  // Display the message from the query parameters
-      confirmButtonText: 'OK'
-    }).then(() => {
-      // Remove the query params from the URL without refreshing the page
-      window.history.replaceState(null, null, window.location.pathname);
-    });
-  } else if (status === 'failure') {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error!',
-      text: message,  // Display the message from the query parameters
-      confirmButtonText: 'OK'
-    }).then(() => {
-      // Remove the query params from the URL without refreshing the page
-      window.history.replaceState(null, null, window.location.pathname);
+    button.addEventListener('click', function () {
+      Swal.fire({
+        title: `Are you sure?`,
+        text: `You want to ${action} this product!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: isBlock ? '#d33' : '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: `Yes, ${action} it!`
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/products/${action}/${productId}`, {
+            method: 'PATCH'
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire(`${action.charAt(0).toUpperCase() + action.slice(1)}ed!`, data.message, 'success');
+
+              // Update button UI
+              button.classList.toggle('btn-danger');
+              button.classList.toggle('btn-success');
+              button.classList.toggle('block-button');
+              button.classList.toggle('unblock-button');
+              button.textContent = isBlock ? 'Unblock' : 'Block';
+
+              // Update status if needed
+              const row = document.getElementById(`row-${productId}`);
+              if (row) {
+                const statusCell = row.querySelector('.status-text');
+                if (statusCell && row) {
+                  const qty = parseInt(row.cells[6].textContent);
+                  statusCell.textContent = qty === 0 ? "Out of Stock" : "Available";
+                }
+              }
+
+              // Re-bind the new button
+              bindActionButton(button);
+            } else {
+              Swal.fire('Error!', data.message, 'error');
+            }
+          })
+          .catch(error => {
+            console.error(error);
+            Swal.fire('Error!', 'Something went wrong!', 'error');
+          });
+        }
+      });
     });
   }
-</script>
 
-<script>
-  document.querySelectorAll('.unblock-button').forEach(button => {
-    button.addEventListener('click', function() {
-      const productId = this.getAttribute('data-id');
-      const form = document.getElementById(`unblockForm-${productId}`);
-
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to unblock this product!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, unblock it!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          form.submit(); // Submit the form if confirmed
-        }
-      });
-    });
+  document.querySelectorAll('.action-button').forEach(button => {
+    bindActionButton(button);
   });
 
-  document.querySelectorAll('.block-button').forEach(button => {
-    button.addEventListener('click', function() {
-      const productId = this.getAttribute('data-id');
-      const form = document.getElementById(`blockForm-${productId}`);
-
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to block this product!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, block it!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          form.submit(); // Submit the form if confirmed
-        }
-      });
-    });
-  });
-</script>
-
-<script>
-  // Clear search input when it is empty
+  // Clear search input redirect
   const searchInput = document.getElementById('search-input');
-
-  searchInput.addEventListener('input', function() {
+  searchInput.addEventListener('input', function () {
     if (this.value === '') {
-      // Redirect to the product listing page without any search parameters
       window.location.href = '/admin/products';
     }
   });

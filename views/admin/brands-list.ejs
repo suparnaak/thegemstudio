@@ -1,96 +1,140 @@
 <%- include("../../views/partials/admin/header") %>
-<!-- Main Content -->
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h1>Brand Management</h1>
-            <a href="/admin/brands/add" class="btn btn-primary mb-3">Add New Brand</a>
-            <div class="table-responsive-lg">
-                <table class="table table-bordered ">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Status</th> <!-- Added Status Column for Brands -->
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% brands.forEach(brand => { %> <!-- Changed categories to brands -->
-                        <tr>
-                            <td><%= brand.brandName %></td> <!-- brandName from the brand schema -->
-                            <td><%= brand.description %></td>
-                            <td><%= brand.isListed ? 'Active' : 'Blocked' %></td> <!-- Show Brand Status -->
-                            <td>
-                                <a href="/admin/brands/edit/<%= brand._id %>"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                
-                                <!-- Toggle Block/Unblock button based on brand status -->
-                                <% if (brand.isListed) { %>
-                                    <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="toggleBrandStatus('<%= brand._id %>', 'block')">Block</button>
-                                <% } else { %>
-                                    <button type="button" class="btn btn-success btn-sm"
-                                        onclick="toggleBrandStatus('<%= brand._id %>', 'unblock')">Unblock</button>
-                                <% } %>
-                            </td>
-                        </tr>
-                    <% }) %> <!-- Ensure you replace categories with brands in your data handling -->
-                </tbody>
-            </table>
-        </div>
-            <!-- Pagination -->
-            <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                <ul class="pagination pagination-sm">
-                    <% if (currentPage > 1) { %>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                        </li>
-                    <% } %>
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Brand Management</h1>
+      <a href="/admin/brands/add" class="btn btn-primary mb-3">Add New Brand</a>
 
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                        </li>
-                    <% } %>
-
-                    <% if (currentPage < totalPages) { %>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
+      <!-- Search -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form action="/admin/brands" method="get" class="d-flex">
+            <input type="search" name="search" id="search-input" class="form-control" placeholder="Search brands..."
+              value="<%= search %>">
+            <button type="submit" class="btn btn-primary ml-2">Search</button>
+            <% if (search) { %>
+              <a href="/admin/brands" class="btn btn-link ml-2 p-2" style="text-decoration: underline;">Clear</a>
+            <% } %>
+          </form>
         </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive-lg">
+        <table class="table table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% brands.forEach(brand => { %>
+              <tr id="row-<%= brand._id %>">
+                <td><%= brand.brandName %></td>
+                <td><%= brand.description %></td>
+                <td><%= brand.isListed ? 'Active' : 'Blocked' %></td>
+                <td>
+                  <a href="/admin/brands/edit/<%= brand._id %>" class="btn btn-warning btn-sm">Edit</a>
+                  <% if (brand.isListed) { %>
+                    <button class="btn btn-danger btn-sm toggle-btn" data-id="<%= brand._id %>" data-action="block">Block</button>
+                  <% } else { %>
+                    <button class="btn btn-success btn-sm toggle-btn" data-id="<%= brand._id %>" data-action="unblock">Unblock</button>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="d-flex justify-content-center">
+        <ul class="pagination pagination-sm">
+          <% if (currentPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">Previous</a>
+            </li>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+            </li>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
     </div>
+  </div>
 </div>
 
+<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    function toggleBrandStatus(brandId, action) {
-        let actionText = action === 'block' ? 'block' : 'unblock';
-        let confirmationText = action === 'block' ? "This brand will be hidden from users!" : "This brand will be visible to users!";
-        let confirmButtonText = action === 'block' ? 'Yes, block it!' : 'Yes, unblock it!';
+  document.addEventListener("DOMContentLoaded", function () {
+    // Block/Unblock
+    document.querySelectorAll(".toggle-btn").forEach(btn => {
+      btn.addEventListener("click", function () {
+        const brandId = this.dataset.id;
+        const action = this.dataset.action;
+        const confirmText = action === 'block'
+          ? 'This brand will be hidden from users!'
+          : 'This brand will be visible to users!';
+        const confirmBtn = action === 'block' ? 'Yes, block it!' : 'Yes, unblock it!';
 
         Swal.fire({
-            title: 'Are you sure?',
-            text: confirmationText,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: confirmButtonText
+          title: `Are you sure you want to ${action} this brand?`,
+          text: confirmText,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: confirmBtn
         }).then((result) => {
-            if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.action = `/admin/brands/${action}/${brandId}`;
-                form.method = 'POST';
-                document.body.appendChild(form);
-                form.submit();
-            }
+          if (result.isConfirmed) {
+            fetch(`/admin/brands/${action}/${brandId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" }
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  const row = document.getElementById(`row-${brandId}`);
+                  row.querySelector("td:nth-child(3)").textContent = data.isListed ? "Active" : "Blocked";
+                  row.querySelector("td:nth-child(4)").innerHTML = `
+                    <a href="/admin/brands/edit/${brandId}" class="btn btn-warning btn-sm">Edit</a>
+                    ${data.isListed
+                      ? `<button class="btn btn-danger btn-sm toggle-btn" data-id="${brandId}" data-action="block">Block</button>`
+                      : `<button class="btn btn-success btn-sm toggle-btn" data-id="${brandId}" data-action="unblock">Unblock</button>`
+                    }
+                  `;
+                  Swal.fire("Updated", `Brand ${action}ed successfully`, "success");
+                } else {
+                  Swal.fire("Failed", "Action failed", "error");
+                }
+              })
+              .catch(err => Swal.fire("Error", "Something went wrong", "error"));
+          }
         });
-    }
+      });
+    });
+
+    // Auto clear search input
+    const input = document.getElementById("search-input");
+    input.addEventListener("input", function () {
+      if (this.value === "") window.location.href = "/admin/brands";
+    });
+  });
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

@@ -1,116 +1,122 @@
 <%- include("../../views/partials/admin/header") %>
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-                <h1>Coupon Management</h1>
-                <a href="/admin/coupons/add" class="btn btn-primary mb-3">Add New Coupon</a>
-                <table class="table table-bordered">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Code</th>
-                            <th>Discount (Rs)</th>
-                            <th>Min Order Price</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Limit</th>
-                            <th>Count</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% coupons.forEach(coupon=> { %>
-                            <tr>
-                                <td>
-                                    <%= coupon.code %>
-                                </td>
-                                <td>
-                                    <%= coupon.discount_rs %>
-                                </td>
-                                <td>
-                                    <%= coupon.min_order_price %>
-                                </td>
-                                <td>
-                                    <%= coupon.start_date.toLocaleDateString() %>
-                                </td>
-                                <td>
-                                    <%= coupon.end_date.toLocaleDateString() %>
-                                </td>
-                                <td>
-                                    <%= coupon.usage_limit %>
-                                </td>
-                                <td>
-                                    <%= coupon.used_count %>
-                                </td>
-                                <td>
-                                    <%= coupon.status %>
-                                </td>
-                                <td>
-                                    <% if (coupon.is_deleted) { %>
-                                        <span class="text-muted">Deleted</span>
-                                        <% } else { %>
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                onclick="deleteCoupon('<%= coupon._id %>')">Delete</button>
-                                            <!-- Show Delete button -->
-                                            <% } %>
-                                </td>
-                            </tr>
-                            <% }) %>
-                    </tbody>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Coupon Management</h1>
+      <a href="/admin/coupons/add" class="btn btn-primary mb-3">Add New Coupon</a>
 
-                </table>
-
-                <!-- Pagination -->
-                <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                    <ul class="pagination">
-                        <% if (currentPage> 1) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                            </li>
-                            <% } %>
-
-                                <% for (let i=1; i <=totalPages; i++) { %>
-                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                        <a class="page-link" href="?page=<%= i %>">
-                                            <%= i %>
-                                        </a>
-                                    </li>
-                                    <% } %>
-
-                                        <% if (currentPage < totalPages) { %>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                                            </li>
-                                            <% } %>
-                    </ul>
-                </nav>
-            </div>
+      <!-- Search Bar -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form method="GET" class="d-flex">
+            <input type="search" name="search" value="<%= search %>" class="form-control" placeholder="Search by coupon code" />
+            <button type="submit" class="btn btn-primary ml-2">Search</button>
+            <% if (search) { %>
+              <a href="/admin/coupons" class="btn btn-link ml-2" style="text-decoration: underline;">Clear</a>
+            <% } %>
+          </form>
         </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th>Code</th>
+              <th>Discount (Rs)</th>
+              <th>Min Order</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Limit</th>
+              <th>Used</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% coupons.forEach(coupon => { %>
+              <tr id="row-<%= coupon._id %>">
+                <td><%= coupon.code %></td>
+                <td><%= coupon.discount_rs %></td>
+                <td><%= coupon.min_order_price %></td>
+                <td><%= coupon.start_date.toLocaleDateString() %></td>
+                <td><%= coupon.end_date.toLocaleDateString() %></td>
+                <td><%= coupon.usage_limit %></td>
+                <td><%= coupon.used_count %></td>
+                <td><%= coupon.status %></td>
+                <td>
+                  <% if (coupon.is_deleted) { %>
+                    <span class="text-muted">Deleted</span>
+                  <% } else { %>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCoupon('<%= coupon._id %>')">Delete</button>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="d-flex justify-content-center">
+        <ul class="pagination pagination-sm">
+          <% if (currentPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">Previous</a>
+            </li>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+            </li>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
     </div>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        function deleteCoupon(couponId) {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const form = document.createElement('form');
-                    form.action = `/admin/coupons/delete/${couponId}`;
-                    form.method = 'POST';
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            });
-        }
-    </script>
+<script>
+  function deleteCoupon(couponId) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This action cannot be undone!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/admin/coupons/delete/${couponId}`, {
+          method: 'POST',
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const row = document.getElementById(`row-${couponId}`);
+            row.remove();
+            Swal.fire('Deleted!', 'Coupon deleted successfully.', 'success');
+          } else {
+            Swal.fire('Error!', data.message || 'Failed to delete coupon.', 'error');
+          }
+        })
+        .catch(() => {
+          Swal.fire('Error!', 'Something went wrong.', 'error');
+        });
+      }
+    });
+  }
+</script>
 
-    <%- include("../../views/partials/admin/footer") %>
+<%- include("../../views/partials/admin/footer") %>

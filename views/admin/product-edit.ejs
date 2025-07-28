@@ -79,7 +79,7 @@
                 <% if (product.images && product.images.length > 0) { %>
                   <% product.images.forEach(function(image, index) { %>
                     <div class="me-2">
-                      <img src="/uploads/products/<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
+                      <img src="<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
                       <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
                     </div>
                   <% }) %>

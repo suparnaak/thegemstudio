@@ -9,7 +9,7 @@ const env = require("dotenv").config();
 const loadHomepage = async (req, res) => {
   try {
     const user = req.session.user;
-    console.log("Aftersignup user",user)
+    
     const featuredProducts = await Product.find({ isListed: true })
       .sort({ createdOn: -1 })  
       .limit(6)

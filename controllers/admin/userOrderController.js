@@ -1,36 +1,63 @@
 const Product = require("../../models/productsSchema");
 const Order = require("../../models/orderSchema");
 const Wallet = require("../../models/walletSchema");
+const User  = require('../../models/userSchema');
 
 //list orders
 const listOrders = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5;
-    const skip = (page - 1) * limit;
+    const page   = parseInt(req.query.page) || 1;
+    const limit  = 5;
+    const skip   = (page - 1) * limit;
+    const search = req.query.search?.trim();
+    let filter  = {};
 
-    const orders = await Order.find({})
-      .populate("userId", "name email")
-      .populate("items.productId", "name price discount")
+    if (search) {
+      const regex = new RegExp(search, 'i');
+
+      const matchingUsers = await User.find({
+        $or: [
+          { name:  regex },
+          { email: regex }
+        ]
+      }).select('_id');
+
+      const userIds = matchingUsers.map(u => u._id);
+
+      filter = {
+        $or: [
+          { orderId:      regex },
+          { userId:       { $in: userIds } },
+          { paymentStatus: regex }      
+        ]
+      };
+    }
+
+    const orders = await Order.find(filter)
+      .populate('userId', 'name email')
       .skip(skip)
       .limit(limit)
       .sort({ orderDate: -1 });
 
-    const totalOrders = await Order.countDocuments();
-    const totalPages = Math.ceil(totalOrders / limit);
+    const totalOrders = await Order.countDocuments(filter);
+    const totalPages  = Math.ceil(totalOrders / limit);
 
-    res.render("orders-list", {
-      orders: orders || [],
+    res.render('orders-list', {
+      orders,
       currentPage: page,
       totalPages,
+      search,   
+      error: null
     });
-  } catch (error) {
-    console.log("Error listing orders:", error);
-    res.render("orders-list", {
-      orders: [],
-      currentPage: 1,
-      totalPages: 1,
-      error: "An error occurred while fetching orders.",
+
+  } catch (err) {
+    console.error('Error listing orders:', err);
+    res.render('orders-list', {
+      orders:       [],
+      currentPage:  1,
+      totalPages:   1,
+      search:       req.query.search || '',
+      error:        'An error occurred while fetching orders.'
     });
   }
 };

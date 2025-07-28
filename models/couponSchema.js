@@ -38,13 +38,13 @@ const couponSchema = new Schema({
   status: {
     type: String,
     enum: ['inactive', 'active', 'expired', 'deleted'],
-    default: "inactive" // true means active, false means inactive
+    default: "inactive" 
   },
   is_deleted: { 
     type: Boolean, 
     default: false }
 }, {
-  timestamps: true // Adds createdAt and updatedAt timestamps
+  timestamps: true 
 });
 
 module.exports = mongoose.model('Coupon', couponSchema);

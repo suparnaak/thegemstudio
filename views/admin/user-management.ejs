@@ -1,84 +1,144 @@
 <%- include("../../views/partials/admin/header") %>
 
-    <!-- Main Content -->
-    <div class="container-fluid">
-        <div class="row">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1 class="text-center">User Management</h1>
 
-            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-                <h1 class="text-center">User Management</h1>
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form id="search-form" action="/admin/users" method="GET" class="form-inline">
+            <input type="search" name="search" id="search-input" class="form-control" placeholder="Search users..."
+              value="<%= search || '' %>" autocomplete="off" style="margin-right: 10px;">
+            <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
-                <table class="table table-bordered table-striped mt-4">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Mobile</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% users.forEach(user=> { %>
-                            <tr>
-                                <td>
-                                    <%= user.name %>
-                                </td>
-                                <td>
-                                    <%= user.email %>
-                                </td>
-                                <td>
-                                    <%= user.mobile %>
-                                </td>
-                                <td>
-                                    <%= user.isBlocked ? 'Blocked' : 'Active' %>
-                                </td>
-                                <td>
-                                    <% if (user.isBlocked) { %>
-                                        <!-- Unblock with confirmation -->
-                                        <form action="/admin/users/unblock/<%= user._id %>" method="POST"
-                                            class="d-inline"
-                                            onsubmit="return confirm('Are you sure you want to unblock this user?');">
-                                            <button type="submit" class="btn btn-success btn-sm">Unblock</button>
-                                        </form>
-                                        <% } else { %>
-                                            <form action="/admin/users/block/<%= user._id %>" method="POST"
-                                                class="d-inline"
-                                                onsubmit="return confirm('Are you sure you want to block this user?');">
-                                                <button type="submit" class="btn btn-danger btn-sm">Block</button>
-                                            </form>
-                                            <% } %>
-                                </td>
-                            </tr>
-                            <% }) %>
-                    </tbody>
-                </table>
-
-                <!-- Pagination -->
-                <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                    <ul class="pagination">
-                        <% if (currentPage> 1) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                            </li>
-                            <% } %>
-
-                                <% for (let i=1; i <=totalPages; i++) { %>
-                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                        <a class="page-link" href="?page=<%= i %>">
-                                            <%= i %>
-                                        </a>
-                                    </li>
-                                    <% } %>
-
-                                        <% if (currentPage < totalPages) { %>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                                            </li>
-                                            <% } %>
-                    </ul>
-                </nav>
-            </div>
+            <% if (search) { %>
+              <a href="/admin/users" class="ml-2" style="text-decoration: underline; color: #007bff; font-size: 14px;">Clear</a>
+            <% } %>
+          </form>
         </div>
-    </div>
+      </div>
 
-    <%- include("../../views/partials/admin/footer") %>
+      <table class="table table-bordered table-striped mt-4">
+        <thead class="thead-dark">
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(user => { %>
+            <tr id="row-<%= user._id %>">
+              <td><%= user.name %></td>
+              <td><%= user.email %></td>
+              <td><%= user.mobile %></td>
+              <td class="status-cell"><%= user.isBlocked ? 'Blocked' : 'Active' %></td>
+              <td class="actions-cell">
+                <% if (user.isBlocked) { %>
+                  <button class="btn btn-success btn-sm unblock-btn" data-id="<%= user._id %>">Unblock</button>
+                <% } else { %>
+                  <button class="btn btn-danger btn-sm block-btn" data-id="<%= user._id %>">Block</button>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <nav aria-label="Page navigation" class="d-flex justify-content-center">
+        <ul class="pagination">
+          <% if (currentPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage - 1 %><%= search ? `&search=${search}` : '' %>">Previous</a>
+            </li>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %><%= search ? `&search=${search}` : '' %>"><%= i %></a>
+            </li>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage + 1 %><%= search ? `&search=${search}` : '' %>">Next</a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = document.querySelector("table");
+
+    table.addEventListener("click", function (e) {
+      if (e.target.classList.contains("block-btn") || e.target.classList.contains("unblock-btn")) {
+        const userId = e.target.getAttribute("data-id");
+        const isBlocking = e.target.classList.contains("block-btn");
+        const action = isBlocking ? "block" : "unblock";
+
+        Swal.fire({
+          title: `Are you sure you want to ${action} this user?`,
+          text: isBlocking
+            ? "The user will be blocked from logging in."
+            : "The user will be unblocked and can log in again.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: isBlocking ? "#d33" : "#28a745",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: `Yes, ${action} user`
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/admin/users/${action}/${userId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              }
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  const row = document.getElementById(`row-${userId}`);
+                  const statusCell = row.querySelector(".status-cell");
+                  const actionsCell = row.querySelector(".actions-cell");
+
+                  if (data.isBlocked) {
+                    statusCell.textContent = "Blocked";
+                    actionsCell.innerHTML = `<button class="btn btn-success btn-sm unblock-btn" data-id="${userId}">Unblock</button>`;
+                  } else {
+                    statusCell.textContent = "Active";
+                    actionsCell.innerHTML = `<button class="btn btn-danger btn-sm block-btn" data-id="${userId}">Block</button>`;
+                  }
+
+                  Swal.fire({
+                    title: "Success!",
+                    text: `User has been ${action}ed.`,
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false
+                  });
+                } else {
+                  Swal.fire("Error", "Failed to update user status.", "error");
+                }
+              })
+              .catch(err => {
+                console.error("Error:", err);
+                Swal.fire("Error", "Something went wrong.", "error");
+              });
+          }
+        });
+      }
+    });
+  });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

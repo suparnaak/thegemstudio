@@ -76,8 +76,10 @@
                             <article class="grid_3 article" style="margin-bottom: 10px;">
                                 <div class="prev">
                                     <a href="/product_page/<%= product._id %>">
-                                        <img src="/uploads/products/<%= product.images[0] %>" alt="<%= product.name %>"
-                                            title="<%= product.name %>" />
+                                        <!-- <img src="/uploads/products/<%= product.images[0] %>" alt="<%= product.name %>"
+                                            title="<%= product.name %>" /> -->
+                                            <img src="<%= product.images[0] %>" alt="<%= product.name %>" title="<%= product.name %>" />
+
                                     </a>
                                 </div>
                                 <h3 class="title">

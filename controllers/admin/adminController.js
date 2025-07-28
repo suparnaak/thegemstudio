@@ -3,7 +3,6 @@ const Product = require("../../models/productsSchema");
 const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
 const Order = require("../../models/orderSchema");
-
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -127,15 +126,11 @@ const loadDashboard = async (req, res) => {
         { $sort: { totalSales: -1 } }, 
       ]);
 
-      console.log("Category Sales:", JSON.stringify(categorySales));
       const paymentMethods = await Order.aggregate([
         { $group: { _id: "$paymentMethod", count: { $sum: 1 } } },
         { $project: { method: "$_id", count: 1, _id: 0 } },
       ]);
-      console.log("Category Sales:", JSON.stringify(categorySales));
-      console.log("Payment Methods:", JSON.stringify(paymentMethods));
-
-      res.render("dashboard", {
+       res.render("dashboard", {
         topCategories,
         topProducts,
         topBrands,
@@ -152,7 +147,6 @@ const loadDashboard = async (req, res) => {
 };
 
 const getSalesData = async (req, res) => {
-  console.log("getSalesData called with filter:", req.query.filter);
   try {
     const filter = req.query.filter || "today";
     let dateFilter = {};
@@ -183,8 +177,6 @@ const getSalesData = async (req, res) => {
       default:
         dateFilter = {};
     }
-
-    console.log("Date filter:", dateFilter);
 
     const categorySales = await Order.aggregate([
       { $match: dateFilter },
@@ -216,7 +208,6 @@ const getSalesData = async (req, res) => {
       { $sort: { totalSales: -1 } },
     ]);
 
-    console.log("Category sales data:", categorySales);
     res.json(categorySales);
   } catch (error) {
     console.error("Error in getSalesData:", error);
@@ -225,7 +216,6 @@ const getSalesData = async (req, res) => {
 };
 
 const getPaymentData = async (req, res) => {
-  console.log("getPaymentData called with filter:", req.query.filter);
   try {
     const filter = req.query.filter || "today";
     let dateFilter = {};
@@ -257,15 +247,12 @@ const getPaymentData = async (req, res) => {
         dateFilter = {};
     }
 
-    console.log("Date filter:", dateFilter);
-
     const paymentMethods = await Order.aggregate([
       { $match: dateFilter },
       { $group: { _id: "$paymentMethod", count: { $sum: 1 } } },
       { $project: { method: "$_id", count: 1, _id: 0 } },
     ]);
 
-    console.log("Payment methods data:", paymentMethods);
     res.json(paymentMethods);
   } catch (error) {
     console.error("Error in getPaymentData:", error);

@@ -7,18 +7,25 @@ const listCategories = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const categories = await Category.find({})
+    const query = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    const categories = await Category.find(query)
+    .sort({ createdOn: -1 }) 
       .skip(skip)
       .limit(limit);
-    const totalCategories = await Category.countDocuments({});
 
+    const totalCategories = await Category.countDocuments(query);
     const totalPages = Math.ceil(totalCategories / limit);
 
     res.render("categories-list", {
       categories,
       currentPage: page,
       totalPages,
+      search, 
     });
   } catch (error) {
     console.log("Error listing categories:", error);
@@ -35,9 +42,7 @@ const loadAddCategory = async (req, res) => {
     res.redirect("/admin/pageerror");
   }
 };
-
 const isValidCategoryName = (name) => /^[a-zA-Z0-9 ]+$/.test(name);
-
 const addCategory = async (req, res) => {
   try {
     let { name, description, offer } = req.body;
@@ -92,10 +97,8 @@ const editCategory = async (req, res) => {
       return res.json({ error: "Category name already exists" });
     }
 
-    // Update the category
     await Category.findByIdAndUpdate(id, { name, description, offer });
 
-    // Send JSON response indicating success
     res.json({ success: true, message: "Category updated successfully" });
   } catch (error) {
     console.log("Error editing category:", error);
@@ -108,7 +111,8 @@ const blockCategory = async (req, res) => {
   try {
     const { id } = req.params;
     await Category.findByIdAndUpdate(id, { isListed: false });
-    res.redirect("/admin/categories");
+    res.json({ success: true, isListed: false });
+
   } catch (error) {
     console.log("Error deleting category:", error);
     res.redirect("/admin/pageerror");
@@ -119,7 +123,7 @@ const unblockCategory = async (req, res) => {
   try {
     const { id } = req.params;
     await Category.findByIdAndUpdate(id, { isListed: true });
-    res.redirect("/admin/categories");
+    res.json({ success: true, isListed: true });
   } catch (error) {
     console.log("Error deleting category:", error);
     res.redirect("/admin/pageerror");

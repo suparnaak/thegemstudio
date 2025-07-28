@@ -45,13 +45,17 @@
                                                     <%= order.address.country %>, <%= order.address.zipcode %>
                                                 </li>
                                                 <li><strong>Payment Method:</strong> <%= order.paymentMethod %></li>
-                                                <li><strong>Payment Status:</strong> <%= order.paymentStatus %></li>
+                                                <li>
+  <strong>Payment Status:</strong>
+  <%= order.paymentStatus === 'Initiated' ? 'Pending' : order.paymentStatus %>
+</li>
+
                                             </ul>
                                             <div>
                                                 <p class="mb-0"><strong>ORDER #</strong> <%= order.orderId %></p>
 
                                                 <% if (order.paymentMethod !== 'Cash on Delivery' && 
-                                                (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                                (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending' || order.paymentStatus === 'Initiated')) { %>
                                                     <button onclick="retryPayment('<%= order._id %>', '<%= order.grandTotal %>')" 
                                                             class="btn btn-primary btn-sm mt-2">
                                                         Retry Payment
@@ -65,7 +69,7 @@
                                         <div class="order-item mt-4">
                                             <div class="d-flex align-items-center mb-3">
                                                 <a href="/product_page/<%= item.productId._id %>">
-                                                    <img src="/uploads/products/<%= item.productId.images[0] %>" alt="Product Image" 
+                                                    <img src="<%= item.productId.images[0] %>" alt="<%= item.productId.name %>"  
                                                         class="img-thumbnail" style="width: 100px; height: auto;">
                                                 </a>
                                                 <div class="ml-3">

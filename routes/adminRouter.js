@@ -46,11 +46,14 @@ router.post("/brands/edit/:id", adminAuth, brandController.editBrand);
 // Product management routes
 router.get("/products", adminAuth, productController.listProducts);
 router.get("/products/add", adminAuth, productController.loadAddProducts);
-router.post("/products/add",  multer.array('images', 10),adminAuth, productController.addProduct); 
+//router.post("/products/add",  multer.array('images', 10),adminAuth, productController.addProduct); 
 router.get("/products/edit/:id", adminAuth,productController.loadEditProduct); 
-router.post("/products/edit/:id", multer.array('images', 10),adminAuth, productController.editProduct);
-router.post("/products/block/:id", adminAuth,productController.blockProduct);
-router.post('/products/unblock/:id', adminAuth,productController.unblockProduct);
+//router.post("/products/edit/:id", multer.array('images', 10),adminAuth, productController.editProduct);
+router.post("/products/add", adminAuth, multer.array('images', 10), productController.addProduct); 
+router.post("/products/edit/:id", adminAuth, multer.array('images', 10), productController.editProduct);
+
+router.patch("/products/block/:id", adminAuth,productController.blockProduct);
+router.patch('/products/unblock/:id', adminAuth,productController.unblockProduct);
 
 //order management routes
 router.get("/orders", adminAuth, userOrderController.listOrders);

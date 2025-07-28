@@ -8,81 +8,83 @@ const calculateStats = async (startDate, endDate) => {
     createdAt: {
       $gte: startDate,
       $lte: endDate,
-    }
-  }).populate('userId', 'name')
-    .populate('items.productId', 'name');
+    },
+  })
+    .populate("userId", "name")
+    .populate("items.productId", "name");
 
-  const stats = orders.reduce((acc, order) => {
-    acc.totalOrders++;
-
-   
-    const originalTotal = order.items.reduce((sum, item) => 
-      sum + (item.price * item.quantity), 0);
-    
-   
-    acc.totalSales += originalTotal;
-
-    
-    const itemsSubtotal = order.items.reduce((sum, item) => 
-      sum + item.subtotal, 0);
-    
-    
-    acc.productDiscount += originalTotal - itemsSubtotal;
-
-    
-    if (order.coupons) {
-      acc.couponDiscount += itemsSubtotal - order.grandTotal;
-    }
-
-    
-    if (order.paymentStatus === 'Paid') {
-      acc.netSales += order.grandTotal;
-
-      
-      const refundEligibleItems = order.items.filter(item => 
-        ['Returned', 'Cancelled', 'Admin Cancelled'].includes(item.deliveryStatus)
+  const stats = orders.reduce(
+    (acc, order) => {
+      acc.totalOrders++;
+      const originalTotal = order.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
       );
-      
-      if (refundEligibleItems.length > 0) {
-        const refundAmount = refundEligibleItems.reduce((sum, item) => 
-          sum + item.subtotal, 0);
-        acc.refundAmount += refundAmount;
+
+      acc.totalSales += originalTotal;
+
+      const itemsSubtotal = order.items.reduce(
+        (sum, item) => sum + item.subtotal,
+        0
+      );
+
+      acc.productDiscount += originalTotal - itemsSubtotal;
+
+      if (order.coupons) {
+        acc.couponDiscount += itemsSubtotal - order.grandTotal;
       }
+
+      if (order.paymentStatus === "Paid") {
+        acc.netSales += order.grandTotal;
+
+        const refundEligibleItems = order.items.filter((item) =>
+          ["Returned", "Cancelled", "Admin Cancelled"].includes(
+            item.deliveryStatus
+          )
+        );
+
+        if (refundEligibleItems.length > 0) {
+          const refundAmount = refundEligibleItems.reduce(
+            (sum, item) => sum + item.subtotal,
+            0
+          );
+          acc.refundAmount += refundAmount;
+        }
+      }
+
+      acc.orderDetails.push({
+        orderId: order.orderId,
+        orderDate: order.createdAt,
+        customerName: order.userId?.name || "N/A",
+        paymentStatus: order.paymentStatus,
+        paymentMethod: order.paymentMethod,
+        originalTotal,
+        productDiscount: originalTotal - itemsSubtotal,
+        couponDiscount: order.coupons ? itemsSubtotal - order.grandTotal : 0,
+        grandTotal: order.grandTotal,
+        items: order.items.map((item) => ({
+          productName: item.productId?.name || "N/A",
+          quantity: item.quantity,
+          originalPrice: item.price,
+          discountedPrice: item.subtotal / item.quantity,
+          subtotal: item.subtotal,
+          status: item.deliveryStatus,
+        })),
+      });
+
+      return acc;
+    },
+    {
+      totalOrders: 0,
+      totalSales: 0,
+      productDiscount: 0,
+      couponDiscount: 0,
+      netSales: 0,
+      refundAmount: 0,
+      orderDetails: [],
     }
+  );
 
-    
-    acc.orderDetails.push({
-      orderId: order.orderId,
-      orderDate: order.createdAt,
-      customerName: order.userId?.name || 'N/A',
-      paymentStatus: order.paymentStatus,
-      paymentMethod: order.paymentMethod,
-      originalTotal,
-      productDiscount: originalTotal - itemsSubtotal,
-      couponDiscount: order.coupons ? (itemsSubtotal - order.grandTotal) : 0,
-      grandTotal: order.grandTotal,
-      items: order.items.map(item => ({
-        productName: item.productId?.name || 'N/A',
-        quantity: item.quantity,
-        originalPrice: item.price,
-        discountedPrice: item.subtotal / item.quantity,
-        subtotal: item.subtotal,
-        status: item.deliveryStatus
-      }))
-    });
-
-    return acc;
-  }, {
-    totalOrders: 0,
-    totalSales: 0,
-    productDiscount: 0,
-    couponDiscount: 0,
-    netSales: 0,
-    refundAmount: 0,
-    orderDetails: []
-  });
-
-  
   stats.netBeforeCoupons = stats.totalSales - stats.productDiscount;
   stats.netSalesAfterRefunds = stats.netSales - stats.refundAmount;
 
@@ -148,12 +150,11 @@ const filterSalesReport = async (req, res) => {
       ...stats,
       dateRange: dateFilter,
     };
-    if (dateFilter === 'custom') {
+    if (dateFilter === "custom") {
       renderData.startDate = startDate;
       renderData.endDate = endDate;
     }
     res.render("sales-report", renderData);
- 
   } catch (error) {
     console.error("Error in filterSalesReport:", error);
     res.status(400).render("sales-report", {
@@ -180,26 +181,53 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
   ];
 
   worksheet.addRow({ metric: "Total Orders", value: stats.totalOrders });
-  worksheet.addRow({ metric: "Total Sales (Before Discounts)", value: `₹${stats.totalSales}` });
-  worksheet.addRow({ metric: "Product Discount", value: `₹${stats.productDiscount}` });
-  worksheet.addRow({ metric: "Net Before Coupons", value: `₹${stats.netBeforeCoupons}` });
-  worksheet.addRow({ metric: "Coupon Discount", value: `₹${stats.couponDiscount}` });
+  worksheet.addRow({
+    metric: "Total Sales (Before Discounts)",
+    value: `₹${stats.totalSales}`,
+  });
+  worksheet.addRow({
+    metric: "Product Discount",
+    value: `₹${stats.productDiscount}`,
+  });
+  worksheet.addRow({
+    metric: "Net Before Coupons",
+    value: `₹${stats.netBeforeCoupons}`,
+  });
+  worksheet.addRow({
+    metric: "Coupon Discount",
+    value: `₹${stats.couponDiscount}`,
+  });
   worksheet.addRow({ metric: "Net Sales", value: `₹${stats.netSales}` });
-  worksheet.addRow({ metric: "Refund Amount", value: `₹${stats.refundAmount}` });
-  worksheet.addRow({ metric: "Net Sales After Refunds", value: `₹${stats.netSalesAfterRefunds}` });
+  worksheet.addRow({
+    metric: "Refund Amount",
+    value: `₹${stats.refundAmount}`,
+  });
+  worksheet.addRow({
+    metric: "Net Sales After Refunds",
+    value: `₹${stats.netSalesAfterRefunds}`,
+  });
 
   worksheet.addRow([]);
   worksheet.addRow([]);
 
   const orderDetailsHeaders = [
-    "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
-    "Payment Status", "Product Name", "Quantity", "Original Price",
-    "Discounted Price", "Subtotal", "Product Status"
+    "Order ID",
+    "Order Date",
+    "Grand Total",
+    "Coupon Discount",
+    "Payment Method",
+    "Payment Status",
+    "Product Name",
+    "Quantity",
+    "Original Price",
+    "Discounted Price",
+    "Subtotal",
+    "Product Status",
   ];
 
   worksheet.addRow(orderDetailsHeaders);
 
-  stats.orderDetails.forEach(order => {
+  stats.orderDetails.forEach((order) => {
     order.items.forEach((item, index) => {
       worksheet.addRow([
         index === 0 ? order.orderId : "",
@@ -213,7 +241,7 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
         item.originalPrice,
         item.discountedPrice,
         item.subtotal,
-        item.status
+        item.status,
       ]);
     });
   });
@@ -221,30 +249,36 @@ const generateExcel = async (res, stats, dateFilter, start, end) => {
   worksheet.eachRow((row, rowNumber) => {
     row.eachCell((cell) => {
       cell.border = {
-        top: {style:'thin'},
-        left: {style:'thin'},
-        bottom: {style:'thin'},
-        right: {style:'thin'}
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
       };
     });
     if (rowNumber === 1 || rowNumber === stats.totalOrders + 11) {
       row.font = { bold: true };
       row.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFD3D3D3' }
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFD3D3D3" },
       };
     }
   });
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", `attachment; filename=Sales_Report_${dateFilter}.xlsx`);
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=Sales_Report_${dateFilter}.xlsx`
+  );
   await workbook.xlsx.write(res);
   res.end();
 };
 
 const generatePDF = (res, stats, dateFilter, start, end) => {
-  const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 30 });
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 30 });
   doc.pipe(res);
 
   doc.fontSize(14).text("Sales Summary:", { underline: true });
@@ -261,14 +295,23 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
 
   const tableData = {
     headers: [
-      "Order ID", "Order Date", "Grand Total", "Coupon Discount", "Payment Method",
-      "Payment Status", "Product Name", "Quantity", "Original Price",
-      "Discounted Price", "Subtotal", "Product Status"
+      "Order ID",
+      "Order Date",
+      "Grand Total",
+      "Coupon Discount",
+      "Payment Method",
+      "Payment Status",
+      "Product Name",
+      "Quantity",
+      "Original Price",
+      "Discounted Price",
+      "Subtotal",
+      "Product Status",
     ],
-    rows: []
+    rows: [],
   };
 
-  stats.orderDetails.forEach(order => {
+  stats.orderDetails.forEach((order) => {
     order.items.forEach((item, index) => {
       tableData.rows.push([
         index === 0 ? order.orderId : "",
@@ -282,7 +325,7 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
         `₹${item.originalPrice}`,
         `₹${item.discountedPrice}`,
         `₹${item.subtotal}`,
-        item.status
+        item.status,
       ]);
     });
   });
@@ -296,10 +339,10 @@ const generatePDF = (res, stats, dateFilter, start, end) => {
     divider: {
       header: { disabled: false, width: 2, opacity: 1 },
       horizontal: { disabled: false, width: 0.5, opacity: 0.5 },
-      vertical: { disabled: false, width: 0.5, opacity: 0.5 }
+      vertical: { disabled: false, width: 0.5, opacity: 0.5 },
     },
     padding: 5,
-    columnSpacing: 10
+    columnSpacing: 10,
   });
 
   doc.end();
@@ -345,8 +388,11 @@ const downloadReport = async (req, res) => {
     if (format === "excel") {
       await generateExcel(res, stats, dateFilter, start, end);
     } else if (format === "pdf") {
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=Sales_Report_${dateFilter}.pdf`);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=Sales_Report_${dateFilter}.pdf`
+      );
       generatePDF(res, stats, dateFilter, start, end);
     } else {
       throw new Error("Invalid format specified");

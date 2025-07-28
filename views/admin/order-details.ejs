@@ -1,187 +1,170 @@
 <%- include("../partials/admin/header") %> 
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h1>Order Details</h1>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Order ID: <%= order.orderId %></h5>
-                    <p class="card-text">Customer: <%= order.userId.name %> (<%= order.userId.email %>)</p>
-                    <p class="card-text">Order Date: <%= order.orderDate.toLocaleDateString() %></p>
-                    <p class="card-text">Payment Method: <%= order.paymentMethod %></p>
-                    <div class="payment-status">
-                        <p class="card-text">Payment Status: <span class="status"><%= order.paymentStatus %></span></p>
-                    </div><br>
-                    <p class="card-text">Grand Total: ₹<%= order.grandTotal.toFixed(2) %></p>
-                </div>
-            </div>
-
-            <h2>Products</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Subtotal</th>
-                        <th>Delivery Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% order.items.forEach((item, index) => { %>
-                        <tr>
-                            <td><%= item.productId.name %></td>
-                            <td>₹<%= item.price.toFixed(2) %></td>
-                            <td><%= item.quantity %></td>
-                            <td>₹<%= item.subtotal.toFixed(2) %></td>
-                            <td><%= item.deliveryStatus %></td>
-                            <td>
-                                <% const getNextStatus = (currentStatus) => {
-                                    const statusFlow = {
-                                        'Pending': 'Shipped',
-                                        'Shipped': 'On Transit',
-                                        'On Transit': 'Out for Delivery',
-                                        'Out for Delivery': 'Delivered'
-                                    };
-                                    return statusFlow[currentStatus];
-                                } %>
-
-                                <% if (item.deliveryStatus === 'Pending') { %>
-                                    <button class="btn btn-success btn-sm changeStatus"
-                                            data-product-id="<%= item.productId._id %>"
-                                            data-status="Shipped"
-                                            data-payment-method="<%= order.paymentMethod %>"
-                                            data-payment-status="<%= order.paymentStatus %>">
-                                        Mark as Shipped
-                                    </button>
-                                    <button class="btn btn-danger btn-sm changeStatus"
-                                            data-product-id="<%= item.productId._id %>"
-                                            data-status="Admin Cancelled"
-                                            data-payment-method="<%= order.paymentMethod %>"
-                                            data-payment-status="<%= order.paymentStatus %>">
-                                        Cancel Order
-                                    </button>
-                                <% } else if (['Shipped', 'On Transit', 'Out for Delivery'].includes(item.deliveryStatus)) { %>
-                                    <button class="btn btn-success btn-sm changeStatus"
-                                            data-product-id="<%= item.productId._id %>"
-                                            data-status="<%= getNextStatus(item.deliveryStatus) %>"
-                                            data-payment-method="<%= order.paymentMethod %>"
-                                            data-payment-status="<%= order.paymentStatus %>">
-                                        Mark as <%= getNextStatus(item.deliveryStatus) %>
-                                    </button>
-                                <% } else if (item.deliveryStatus === 'Return Pending') { %>
-                                    <button class="btn btn-warning btn-sm changeStatus"
-                                            data-product-id="<%= item.productId._id %>"
-                                            data-status="Returned"
-                                            data-payment-method="<%= order.paymentMethod %>"
-                                            data-payment-status="<%= order.paymentStatus %>">
-                                        Mark as Returned
-                                    </button>
-                                <% } %>
-                            </td>
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-
-            <h2>Delivery Address</h2>
-            <p>
-                <%= order.address.name %>, <%= order.address.houseName %>, <%= order.address.street %>,
-                <%= order.address.city %>, <%= order.address.country %> - <%= order.address.zipcode %><br>
-                Mobile: <%= order.address.mobile %>
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Order Details</h1>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Order ID: <%= order.orderId %></h5>
+          <p class="card-text">
+            Customer: <%= order.userId.name %> (<%= order.userId.email %>)
+          </p>
+          <p class="card-text">
+            Order Date: <%= order.orderDate.toLocaleDateString() %>
+          </p>
+          <p class="card-text">
+            Payment Method: <%= order.paymentMethod %>
+          </p>
+          <div class="payment-status">
+            <p class="card-text">
+              Payment Status: <span class="status"><%= order.paymentStatus %></span>
             </p>
+          </div>
+          <br>
+          <p class="card-text">
+            Grand Total: ₹<%= order.grandTotal.toFixed(2) %>
+          </p>
         </div>
+      </div>
+
+      <h2>Products</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Subtotal</th>
+            <th>Delivery Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+            // allow shipping if COD or Wallet, or if online and already Paid 
+            const canAdvance = 
+              order.paymentMethod === 'Cash on Delivery' 
+              || order.paymentMethod === 'Wallet' 
+              || order.paymentStatus === 'Paid';
+            const nextStatusMap = {
+              'Pending': 'Shipped',
+              'Shipped': 'On Transit',
+              'On Transit': 'Out for Delivery',
+              'Out for Delivery': 'Delivered'
+            };
+          %>
+
+          <% order.items.forEach(item => { %>
+            <tr>
+              <td><%= item.productId.name %></td>
+              <td>₹<%= item.price.toFixed(2) %></td>
+              <td><%= item.quantity %></td>
+              <td>₹<%= item.subtotal.toFixed(2) %></td>
+              <td><%= item.deliveryStatus %></td>
+              <td>
+                <% if (item.deliveryStatus === 'Pending') { %>
+                  <% if (canAdvance) { %>
+                    <button class="btn btn-success btn-sm changeStatus"
+                            data-product-id="<%= item.productId._id %>"
+                            data-status="Shipped">
+                      Mark as Shipped
+                    </button>
+                  <% } %>
+                  <button class="btn btn-danger btn-sm changeStatus"
+                          data-product-id="<%= item.productId._id %>"
+                          data-status="Admin Cancelled">
+                    Cancel Order
+                  </button>
+
+                <% } else if (['Shipped','On Transit','Out for Delivery'].includes(item.deliveryStatus)) { %>
+                  <% if (canAdvance) { 
+                       const next = nextStatusMap[item.deliveryStatus];
+                  %>
+                    <button class="btn btn-success btn-sm changeStatus"
+                            data-product-id="<%= item.productId._id %>"
+                            data-status="<%= next %>">
+                      Mark as <%= next %>
+                    </button>
+                  <% } %>
+
+                <% } else if (item.deliveryStatus === 'Return Pending') { %>
+                  <% if (canAdvance) { %>
+                    <button class="btn btn-warning btn-sm changeStatus"
+                            data-product-id="<%= item.productId._id %>"
+                            data-status="Returned">
+                      Mark as Returned
+                    </button>
+                  <% } %>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <h2>Delivery Address</h2>
+      <p>
+        <%= order.address.name %>, 
+        <%= order.address.houseName %>, 
+        <%= order.address.street %>,
+        <%= order.address.city %>, 
+        <%= order.address.country %> – 
+        <%= order.address.zipcode %><br>
+        Mobile: <%= order.address.mobile %>
+      </p>
     </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.changeStatus').forEach(button => {
-        button.addEventListener('click', function() {
-            const newStatus = this.getAttribute('data-status');
-            const productId = this.getAttribute('data-product-id');
-            const paymentMethod = this.getAttribute('data-payment-method');
-            const paymentStatus = this.getAttribute('data-payment-status');
+  document.querySelectorAll('.changeStatus').forEach(button => {
+    button.addEventListener('click', function() {
+      const newStatus = this.getAttribute('data-status');
+      const productId = this.getAttribute('data-product-id');
 
-            let confirmationMessage = `You are about to change the delivery status to ${newStatus}.`;
-            let warningText = '';
-            if (!['Admin Cancelled', 'Return Pending', 'Returned'].includes(newStatus)) {
-                if (paymentMethod !== 'Cash on Delivery' && paymentStatus !== 'Paid') {
-                    warningText = 'Note: This order\'s payment is still pending.';
-                }
+      let confirmText = `You are about to change the delivery status to "${newStatus}".`;
+      if (newStatus === 'Admin Cancelled') {
+        confirmText = 'You are about to cancel this order. This action cannot be undone.';
+      } else if (newStatus === 'Returned') {
+        confirmText = 'You are about to mark this item as returned. This action cannot be undone.';
+      }
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: confirmText,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, update',
+        cancelButtonText: 'No, keep'
+      }).then(result => {
+        if (result.isConfirmed) {
+          fetch('/admin/update-order-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: '<%= order._id %>',
+              productId,
+              newStatus
+            })
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) {
+              Swal.fire('Error', data.error, 'error');
+            } else {
+              Swal.fire('Updated', data.message, 'success')
+                .then(() => location.reload());
             }
-
-            if (newStatus === 'Admin Cancelled') {
-                confirmationMessage = 'You are about to cancel this order. This action cannot be undone.';
-            } else if (newStatus === 'Returned') {
-                confirmationMessage = 'You are about to mark this item as returned. This action cannot be undone.';
-            }
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: confirmationMessage,
-                html: warningText ? `${confirmationMessage}<br><br><small>${warningText}</small>` : confirmationMessage,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, update status',
-                cancelButtonText: 'No, cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const data = {
-                        orderId: '<%= order._id %>',
-                        productId: productId,
-                        newStatus: newStatus,
-                    };
-
-                    updateStatus(data);
-                }
-            });
-        });
-    });
-});
-
-function updateStatus(data) {
-    fetch('/admin/update-order-status', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message.includes("Payment not completed")) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Cannot Update Status',
-                text: 'Payment is not completed for this order.',
-            });
-        } else if (data.refunded) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Status Updated',
-                html: `${data.message}<br>Refunded amount: ₹${data.amount.toFixed(2)}`,
-            }).then(() => {
-                location.reload();
-            });
-        } else {
-            Swal.fire({
-                icon: 'success',
-                title: 'Status Updated',
-                text: data.message,
-            }).then(() => {
-                location.reload();
-            });
+          })
+          .catch(() => Swal.fire('Error', 'Could not update status', 'error'));
         }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'An error occurred while updating the status.', 'error');
+      });
     });
-}
+  });
+});
 </script>
 
 <%- include("../partials/admin/footer") %>

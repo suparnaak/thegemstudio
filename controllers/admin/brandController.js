@@ -5,18 +5,25 @@ const listBrands = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const brands = await Brand.find({})
+    const query = search
+      ? { brandName: { $regex: search, $options: "i" } }
+      : {};
+
+    const brands = await Brand.find(query)
+      .sort({ createdOn: -1 })  
       .skip(skip)
       .limit(limit);
-    
-    const totalBrands = await Brand.countDocuments({});
+
+    const totalBrands = await Brand.countDocuments(query);
     const totalPages = Math.ceil(totalBrands / limit);
 
     res.render("brands-list", {
-      brands,  
+      brands,
       currentPage: page,
       totalPages,
+      search,
     });
   } catch (error) {
     console.log("Error listing Brands:", error);
@@ -67,7 +74,7 @@ const blockBrand = async (req, res) => {
     const { id } = req.params;
     await Brand.findByIdAndUpdate(id, { isListed: false });
    
-    res.redirect("/admin/brands");
+    res.json({ success: true, isListed: false });
   } catch (error) {
     console.log("Error deleting Brands:", error);
     res.redirect("/admin/pageerror");
@@ -79,7 +86,7 @@ const unblockBrand = async (req, res) => {
     const { id } = req.params;
     await Brand.findByIdAndUpdate(id, { isListed: true });
    
-    res.redirect("/admin/brands");
+    res.json({ success: true, isListed: true });
   } catch (error) {
     console.log("Error deleting Brands:", error);
     res.redirect("/admin/pageerror");

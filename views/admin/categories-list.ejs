@@ -1,97 +1,152 @@
 <%- include("../../views/partials/admin/header") %>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-            <h1>Category Management</h1>
-            <a href="/admin/categories/add" class="btn btn-primary mb-3">Add New Category</a>
-            <table class="table table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Offer (%)</th>
-                        <th>Status</th> <!-- Added Status Column -->
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% categories.forEach(category => { %>
-                        <tr>
-                            <td><%= category.name %></td>
-                            <td><%= category.description %></td>
-                            <td><%= category.offer %></td>
-                            <td><%= category.isListed ? 'Active' : 'Blocked' %></td> <!-- Show Category Status -->
-                            <td>
-                                <a href="/admin/categories/edit/<%= category._id %>"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                
-                                <!-- Toggle Block/Unblock button based on category status -->
-                                <% if (category.isListed) { %>
-                                    <button type="button" class="btn btn-danger btn-sm"
-                                        onclick="toggleCategoryStatus('<%= category._id %>', 'block')">Block</button>
-                                <% } else { %>
-                                    <button type="button" class="btn btn-success btn-sm"
-                                        onclick="toggleCategoryStatus('<%= category._id %>', 'unblock')">Unblock</button>
-                                <% } %>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <h1>Category Management</h1>
+      <a href="/admin/categories/add" class="btn btn-primary mb-3">Add New Category</a>
 
-            <!-- Pagination -->
-            <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                <ul class="pagination">
-                    <% if (currentPage > 1) { %>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                        </li>
-                    <% } %>
-
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                        </li>
-                    <% } %>
-
-                    <% if (currentPage < totalPages) { %>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
+      <!-- Search Form -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <form action="/admin/categories" method="get" class="d-flex">
+            <input type="search" name="search" class="form-control" placeholder="Search categories..."
+              value="<%= search %>" id="search-input">
+            <button type="submit" class="btn btn-primary ml-2">Search</button>
+            <% if (search) { %>
+              <a href="/admin/categories" class="btn btn-link ml-2 p-2" style="text-decoration: underline;">Clear</a>
+            <% } %>
+          </form>
         </div>
+      </div>
+
+      <!-- Categories Table -->
+      <table class="table table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Offer (%)</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% categories.forEach(category => { %>
+            <tr id="row-<%= category._id %>">
+              <td><%= category.name %></td>
+              <td><%= category.description %></td>
+              <td><%= category.offer %></td>
+              <td><%= category.isListed ? 'Active' : 'Blocked' %></td>
+              <td>
+                <a href="/admin/categories/edit/<%= category._id %>" class="btn btn-warning btn-sm">Edit</a>
+                <% if (category.isListed) { %>
+                  <button type="button" class="btn btn-danger btn-sm block-btn" data-id="<%= category._id %>">Block</button>
+                <% } else { %>
+                  <button type="button" class="btn btn-success btn-sm unblock-btn" data-id="<%= category._id %>">Unblock</button>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <nav aria-label="Page navigation" class="d-flex justify-content-center">
+        <ul class="pagination">
+          <% if (currentPage > 1) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">Previous</a>
+            </li>
+          <% } %>
+
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+              <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+            </li>
+          <% } %>
+
+          <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+              <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
     </div>
+  </div>
 </div>
 
+<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    function toggleCategoryStatus(categoryId, action) {
-        let actionText = action === 'block' ? 'block' : 'unblock';
-        let confirmationText = action === 'block' ? "This category will be hidden from users!" : "This category will be visible to users!";
-        let confirmButtonText = action === 'block' ? 'Yes, block it!' : 'Yes, unblock it!';
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = document.querySelector("table");
+
+    table.addEventListener("click", function (e) {
+      if (e.target.classList.contains("block-btn") || e.target.classList.contains("unblock-btn")) {
+        const categoryId = e.target.getAttribute("data-id");
+        const action = e.target.classList.contains("block-btn") ? "block" : "unblock";
+        const isBlocking = action === "block";
 
         Swal.fire({
-            title: 'Are you sure?',
-            text: confirmationText,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: confirmButtonText
+          title: `Are you sure you want to ${action} this category?`,
+          text: isBlocking
+            ? "This category will be hidden from users!"
+            : "This category will be visible to users!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: `Yes, ${action} it!`
         }).then((result) => {
-            if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.action = `/admin/categories/${action}/${categoryId}`;
-                form.method = 'POST';
-                document.body.appendChild(form);
-                form.submit();
-            }
+          if (result.isConfirmed) {
+            fetch(`/admin/categories/${action}/${categoryId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              }
+            })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  const row = document.getElementById(`row-${categoryId}`);
+                  row.querySelector("td:nth-child(4)").textContent = data.isListed ? "Active" : "Blocked";
+                  row.querySelector("td:nth-child(5)").innerHTML = `
+                    <a href="/admin/categories/edit/${categoryId}" class="btn btn-warning btn-sm">Edit</a>
+                    ${data.isListed
+                      ? `<button type="button" class="btn btn-danger btn-sm block-btn" data-id="${categoryId}">Block</button>`
+                      : `<button type="button" class="btn btn-success btn-sm unblock-btn" data-id="${categoryId}">Unblock</button>`
+                    }
+                  `;
+                  Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: `Category ${action}ed successfully`,
+                    timer: 2000,
+                    showConfirmButton: false
+                  });
+                } else {
+                  Swal.fire("Error", "Operation failed", "error");
+                }
+              })
+              .catch(err => {
+                console.error(err);
+                Swal.fire("Error", "Something went wrong", "error");
+              });
+          }
         });
-    }
+      }
+    });
+
+    const searchInput = document.getElementById("search-input");
+    searchInput.addEventListener("input", function () {
+      if (this.value === "") {
+        window.location.href = "/admin/categories";
+      }
+    });
+  });
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

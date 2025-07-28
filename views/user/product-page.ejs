@@ -24,8 +24,8 @@
                         <img class="sale" src="/img/sale.png" alt="Sale">
                         <div class="preview slides_container">
                             <div class="prev_bg">
-                                <a href="/uploads/products/<%= product.images[0] %>" class="jqzoom" rel='gal1' title="">
-                                    <img src="/uploads/products/<%= product.images[0] %>" alt="<%= product.name %>"
+                                <a href="<%= product.images[0] %>" class="jqzoom" rel='gal1' title="">
+                                    <img src="<%= product.images[0] %>" alt="<%= product.name %>"
                                         title="" style="width: 100%">
                                 </a>
                             </div>
@@ -40,8 +40,8 @@
                             <% product.images.forEach((image, index)=> { %>
                                 <li>
                                     <a class="zoomThumbActive" href='javascript:void(0);'
-                                        rel="{gallery: 'gal1', smallimage: '/uploads/products/<%= image %>', largeimage: '/uploads/products/<%= image %>'}">
-                                        <img src='/uploads/products/<%= image %>' alt="">
+                                        rel="{gallery: 'gal1', smallimage: '<%= image %>', largeimage: '<%= image %>'}">
+                                        <img src='<%= image %>' alt="">
                                     </a>
                                 </li>
                                 <% }) %>
@@ -96,7 +96,9 @@
                                 <div class="clear"></div>
                             </div><!-- .ava_price -->
                             <div class="cart">
-                                <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"><img
+                                <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"
+                                    style="width:150px"
+                                    ><img
                                         src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
                                 <a href="#" class="wishlist" data-id="<%= product._id %>"><span></span>Add
                                     to Wishlist</a>
@@ -178,7 +180,7 @@
                                                 <% } %>
                                                     <div class="prev">
                                                         <a href="/product_page/<%= product._id %>"><img
-                                                                src="/uploads/products/<%= product.images[0] %>"
+                                                                src="<%= product.images[0] %>"
                                                                 alt="<%= product.name %>" title=""></a>
                                                     </div><!-- .prev -->
                                                     <h3 class="title">
@@ -321,7 +323,7 @@
                 li.innerHTML = `
             <a href="/product_page/${item.product._id}" class="prev_cart">
                 <div class="cart_vert">
-                    <img src="/uploads/products/${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
+                    <img src="${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
                 </div>
             </a>
             <div class="cont_cart">

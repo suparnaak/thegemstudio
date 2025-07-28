@@ -72,11 +72,15 @@ const verifyRetryPayment = async (req, res) => {
         const generated_signature = hmac.digest('hex');
 
         if (generated_signature === payment.razorpay_signature) {
-            await Order.findByIdAndUpdate(order.orderId, {
-                paymentStatus: 'Paid',
-                'payment.paymentId': payment.razorpay_payment_id,
-                'payment.orderId': order.razorpayOrderId
-            });
+            const updated = await Order.findByIdAndUpdate(order.orderId, {
+    paymentStatus: 'Paid',
+    razorpayPaymentId: payment.razorpay_payment_id
+  }, { new: true });
+
+  await Cart.findOneAndUpdate(
+    { userId: updated.userId },
+    { items: [], grandTotal: 0 }
+  );
 
             res.json({ success: true });
         } else {

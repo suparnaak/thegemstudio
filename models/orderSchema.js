@@ -71,8 +71,8 @@ const orderSchema = new Schema(
           default: "Pending",
         },
         deliveryDate: {
-          type: Date,  // Adding the delivery date for each product
-          default: null, // Initially null, can be updated when product is delivered
+          type: Date,  
+          default: null, 
         },
         
         cancelReason: {
@@ -112,7 +112,6 @@ const orderSchema = new Schema(
     timestamps: true, 
   }
 );
-
 
 const Order = mongoose.model("Order", orderSchema);
 

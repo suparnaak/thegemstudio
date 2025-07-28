@@ -34,8 +34,8 @@
                     <tr data-product-id="<%= item.product._id %>">
                       <td class="images" style="text-align: left;">
                         <a href="/product_page/<%= item.product._id %>">
-                          <img src="/uploads/products/<%= item.product.images[0] %>" alt="<%= item.product.name %>"
-                            title="">
+                          <img src="<%= item.product.images[0] %>" alt="<%= item.product.name %>" title="<%= item.product.name %>">
+
                         </a>
                       </td>
                       <td class="name" style="text-align: left;">
@@ -70,15 +70,14 @@
                     </tr>
                     <% }); %>
 
-                      <% // Then, render unavailable products %>
+                     
                         <% if (unavailableProducts && unavailableProducts.length> 0) { %>
                           <% unavailableProducts.forEach(function(product) { %>
                             <tr style="color: red;">
                               <td class="images" style="text-align: left;">
                                 <% if (product.id) { %>
                                   <a href="/product_page/<%= product.id %>">
-                                    <img src="/uploads/products/<%= product.images[0] %>" alt="<%= product.name %>"
-                                      title="">
+                                    <img src="<%= product.images[0] %>" alt="<%= product.name %>" title="<%= product.name %>">
                                   </a>
                                   <% } %>
                               </td>
@@ -394,7 +393,7 @@
           li.innerHTML = `
             <a href="/product_page/${item.product._id}" class="prev_cart">
               <div class="cart_vert">
-                <img src="/uploads/products/${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
+                <img src="${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
               </div>
             </a>
             <div class="cont_cart">

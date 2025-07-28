@@ -7,18 +7,22 @@ const listCoupons = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 3;
     const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const coupons = await Coupon.find({ is_deleted: { $ne: true } })
+    const query = {
+      is_deleted: { $ne: true },
+      ...(search && { code: { $regex: search, $options: "i" } }),
+    };
+
+    const coupons = await Coupon.find(query)
       .skip(skip)
       .limit(limit)
-      .sort({createdAt:-1});
+      .sort({ createdAt: -1 });
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     for (const coupon of coupons) {
-      if (coupon.is_deleted) continue;
-
       const startDate = new Date(coupon.start_date);
       const endDate = new Date(coupon.end_date);
 
@@ -41,21 +45,21 @@ const listCoupons = async (req, res) => {
       }
     }
 
-    const totalCoupons = await Coupon.countDocuments({
-      is_deleted: { $ne: true },
-    });
+    const totalCoupons = await Coupon.countDocuments(query);
     const totalPages = Math.ceil(totalCoupons / limit);
 
     res.render("coupons-list", {
       coupons,
       currentPage: page,
       totalPages,
+      search,
     });
   } catch (error) {
     console.log("Error listing coupons", error);
     res.redirect("/admin/pageerror");
   }
 };
+
 
 //add coupons
 const loadAddCoupons = async (req, res) => {
@@ -159,9 +163,6 @@ const addCoupons = async (req, res) => {
 const deleteCoupon = async (req, res) => {
   try {
     const couponId = req.params.id;
-
-    console.log(`Attempting to delete coupon with ID: ${couponId}`);
-
     const updatedCoupon = await Coupon.findByIdAndUpdate(
       couponId,
       {
@@ -172,21 +173,19 @@ const deleteCoupon = async (req, res) => {
     );
 
     if (!updatedCoupon) {
-      console.log(`No coupon found with ID: ${couponId}`);
-      return res.status(404).json({ message: "Coupon not found" });
+      return res.status(404).json({ success: false, message: "Coupon not found" });
     }
 
-    console.log("Updated coupon:", updatedCoupon);
-
-    res.redirect("/admin/coupons");
+    res.json({ success: true, message: "Coupon deleted successfully" });
   } catch (err) {
     console.error("Error in deleteCoupon:", err);
     res.status(500).json({
+      success: false,
       message: "An error occurred while deleting the coupon",
-      error: err.message,
     });
   }
 };
+
 module.exports = {
   listCoupons,
   loadAddCoupons,
