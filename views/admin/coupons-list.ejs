@@ -99,7 +99,7 @@
     }).then((result) => {
       if (result.isConfirmed) {
         fetch(`/admin/coupons/delete/${couponId}`, {
-          method: 'POST',
+          method: 'PATCH',
         })
         .then(res => res.json())
         .then(data => {

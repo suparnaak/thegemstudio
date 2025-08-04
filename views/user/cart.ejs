@@ -16,6 +16,12 @@
         </header>
         <article>
           <div id="cart-container">
+            <% if (typeof errorMessage !== 'undefined') { %>
+  <div class="alert alert-warning text-center my-3">
+    <%= errorMessage %>
+  </div>
+<% } %>
+
             <table class="cart_product">
               <tr class="bg">
                 <th class="images" style="text-align: left;"></th>
@@ -125,10 +131,21 @@
                       </span></td>
                   </tr>
                 </table>
-                <form action="/checkout" method="POST">
+                <!-- <form action="/checkout" method="POST">
                   <button type="submit" class="checkout" id="checkout-button" >PROCEED TO ORDER <img
                       src="/img/checkout.png" alt="" title=""></button>
-                </form>
+                </form> -->
+                <form action="/checkout" method="POST">
+  <button
+    type="submit"
+    class="checkout"
+    id="checkout-button"
+    <% if (!cart || cart.length === 0) { %> disabled <% } %>
+  >
+    PROCEED TO ORDER <img src="/img/checkout.png" alt="" title="">
+  </button>
+</form>
+
               </div><!-- .total -->
             </div><!-- .grid_4 -->
             <div class="clear"></div>

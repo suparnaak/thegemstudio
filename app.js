@@ -11,8 +11,8 @@ const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter");
 db();
 
-app.use(express.json()); //form data is converted into json
-app.use(express.urlencoded({ extended: true })); //to convert query string data
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 //session management
 app.use(

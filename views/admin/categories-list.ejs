@@ -103,7 +103,7 @@
         }).then((result) => {
           if (result.isConfirmed) {
             fetch(`/admin/categories/${action}/${categoryId}`, {
-              method: "POST",
+              method: "PATCH",
               headers: {
                 "Content-Type": "application/json"
               }

@@ -80,6 +80,7 @@ const listOrderDetails = async (req, res) => {
   }
 };
 
+
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, productId, newStatus } = req.body;
@@ -89,7 +90,7 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const item = order.items.find((item) => item.productId.equals(productId));
+    const item = order.items.find(i => i.productId.equals(productId));
     if (!item) {
       return res.status(404).json({ message: "Product not found in the order" });
     }
@@ -98,7 +99,6 @@ const updateOrderStatus = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product details not found" });
     }
-    const productName = product.name;
 
     const validStatusTransitions = {
       'Pending': ['Shipped', 'Admin Cancelled'],
@@ -107,15 +107,53 @@ const updateOrderStatus = async (req, res) => {
       'Out for Delivery': ['Delivered'],
       'Return Pending': ['Returned']
     };
-
     if (!validStatusTransitions[item.deliveryStatus]?.includes(newStatus)) {
-      return res.status(400).json({ 
-        message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}` 
+      return res.status(400).json({
+        message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}`
       });
     }
 
-    if (['Admin Cancelled', 'Return Pending', 'Returned'].includes(newStatus)) {
+    if (['Admin Cancelled', 'Returned'].includes(newStatus) && order.paymentStatus === 'Paid') {
+      product.quantity += item.quantity;
+      product.status = product.quantity > 0 ? 'Available' : 'Out of Stock';
+      await product.save();
 
+      item.deliveryStatus = newStatus;
+      item.deliveryDate = new Date();
+
+      let wallet = await Wallet.findOne({ userId: order.userId });
+      if (!wallet) {
+        wallet = new Wallet({ userId: order.userId, balance: 0, transactions: [] });
+      }
+
+      const totalSubtotals = order.items.reduce((sum, it) => sum + it.subtotal, 0);
+      const refundAmount = item.subtotal - ((totalSubtotals - order.grandTotal) / order.items.length);
+      if (isNaN(refundAmount)) {
+        throw new Error(`Invalid refund amount: ${refundAmount}`);
+      }
+
+      wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
+      wallet.transactions.push({
+        type: 'credit',
+        amount: refundAmount,
+        description: `Refund for ${newStatus.toLowerCase()} - Order #${order.orderId} - ${product.name}`,
+        date: new Date(),
+        transactionId: generateTransactionId()
+      });
+      await wallet.save();
+
+      await order.save();
+
+      return res.json({
+        message: `Status updated to '${newStatus}', stock restored, and ₹${refundAmount} refunded.`, 
+        refunded: true,
+        amount: refundAmount,
+        newStatus: item.deliveryStatus,
+        paymentStatus: order.paymentStatus
+      });
+    }
+
+    if (['Admin Cancelled', 'Return Pending'].includes(newStatus)) {
       item.deliveryStatus = newStatus;
     } else {
       if (order.paymentMethod === 'Cash on Delivery') {
@@ -126,9 +164,7 @@ const updateOrderStatus = async (req, res) => {
         }
       } else {
         if (order.paymentStatus !== 'Paid' && item.deliveryStatus === 'Pending') {
-          return res.status(400).json({ 
-            message: "Payment not completed. Cannot update delivery status." 
-          });
+          return res.status(400).json({ message: 'Payment not completed. Cannot update delivery status.' });
         }
         item.deliveryStatus = newStatus;
         if (newStatus === 'Delivered') {
@@ -136,69 +172,18 @@ const updateOrderStatus = async (req, res) => {
         }
       }
     }
-    if ((newStatus === "Returned" || newStatus === "Admin Cancelled") && 
-        order.paymentStatus === "Paid") {
-      let wallet = await Wallet.findOne({ userId: order.userId });
-
-      if (!wallet) {
-        wallet = new Wallet({
-          userId: order.userId,
-          balance: 0,
-          transactions: [],
-        });
-      }
-
-      const totalSubtotals = order.items.reduce(
-        (sum, item) => sum + item.subtotal,
-        0
-      );
-      const refundAmount =
-        item.subtotal - 
-        (totalSubtotals - order.grandTotal) / order.items.length;
-
-      if (isNaN(refundAmount)) {
-        throw new Error(
-          `Invalid refund amount for order ${order.orderId} and product ${productName}`
-        );
-      }
-
-      wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
-
-      const transactionId = generateTransactionId();
-      
-      const transaction = {
-        type: "credit",
-        amount: refundAmount,
-        description: `Refund for ${newStatus.toLowerCase()} - Order #${order.orderId} - ${productName}`,
-        date: new Date(),
-        transactionId,
-      };
-
-      wallet.transactions.push(transaction);
-      await wallet.save();
-      await order.save();
-
-      return res.json({
-        message: `Delivery status updated and refund processed successfully!`,
-        refunded: true,
-        amount: refundAmount,
-        newStatus: item.deliveryStatus,
-        paymentStatus: order.paymentStatus
-      });
-    }
 
     await order.save();
-    
-    return res.json({ 
-      message: "Delivery status updated successfully!",
+    return res.json({
+      message: 'Delivery status updated successfully!',
       newStatus: item.deliveryStatus,
       deliveryDate: item.deliveryDate,
       paymentStatus: order.paymentStatus
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error updating order status:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 function generateTransactionId() {

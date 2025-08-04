@@ -4,7 +4,7 @@
     <div class="row">
       <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
         <h1>Edit Category</h1>
-        <form id="edit-category-form" method="POST">
+        <form id="edit-category-form" method="PATCH">
           <div class="form-group">
             <label for="name">Category Name</label>
             <input type="text" class="form-control" id="name" name="name" value="<%= category.name %>" required />
@@ -59,7 +59,7 @@
 
       try {
         const response = await fetch(`/admin/categories/edit/${categoryId}`, {
-          method: "POST",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, description, offer }),
         });

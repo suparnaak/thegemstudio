@@ -103,7 +103,7 @@
         }).then((result) => {
           if (result.isConfirmed) {
             fetch(`/admin/brands/${action}/${brandId}`, {
-              method: "POST",
+              method: "PATCH",
               headers: { "Content-Type": "application/json" }
             })
               .then(res => res.json())

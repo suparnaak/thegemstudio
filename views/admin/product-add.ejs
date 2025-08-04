@@ -106,6 +106,8 @@
   </div>
 </div>
 
+<!-- Add SweetAlert2 Script -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Add Cropper.js Script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
@@ -355,7 +357,13 @@
   fileInput.addEventListener('change', function(e) {
     const files = e.target.files;
     if (files.length < 3) {
-      alert('Please select at least 3 images');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Insufficient Images',
+        text: 'Please select at least 3 images',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK'
+      });
       return;
     }
     validateImages();
@@ -403,6 +411,17 @@
       return;
     }
 
+    // Show loading alert
+    Swal.fire({
+      title: 'Adding Product...',
+      text: 'Please wait while we add your product',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    });
+
     const formData = new FormData(form);
     
     // Remove the original file input images
@@ -429,14 +448,29 @@
       const result = await response.json();
       
       if (response.ok) {
-        alert('Product added successfully!');
-        window.location.href = '/admin/products';
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Product added successfully!',
+          confirmButtonColor: '#28a745',
+          confirmButtonText: 'OK'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = '/admin/products';
+          }
+        });
       } else {
         throw new Error(result.message || 'Failed to add product');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert(error.message || 'Failed to add product. Please try again.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: error.message || 'Failed to add product. Please try again.',
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'OK'
+      });
     }
   });
 </script>

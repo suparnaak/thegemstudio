@@ -1,4 +1,3 @@
-<!--header begins-->
 <%- include("../../views/partials/user/header") %>
 <!--header ends-->
 
@@ -9,6 +8,12 @@
         </div>
     </div>
 </div>
+
+<% if (typeof errorMessage !== 'undefined') { %>
+  <div class="alert alert-warning text-center my-3">
+    <%= errorMessage %>
+  </div>
+<% } %>
 
 <section id="checkout-main" class="checkout-section">
     <div class="container_12">
@@ -48,22 +53,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% availableProducts.forEach(function(product) { %>
+                    <% availableProducts.forEach(function(item) { %>
                         <tr>
-                            <td style="text-align: left;"><%= product.name %></td>
-                            <td style="text-align: left;"><%= product.quantity %></td>
-                            <td style="text-align: left;">₹<%= product.price %></td>
-                            <td style="text-align: left;"><%= product.appliedDiscountPercent %></td>
-                            <td style="text-align: left;">₹<%= product.finalPrice %></td>
+                            <td style="text-align: left;"><%= item.product.name %></td>
+                            <td style="text-align: left;"><%= item.quantity %></td>
+                            <td style="text-align: left;">₹<%= item.product.price %></td>
+                            <td style="text-align: left;"><%= item.appliedDiscountPercent %>%</td>
+                            <td style="text-align: left;">₹<%= item.finalPrice %></td>
                             <td style="text-align: left;">Available</td>
                         </tr>
                     <% }) %>
                     <% unavailableProducts.forEach(function(product) { %>
-                        <tr style="color: red;">
-                            <td style="text-align: left;"><%= product.name %></td>
-                            <td style="text-align: left;">N/A</td>
-                            <td style="text-align: left;">N/A</td>
-                            <td style="text-align: left;"><%= product.status %></td>
+                        <tr class="table-danger">
+                            <td colspan="6" style="text-align: left;">
+                                <strong><%= product.name %></strong> &mdash; <%= product.status %>
+                            </td>
                         </tr>
                     <% }) %>
                 </tbody>
@@ -78,68 +82,54 @@
             </table>
 
             <div id="checkout-content" class="checkout-content">
-                <% if (availableProducts.length > 0) { %>
-                    <form action="/checkout/placeOrder" method="POST" id="checkout-form">
-                        <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
-                        <input type="hidden" name="grandTotal" id="grandTotal" value="<%= grandTotal %>">
-                        <input type="hidden" name="appliedCoupon" id="appliedCoupon">
+                <form action="/checkout/placeOrder" method="POST" id="checkout-form">
+                    <input type="hidden" name="availableProducts" value='<%= JSON.stringify(availableProducts) %>'>
+                    <input type="hidden" name="grandTotal" id="grandTotal" value="<%= grandTotal %>">
+                    <input type="hidden" name="appliedCoupon" id="appliedCoupon">
 
-                        <div id="delivery-address" class="checkout-step">
-                            <h3 class="step-title">1. Delivery Address</h3>
-
-                            <div class="saved-addresses">
-                                <h5>Select a Saved Address:</h5>
-                                <ul class="address-list">
-                                    <% addresses.forEach(function(address) { %>
-                                        <li>
-                                            <input type="radio" id="<%= address._id %>" name="delivery_address"
-                                                value="<%= address._id %>">
-                                            <label for="<%= address._id %>">
-                                                <%= address.name %>, <%= address.houseName %>, <%= address.street %>,
-                                                <%= address.city %>, <%= address.country %>, <%= address.mobile %>
-                                            </label>
-                                        </li>
-                                    <% }) %>
-                                </ul>
-                            </div>
-
-                            <div class="add-new-address">
-                                <a href="/manage-addresses/add-address" class="add-address-link">Click here to add a new address</a>
-                            </div>
+                    <div id="delivery-address" class="checkout-step">
+                        <h3 class="step-title">1. Delivery Address</h3>
+                        <div class="saved-addresses">
+                            <h5>Select a Saved Address:</h5>
+                            <ul class="address-list">
+                                <% addresses.forEach(function(address) { %>
+                                    <li>
+                                        <input type="radio" id="<%= address._id %>" name="delivery_address" value="<%= address._id %>">
+                                        <label for="<%= address._id %>">
+                                            <%= address.name %>, <%= address.houseName %>, <%= address.street %>, <%= address.city %>, <%= address.country %>, <%= address.mobile %>
+                                        </label>
+                                    </li>
+                                <% }) %>
+                            </ul>
                         </div>
-
-                        <div id="payment-method" class="checkout-step">
-                            <h3 class="step-title">2. Payment Method</h3>
-                            <div class="payment-options">
-                                <ul class="payment-list">
-                                    <li>
-                                        <input type="radio" id="cod" name="payment_method" value="Cash on Delivery">
-                                        <label for="cod">Cash on Delivery</label>
-                                    </li>
-                                    <li>
-                                        <input type="radio" id="netbanking" name="payment_method" value="Online">
-                                        <label for="netbanking">Pay Online</label>
-                                    </li>
-                                    <li>
-                                        <input type="radio" id="wallet" name="payment_method" value="Wallet">
-                                        <label for="wallet">Pay From Wallet</label>
-                                    </li>
-                                </ul>
-                            </div>
+                        <div class="add-new-address">
+                            <a href="/manage-addresses/add-address" class="add-address-link">Click here to add a new address</a>
                         </div>
+                    </div>
 
-                        <div id="place-order" class="checkout-step">
-                            <h3 class="step-title">3. Place Your Order</h3>
+                    <div id="payment-method" class="checkout-step">
+                        <h3 class="step-title">2. Payment Method</h3>
+                        <ul class="payment-list">
+                            <li><input type="radio" id="cod" name="payment_method" value="Cash on Delivery"><label for="cod">Cash on Delivery</label></li>
+                            <li><input type="radio" id="netbanking" name="payment_method" value="Online"><label for="netbanking">Pay Online</label></li>
+                            <li><input type="radio" id="wallet" name="payment_method" value="Wallet"><label for="wallet">Pay From Wallet</label></li>
+                        </ul>
+                    </div>
+
+                    <div id="place-order" class="checkout-step">
+                        <h3 class="step-title">3. Place Your Order</h3>
+                        <% if (availableProducts.length > 0) { %>
                             <button type="submit" class="button place-order-button">Place Order</button>
-                        </div>
-                    </form>
-                <% } else { %>
-                    <p>All products in your cart are unavailable. Unable to proceed with the order.</p>
-                <% } %>
+                        <% } else { %>
+                            <button type="button" class="button place-order-button" disabled>Place Order</button>
+                        <% } %>
+                    </div>
+                </form>
             </div>
-        </div><!-- .grid_12 -->
-    </div><!-- .container_12 -->
-</section><!-- #checkout-main -->
+        </div>
+    </div>
+</section>
+
 
 <div class="clear"></div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
