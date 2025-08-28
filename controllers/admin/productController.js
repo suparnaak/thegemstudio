@@ -151,39 +151,112 @@ const loadEditProduct = async (req, res) => {
 const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      name,
-      description,
-      brand,
-      category,
-      price,
-      discount,
-      quantity,
-      color,
-      material,
-    } = req.body;
+    const rawName = req.body.name ?? "";
+    const rawDescription = req.body.description ?? "";
+    const rawBrand = req.body.brand ?? "";
+    const rawCategory = req.body.category ?? "";
+    const rawPrice = req.body.price ?? "";
+    const rawDiscount = req.body.discount ?? "";
+    const rawQuantity = req.body.quantity ?? "";
+    const rawColor = req.body.color ?? "";
+    const rawMaterial = req.body.material ?? "";
+
+    const name = String(rawName).trim();
+    const description = String(rawDescription).trim();
+    const brand = rawBrand;
+    const category = rawCategory;
+    const price = parseFloat(rawPrice) || 0;
+    const discount = parseFloat(rawDiscount) || 0;
+    const quantity = parseInt(rawQuantity) || 0;
+    const color = String(rawColor).trim();
+    const material = String(rawMaterial).trim();
 
     const product = await Product.findById(id);
+    if (!product) {
+      return res.redirect("/admin/products?status=failure&message=Product not found");
+    }
 
-    let imagesToKeep = product.images;
+    const errors = {};
+    if (!name) errors.name = "Product name is required.";
+    if (!description) errors.description = "Description is required.";
 
+    const colorMaterialRegex = /^[a-zA-Z\s\-]+$/;
+    if (!color) {
+      errors.color = "Color is required.";
+    } else if (!colorMaterialRegex.test(color)) {
+      errors.color = "Color can only contain letters, spaces, and hyphens.";
+    }
+
+    if (!material) {
+      errors.material = "Material is required.";
+    } else if (!colorMaterialRegex.test(material)) {
+      errors.material = "Material can only contain letters, spaces, and hyphens.";
+    }
+
+    if (price < 0) errors.price = "Price must be >= 0.";
+    if (discount < 0 || discount > 90) errors.discount = "Discount must be between 0 and 90.";
+    if (quantity < 0) errors.quantity = "Quantity must be >= 0.";
+
+    let imagesToRemove = [];
     if (req.body.removeImages) {
-      const imagesToRemove = Array.isArray(req.body.removeImages)
+      imagesToRemove = Array.isArray(req.body.removeImages)
         ? req.body.removeImages
         : [req.body.removeImages];
-
-      imagesToKeep = product.images
-        .map((img) => (typeof img === "string" ? img : img.path))
-        .filter((img) => !imagesToRemove.includes(img));
     }
 
-    let newImages = [];
-    if (req.files && req.files.length > 0) {
-      newImages = req.files.map((file) => file.path); 
+    const remainingExistingImages = product.images.filter(img => !imagesToRemove.includes(img)).length;
+
+    const uploadedFiles = Array.isArray(req.files) ? req.files : [];
+    const newImagesCount = uploadedFiles.length;
+
+    const totalAfterUpdate = remainingExistingImages + newImagesCount;
+    if (totalAfterUpdate < 3) {
+      errors.imageCount = `At least 3 images are required. You will have ${totalAfterUpdate} image(s) after update.`;
     }
 
-    const updatedImages = [...imagesToKeep, ...newImages];
-    const status = parseInt(quantity) === 0 ? "Out of Stock" : "Available";
+    if (Object.keys(errors).length > 0) {
+      for (const f of uploadedFiles) {
+        try {
+          if (f && f.path && fs.existsSync(f.path)) {
+            fs.unlinkSync(f.path);
+          }
+        } catch (e) {
+          console.warn("Failed to cleanup uploaded file:", f?.path, e.message);
+        }
+      }
+
+      const formData = {
+        name,
+        description,
+        brand,
+        category,
+        price,
+        discount,
+        quantity,
+        color,
+        material
+      };
+
+      const categories = await loadCategories();
+      const brands = await loadBrands();
+
+      return res.status(400).render("product-edit", {
+        product,        
+        categories,
+        brands,
+        admin: true,
+        pageTitle: "Edit Product",
+        errors,
+        formData,
+        removedImages: imagesToRemove
+      });
+    }
+
+    const imagesToKeep = product.images.filter(img => !imagesToRemove.includes(img));
+    const newImagePaths = uploadedFiles.map(f => f.path);
+    const updatedImages = [...imagesToKeep, ...newImagePaths];
+
+    const status = quantity === 0 ? "Out of Stock" : "Available";
 
     const updatedProduct = {
       name,
@@ -201,16 +274,18 @@ const editProduct = async (req, res) => {
 
     await Product.findByIdAndUpdate(id, { $set: updatedProduct });
 
-    res.redirect(
-      "/admin/products?status=success&message=Product has been updated successfully."
-    );
+    return res.redirect("/admin/products?status=success&message=Product has been updated successfully.");
   } catch (error) {
-    console.log("Error editing product:", error);
-    res.redirect(
-      `/admin/products?status=failure&message=Error occurred while updating the product.`
-    );
+    console.error("Error editing product:", error);
+    if (req.files && req.files.length) {
+      for (const f of req.files) {
+        try { if (f && f.path && fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch (e) {}
+      }
+    }
+    return res.redirect(`/admin/products/edit/${req.params.id}?status=failure&message=Error occurred while updating the product.`);
   }
 };
+
 
 // Soft delete a product
 const blockProduct = async (req, res) => {

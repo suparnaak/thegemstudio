@@ -1,63 +1,257 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Complete Payment — The Gem Studio</title>
+
+  <!-- Bootstrap 3 -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-  <title>Razorpay Checkout</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+  <style>
+    body {
+      background: #f6f8fb;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: #333;
+      padding: 60px 15px;
+    }
+
+    .checkout-wrapper {
+      max-width: 960px; /* wider */
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(40,44,63,0.12);
+      overflow: hidden;
+      font-size: 1.2rem;
+    }
+
+    .card-header {
+      background: linear-gradient(90deg, #5b6e90, #7d92b8);
+      color: #fff;
+      padding: 28px 30px;
+    }
+
+    .card-header h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .card-body {
+      padding: 36px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 1.2rem;
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .pay-box {
+      background: #fafbfd;
+      border: 1px solid #eef2f9;
+      padding: 28px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .pay-amount {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #2a4a85;
+    }
+
+    .small-muted {
+      color: #7b7f87;
+      font-size: 1.05rem;
+    }
+
+    .btn-pay {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 1.3rem;
+      border-radius: 8px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 767px) {
+      .checkout-wrapper { padding: 15px; }
+      .pay-amount { font-size: 1.7rem; }
+      .btn-pay { font-size: 1.1rem; padding: 14px; }
+    }
+  </style>
+
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 
 <body>
-  <div class="form-gap"></div>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-4 col-md-offset-4">
-        <div class="panel panel-default">
-          <div class="panel-body">
-            <div class="text-center">
-              <h3><i class="fa fa-lock fa-4x"></i></h3>
-              <h1 class="text-center">Complete Your Payment</h1>
-              <button id="rzp-button1" type="button" class="btn btn-lg btn-primary btn-block">Pay Now</button>
-              <script>
-                var options = {
-                  "key": "<%= razorpayKeyId %>",
-                  "amount": "<%= order.grandTotal * 100 %>",
-                  "currency": "INR",
-                  "name": "THE GEM STUDIO",
-                  "description": "Order Payment",
-                  "order_id": "<%= razorpayOrder.id %>",
-                  "handler": function (response) {
-                    window.location.href = "/payment/verify?razorpay_payment_id=" + response.razorpay_payment_id + "&razorpay_order_id=" + response.razorpay_order_id + "&razorpay_signature=" + response.razorpay_signature;
-                  },
-                  "prefill": {
-                    "name": "<%= user.name %>",
-                    "email": "<%= user.email %>"
-                  },
-                  "theme": {
-                    "color": "#F37254"
-                  },
-                  "modal": {
-                    "ondismiss": function () {
-                      window.location.href = "/payment/verify?razorpay_order_id=<%= razorpayOrder.id %>&paymentFailed=true";
-                    }
-                  }
-                };
+  <div class="checkout-wrapper">
+    <div class="card">
+      <div class="card-header clearfix">
+        <div style="float:left;">
+          <h3>Complete Your Payment</h3>
+          <div class="small-muted" style="margin-top:6px;">Secure payment powered by Razorpay</div>
+        </div>
+        <div style="float:right; text-align:right;">
+          <div style="font-weight:700; font-size:1.2rem;">THE GEM STUDIO</div>
+          <div class="small-muted">support@thegemstudio.example</div>
+        </div>
+      </div>
 
-                var rzp1 = new Razorpay(options);
+      <div class="card-body">
+        <div class="row">
+          <!-- Left: Order info -->
+          <div class="col-md-7">
+            <h4 style="margin-top:0; font-size:1.4rem;">Order Summary</h4>
 
-                document.getElementById('rzp-button1').onclick = function (e) {
-                  rzp1.open();
-                  e.preventDefault();
-                }
-              </script>
+            <div class="summary-row">
+              <div>
+                <div class="small-muted">Order ID</div>
+                <div style="font-weight:600; font-size:1.2rem;">
+                  <%= order.orderId ? order.orderId : (order._id ? order._id.toString() : 'N/A') %>
+                </div>
+              </div>
+            </div>
 
+            <div class="summary-row">
+              <div>
+                <div class="small-muted">Payment Method</div>
+                <div style="font-weight:600; font-size:1.2rem;"><%= order.paymentMethod || 'Online' %></div>
+              </div>
+            </div>
+
+            <% if (order.coupons) { %>
+              <div style="margin-top:16px;">
+                <div class="small-muted">Applied Coupon</div>
+                <div style="font-weight:600; font-size:1.2rem;"><%= order.coupons %></div>
+              </div>
+            <% } %>
+
+            <div style="margin-top:18px;" class="small-muted">
+              <div style="font-size:1.1rem;">Billing: <strong><%= user && user.name ? user.name : 'Customer' %></strong></div>
+              <% if (order.address && order.address.city) { %>
+                <div style="font-size:1rem;">
+                  <%= order.address.houseName ? order.address.houseName + ', ' : '' %>
+                  <%= order.address.street ? order.address.street + ', ' : '' %>
+                  <%= order.address.city %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Right: Payment box -->
+          <div class="col-md-5">
+            <div class="pay-box">
+              <div style="margin-bottom:16px;">
+                <div class="small-muted">Amount to Pay</div>
+                <div class="pay-amount">₹ <%= Number(order.grandTotal || 0).toFixed(2) %></div>
+              </div>
+
+              <div style="margin-bottom:22px;">
+                <button id="rzp-button" class="btn btn-primary btn-pay" type="button">
+                  <i class="fa fa-credit-card"></i> Pay Now
+                </button>
+                <div id="spinner" style="display:none; margin-top:12px;">
+                  <span class="small-muted">Opening payment window...</span>
+                </div>
+              </div>
+
+              <div class="small-muted" style="font-size:1rem;">
+                By clicking Pay Now you agree to our <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>.
+              </div>
+            </div>
+
+            <div style="margin-top:16px; text-align:center;">
+              <a href="/contact" class="small-muted">Need help? Contact support</a>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</body>
 
+  <script>
+    (function() {
+      var payBtn = document.getElementById('rzp-button');
+
+      function setLoading(on) {
+        if (on) {
+          payBtn.disabled = true;
+          payBtn.innerHTML = '<i class="fa fa-credit-card"></i> Processing <span class="spinner"></span>';
+        } else {
+          payBtn.disabled = false;
+          payBtn.innerHTML = '<i class="fa fa-credit-card"></i> Pay Now';
+        }
+      }
+
+      var options = {
+        "key": "<%= razorpayKeyId %>",
+        "amount": <%= Math.round(Number(order.grandTotal || 0) * 100) %>,
+        "currency": "INR",
+        "name": "THE GEM STUDIO",
+        "description": "Order Payment",
+        "order_id": "<%= razorpayOrder.id %>",
+        "handler": function (response) {
+          window.location.href = "/payment/verify?razorpay_payment_id=" + response.razorpay_payment_id + "&razorpay_order_id=" + response.razorpay_order_id + "&razorpay_signature=" + response.razorpay_signature;
+        },
+        "prefill": {
+          "name": "<%= (user && user.name) ? user.name : '' %>",
+          "email": "<%= (user && user.email) ? user.email : '' %>",
+          "contact": "<%= (user && user.mobile) ? user.mobile : '' %>"
+        },
+        "theme": { "color": "#5b6e90" },
+        "modal": {
+          "ondismiss": function () {
+            window.location.href = "/payment/verify?razorpay_order_id=<%= razorpayOrder.id %>&paymentFailed=true";
+          }
+        }
+      };
+
+      var rzp1 = new Razorpay(options);
+
+      payBtn.addEventListener('click', function(e) {
+        try {
+          setLoading(true);
+          setTimeout(function() {
+            rzp1.open();
+            setLoading(false);
+          }, 250);
+          e.preventDefault();
+        } catch (err) {
+          console.error("Razorpay open error:", err);
+          setLoading(false);
+          alert("Unable to open the payment window. Please try again.");
+        }
+      });
+    })();
+  </script>
+
+  <!-- Optional JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</body>
 </html>

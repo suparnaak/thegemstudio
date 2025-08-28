@@ -7,6 +7,16 @@
         <div class="container mt-4">
           <h2>Edit Product</h2>
         
+          <!-- Display error/success messages -->
+          <% if (typeof query !== 'undefined' && query.status) { %>
+            <div class="alert alert-<%= query.status === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+              <%= query.message %>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          <% } %>
+        
           <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
             <div class="form-group">
               <label for="name">Product Name</label>
@@ -74,29 +84,32 @@
         
             <!-- Image Upload Section -->
             <div class="form-group">
-              <label for="existingImages">Current Product Images</label>
-              <div class="d-flex flex-wrap">
+              <label for="existingImages">Current Product Images (Minimum 3 required)</label>
+              <div class="d-flex flex-wrap" id="existingImagesContainer">
                 <% if (product.images && product.images.length > 0) { %>
                   <% product.images.forEach(function(image, index) { %>
-                    <div class="me-2">
+                    <div class="me-2 mb-2 image-item">
                       <img src="<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
-                      <input type="checkbox" name="removeImages" value="<%= image %>"> Remove
+                      <div>
+                        <input type="checkbox" name="removeImages" value="<%= image %>" onchange="validateImageCount()"> Remove
+                      </div>
                     </div>
                   <% }) %>
                 <% } else { %>
                   <p>No images available for this product.</p>
                 <% } %>
               </div>
+              <small id="imageCountError" class="text-danger" style="display:none;">At least 3 images are required. Please add more images or uncheck some for removal.</small>
             </div>
         
             <div class="form-group">
-              <label for="images">Upload New Images (min 3)</label>
-              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+              <label for="images">Upload New Images</label>
+              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*" onchange="validateImageCount()">
             </div>
         
             <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
         
-            <button type="submit" class="btn btn-success">Update Product</button><br><br>
+            <button type="submit" class="btn btn-success" id="submitBtn">Update Product</button><br><br>
           </form>
         </div>
         
@@ -105,6 +118,12 @@
   <script>
     function hasOnlySpaces(value) {
       return value.trim().length === 0;
+    }
+
+    function hasNumbersOrSpecialChars(value) {
+      // Allow only letters, spaces, and common color/material words with hyphens
+      const regex = /^[a-zA-Z\s\-]+$/;
+      return !regex.test(value.trim());
     }
 
     function validateField(fieldId, errorId) {
@@ -119,19 +138,75 @@
         field.classList.remove('is-invalid');
       }
     }
-    function validateForm() {
 
-      const fields = [
+    function validateColorMaterialField(fieldId, errorId) {
+      const field = document.getElementById(fieldId);
+      const errorElement = document.getElementById(errorId);
+
+      if (hasOnlySpaces(field.value)) {
+        errorElement.textContent = `${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)} cannot contain only spaces.`;
+        errorElement.style.display = 'inline';
+        field.classList.add('is-invalid');
+        return false;
+      } else if (hasNumbersOrSpecialChars(field.value)) {
+        errorElement.textContent = `${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)} can only contain letters, spaces, and hyphens.`;
+        errorElement.style.display = 'inline';
+        field.classList.add('is-invalid');
+        return false;
+      } else {
+        errorElement.style.display = 'none';
+        field.classList.remove('is-invalid');
+        return true;
+      }
+    }
+
+    function validateImageCount() {
+      const existingImages = document.querySelectorAll('input[name="removeImages"]');
+      const newImageFiles = document.getElementById('images').files;
+      const errorElement = document.getElementById('imageCountError');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      let remainingExistingImages = 0;
+      existingImages.forEach(function(checkbox) {
+        if (!checkbox.checked) {
+          remainingExistingImages++;
+        }
+      });
+      
+      const newImagesCount = newImageFiles ? newImageFiles.length : 0;
+      
+      const totalImages = remainingExistingImages + newImagesCount;
+      
+      if (totalImages < 3) {
+        errorElement.style.display = 'inline';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('btn-secondary');
+        submitBtn.classList.remove('btn-success');
+        return false;
+      } else {
+        errorElement.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-secondary');
+        submitBtn.classList.add('btn-success');
+        return true;
+      }
+    }
+
+    function validateForm() {
+      const textFields = [
         { id: 'name', error: 'nameError' },
         { id: 'description', error: 'descriptionError' },
-        { id: 'brand', error: 'brandError' },
+        { id: 'brand', error: 'brandError' }
+      ];
+
+      const colorMaterialFields = [
         { id: 'color', error: 'colorError' },
         { id: 'material', error: 'materialError' }
       ];
 
       let isValid = true;
 
-      fields.forEach(function (field) {
+      textFields.forEach(function (field) {
         const inputField = document.getElementById(field.id);
         const errorField = document.getElementById(field.error);
 
@@ -145,8 +220,19 @@
         }
       });
 
+      colorMaterialFields.forEach(function (field) {
+        if (!validateColorMaterialField(field.id, field.error)) {
+          isValid = false;
+        }
+      });
+
+      if (!validateImageCount()) {
+        isValid = false;
+      }
+
       return isValid;
     }
+
     document.getElementById('name').addEventListener('blur', function () {
       validateField('name', 'nameError');
     });
@@ -160,11 +246,19 @@
     });
 
     document.getElementById('color').addEventListener('blur', function () {
-      validateField('color', 'colorError');
+      validateColorMaterialField('color', 'colorError');
+    });
+
+    document.getElementById('color').addEventListener('input', function () {
+      validateColorMaterialField('color', 'colorError');
     });
 
     document.getElementById('material').addEventListener('blur', function () {
-      validateField('material', 'materialError');
+      validateColorMaterialField('material', 'materialError');
+    });
+
+    document.getElementById('material').addEventListener('input', function () {
+      validateColorMaterialField('material', 'materialError');
     });
 
     document.querySelector('form').addEventListener('submit', function (event) {
@@ -172,7 +266,12 @@
         event.preventDefault();
       }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      validateImageCount();
+    });
   </script>
+  
   <script>
     const fileInput = document.getElementById('images');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
@@ -187,60 +286,56 @@
         reader.onload = function (event) {
           const imageData = event.target.result;
           const imagePreview = document.createElement('div');
-          imagePreview.className = 'image-preview';
+          imagePreview.className = 'image-preview me-2 mb-2';
+          imagePreview.style.cssText = 'display: inline-block; border: 1px solid #ddd; padding: 5px; border-radius: 4px;';
+          
           const img = document.createElement('img');
           img.src = imageData;
+          img.style.cssText = 'max-width: 150px; max-height: 150px; display: block;';
+          
+          const fileName = document.createElement('small');
+          fileName.textContent = file.name;
+          fileName.style.cssText = 'display: block; text-align: center; margin-top: 5px;';
+          
           imagePreview.appendChild(img);
+          imagePreview.appendChild(fileName);
           imagePreviewContainer.appendChild(imagePreview);
 
           img.addEventListener('click', function () {
             const modal = document.createElement('div');
             modal.className = 'modal';
+            modal.style.cssText = 'display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);';
+            
             const modalContent = document.createElement('div');
             modalContent.className = 'modal-content';
+            modalContent.style.cssText = 'margin: 15% auto; padding: 20px; width: 80%; max-width: 700px; background-color: white; border-radius: 5px;';
+            
             const closeButton = document.createElement('span');
             closeButton.className = 'close';
             closeButton.innerHTML = '&times;';
+            closeButton.style.cssText = 'color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;';
             closeButton.addEventListener('click', function () {
-              modal.style.display = 'none';
-              cropper.destroy();
+              document.body.removeChild(modal);
+              if (typeof cropper !== 'undefined') {
+                cropper.destroy();
+              }
             });
             modalContent.appendChild(closeButton);
 
             const cropImage = document.createElement('img');
             cropImage.src = imageData;
+            cropImage.style.cssText = 'max-width: 100%;';
             modalContent.appendChild(cropImage);
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
-            modal.style.display = 'block';
 
-            const cropper = new Cropper(cropImage, {
-              aspectRatio: 16 / 9,
-              viewMode: 1,
-              dragMode: 'move',
-              cropBoxResizable: true,
-              ready: function () {
-                const cropButton = document.createElement('button');
-                cropButton.innerHTML = 'Crop';
-                cropButton.className = 'crop';
-                cropButton.addEventListener('click', function () {
-                  const croppedCanvas = cropper.getCroppedCanvas();
-                  const croppedImage = croppedCanvas.toDataURL("image/png");
-                  img.src = croppedImage;
-                  modal.style.display = 'none';
-                  cropper.destroy();
-                });
-                modalContent.appendChild(cropButton);
-              }
-            });
           });
         };
         reader.readAsDataURL(file);
       }
+      
+      validateImageCount();
     });
-
-
-
   </script>
 
-  <%- include("../../views/partials/admin/footer") %>
+  <%- include("../../views/partials/admin/footer") %></document_content>
