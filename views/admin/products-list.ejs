@@ -113,14 +113,12 @@
             if (data.success) {
               Swal.fire(`${action.charAt(0).toUpperCase() + action.slice(1)}ed!`, data.message, 'success');
 
-              // Update button UI
               button.classList.toggle('btn-danger');
               button.classList.toggle('btn-success');
               button.classList.toggle('block-button');
               button.classList.toggle('unblock-button');
               button.textContent = isBlock ? 'Unblock' : 'Block';
 
-              // Update status if needed
               const row = document.getElementById(`row-${productId}`);
               if (row) {
                 const statusCell = row.querySelector('.status-text');
@@ -130,7 +128,6 @@
                 }
               }
 
-              // Re-bind the new button
               bindActionButton(button);
             } else {
               Swal.fire('Error!', data.message, 'error');
@@ -149,7 +146,6 @@
     bindActionButton(button);
   });
 
-  // Clear search input redirect
   const searchInput = document.getElementById('search-input');
   searchInput.addEventListener('input', function () {
     if (this.value === '') {

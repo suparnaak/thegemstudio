@@ -174,7 +174,6 @@
             const clearSearchButton = document.getElementById('clearSearch');
             const clearCategoryButton = document.getElementById('clearCategory');
 
-            // Clear search but maintain category and sort
             clearSearchButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 const url = new URL(window.location.href);
@@ -183,7 +182,6 @@
                 window.location.href = url.toString();
             });
 
-            // Clear category but maintain search and sort
             clearCategoryButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 const url = new URL(window.location.href);
@@ -193,14 +191,12 @@
             });
         });
 
-        // Updated sort function to preserve all filters
         function sortProducts() {
             const selectedOption = document.getElementById('sort-options').value;
             const url = new URL(window.location.href);
             url.searchParams.set('sort', selectedOption);
             url.searchParams.set('page', '1');
 
-            // Preserve existing search and category
             const searchQuery = '<%= searchQuery %>';
             const selectedCategory = '<%= selectedCategory %>';
 
@@ -214,7 +210,6 @@
             window.location.href = url.toString();
         }
 
-        // Function to remove only search filter
         function removeSearchFilter() {
             const url = new URL(window.location.href);
             url.searchParams.delete('search');
@@ -222,7 +217,6 @@
             window.location.href = url.toString();
         }
 
-        // Function to remove only category filter
         function removeCategoryFilter() {
             const url = new URL(window.location.href);
             url.searchParams.delete('category');
@@ -230,7 +224,6 @@
             window.location.href = url.toString();
         }
 
-        // Function to clear all filters
         function clearAllFilters() {
             const url = new URL(window.location.pathname, window.location.origin);
             url.searchParams.set('page', '1');
