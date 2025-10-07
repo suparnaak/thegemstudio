@@ -1,4 +1,6 @@
 const Brand = require("../../models/brandSchema");
+const STATUSCODES = require("../../utilities/statusCodes");
+const MESSAGES= require("../../utilities/messages")
 // List categories
 const listBrands = async (req, res) => {
   try {
@@ -46,12 +48,12 @@ const addBrands = async (req, res) => {
     const { brandName, description } = req.body;
 
     if (!brandName || !description) {
-      return res.status(400).json({ error: "Brand name and description are required." });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ error: MESSAGES.BRAND.NAME_DESC_REQ });
     }
 
     const existingBrand = await Brand.findOne({ brandName: { $regex: `^${brandName.trim()}$`, $options: 'i' } });
     if (existingBrand) {
-      return res.status(400).json({ error: "Brand with this name already exists." });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ error: MESSAGES.BRAND.ALREADY_EXISTS });
     }
 
     const newBrand = new Brand({
@@ -61,10 +63,10 @@ const addBrands = async (req, res) => {
 
     await newBrand.save();
 
-    res.status(201).json({ message: "Brand added successfully!" });
+    res.status(STATUSCODES.CREATED).json({ message: MESSAGES.BRAND.CREATED });
   } catch (error) {
     console.error("Error adding brand:", error);
-    res.status(500).json({ error: "An error occurred while adding the brand." });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -116,7 +118,7 @@ try {
   });
 
   if (existingBrand) {
-    return res.json({ error: "Brand name already exists. Please choose a different name." });
+    return res.json({ error: MESSAGES.BRAND.ALREADY_EXISTS });
   }
 
   const updatedBrand = await Brand.findByIdAndUpdate(
@@ -126,13 +128,13 @@ try {
   );
 
   if (!updatedBrand) {
-    return res.status(404).json({ error: "Brand not found" });
+    return res.status(STATUSCODES.NOT_FOUND).json({ error: MESSAGES.GENERAL.RESOURCE_NOT_FOUND });
   }
 
   res.json({ success: true });
 } catch (error) {
   console.error("Error editing brand:", error);
-  res.status(500).json({ error: "An error occurred while editing the brand" });
+  res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
 }
 };
 

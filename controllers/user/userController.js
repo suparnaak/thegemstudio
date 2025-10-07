@@ -2,6 +2,8 @@ const User = require("../../models/userSchema");
 const Product = require("../../models/productsSchema");
 const Category = require("../../models/categorySchema");
 const Review = require("../../models/reviewSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
@@ -31,7 +33,7 @@ const loadHomepage = async (req, res) => {
     });
   } catch (error) {
     console.log("Home page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 // Load signup page
@@ -40,7 +42,7 @@ const loadSignup = async (req, res) => {
     return res.render("signup");
   } catch (error) {
     console.log("Sign up page not found");
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 
@@ -135,14 +137,14 @@ const verifyOtp = async (req, res) => {
       return res.json({ success: true, redirectUrl: "/" });
     } else {
       return res
-        .status(400)
-        .json({ success: false, message: "Invalid OTP, Please try again" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.AUTH.INVALID_OTP });
     }
   } catch (error) {
     console.error("Error verifying OTP", error);
     return res
-      .status(500)
-      .json({ success: false, message: "An error occurred" });
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -152,8 +154,8 @@ const resendOtp = async (req, res) => {
     const { email } = req.session.userData;
     if (!email) {
       return res
-        .status(400)
-        .json({ success: false, message: "Email not found in session" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.AUTH.NO_EMAIL });
     }
     const otp = generateOtp();
     req.session.userOtp = otp;
@@ -161,23 +163,23 @@ const resendOtp = async (req, res) => {
     if (emailSent) {
       console.log("Resend Otp", otp);
       res
-        .status(200)
-        .json({ success: true, message: "OTP resend successfully" });
+        .status(STATUSCODES.OK)
+        .json({ success: true, message: MESSAGES.AUTH.OTP_SEND});
     } else {
       res
-        .status(500)
+        .status(STATUSCODES.INTERNAL_SERVER_ERROR)
         .json({
           success: false,
-          message: "Failed to resend otp. Please try again",
+          message:MESSAGES.GENERAL.SERVER_ERROR,
         });
     }
   } catch (error) {
     console.error("Error resending otp", error);
     res
-      .status(500)
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
       .json({
         success: false,
-        message: "Internal Server error.Please try again",
+        message: MESSAGES.GENERAL.SERVER_ERROR,
       });
   }
 };
@@ -206,21 +208,21 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     const findUser = await User.findOne({ isAdmin: 0, email: email });
     if (!findUser) {
-      return res.render("login", { message: "User not found" });
+      return res.render("login", { message: MESSAGES.AUTH.NO_USER });
     }
     if (findUser.isBlocked) {
-      return res.render("login", { message: "Blocked by Admin" });
+      return res.render("login", { message: MESSAGES.AUTH.BLOCKED });
     }
     const passwordMatch = await bcrypt.compare(password, findUser.password);
     if (!passwordMatch) {
-      return res.render("login", { message: "Incorrect Password" });
+      return res.render("login", { message: MESSAGES.AUTH.INVALID_CREDENTIALS });
     }
 
     req.session.user = findUser;
     res.redirect("/");
   } catch (error) {
     console.error("login error", error);
-    res.render("login", { message: "Login failed. Please try again later" });
+    res.render("login", { message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -232,7 +234,7 @@ const logout = async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error("Error in destroying session:", err);
-        return res.status(500).send("Error logging out. Please try again.");
+        return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
       }
 
       res.clearCookie("connect.sid");
@@ -241,7 +243,7 @@ const logout = async (req, res) => {
     });
   } catch (error) {
     console.error("Logout error:", error);
-    res.status(500).send("An unexpected error occurred. Please try again.");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 const loadProducts = async (req, res) => {
@@ -324,7 +326,7 @@ const loadProducts = async (req, res) => {
     });
   } catch (error) {
     console.log("Products page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 
@@ -336,7 +338,7 @@ const loadProductPage = async (req, res) => {
     const product = await Product.findById(productId).populate("category").populate("brand");
 
     if (!product) {
-      return res.status(404).send("Product not found");
+      return res.status(STATUSCODES.NOT_FOUND).send(MESSAGES.GENERAL.SERVER_ERROR);
     }
 
     const productDiscount = product.discount || 0;
@@ -365,7 +367,7 @@ const loadProductPage = async (req, res) => {
     });
   } catch (error) {
     console.log("Product page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 

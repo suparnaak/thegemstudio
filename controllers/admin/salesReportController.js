@@ -1,6 +1,8 @@
 const Order = require("../../models/orderSchema");
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit-table");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 
 //for calculations
 const calculateStats = async (startDate, endDate) => {
@@ -104,7 +106,7 @@ const getSalesReport = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getSalesReport:", error);
-    res.status(500).redirect("/admin/error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).redirect("/admin/error");
   }
 };
 
@@ -155,7 +157,7 @@ const filterSalesReport = async (req, res) => {
     res.render("sales-report", renderData);
   } catch (error) {
     console.error("Error in filterSalesReport:", error);
-    res.status(400).render("sales-report", {
+    res.status(STATUSCODES.BAD_REQUEST).render("sales-report", {
       error: error.message,
       totalOrders: 0,
       totalSales: 0,
@@ -329,7 +331,7 @@ const downloadReport = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in downloadReport:", error);
-    res.status(500).send("Error generating report");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 module.exports = {

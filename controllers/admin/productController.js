@@ -3,6 +3,8 @@ const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
 const path = require("path");
 const fs = require("fs");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 
 // List all products
 const listProducts = async (req, res) => {
@@ -51,9 +53,9 @@ const loadAddProducts = async (req, res) => {
 const addProduct = async (req, res) => {
   try {
     if (!req.files || req.files.length < 3) {
-      return res.status(400).json({
+      return res.status(STATUSCODES.BAD_REQUEST).json({
         status: "failure",
-        message: "Please upload at least 3 images.",
+        message: MESSAGES.PRODUCT.IMAGE_LIMIT,
       });
     }
 
@@ -87,16 +89,16 @@ const addProduct = async (req, res) => {
 
     await product.save();
 
-    res.status(200).json({
+    res.status(STATUSCODES.OK).json({
       status: "success",
-      message: "Product has been added successfully",
+      message: MESSAGES.PRODUCT.CREATED,
       product: product,
     });
   } catch (error) {
     console.log("Error adding product:", error);
-    res.status(500).json({
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       status: "failure",
-      message: error.message || "Error occurred while adding the product",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -240,7 +242,7 @@ const editProduct = async (req, res) => {
       const categories = await loadCategories();
       const brands = await loadBrands();
 
-      return res.status(400).render("product-edit", {
+      return res.status(STATUSCODES.BAD_REQUEST).render("product-edit", {
         product,        
         categories,
         brands,
@@ -292,15 +294,15 @@ const blockProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await Product.findByIdAndUpdate(id, { isListed: false });
-    res.status(200).json({
+    res.status(STATUSCODES.OK).json({
       success: true,
-      message: "Product has been blocked successfully.",
+      message: MESSAGES.PRODUCT.BLOCKED,
     });
   } catch (error) {
     console.log("Error deleting product:", error);
-    res.status(500).json({
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Error occurred while blocking the product.",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -308,15 +310,15 @@ const unblockProduct = async (req, res) => {
   try {
     const { id } = req.params;
     await Product.findByIdAndUpdate(id, { isListed: true });
-    res.status(200).json({
+    res.status(STATUSCODES.OK).json({
       success: true,
-      message: "Product has been unblocked successfully.",
+      message: MESSAGES.PRODUCT.UNBLOCKED,
     });
   } catch (error) {
     console.log("Error unblocking product:", error);
-    res.status(500).json({
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Error occurred while unblocking the product.",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };

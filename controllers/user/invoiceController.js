@@ -4,6 +4,8 @@ const Order = require("../../models/orderSchema");
 const Coupon = require("../../models/couponSchema")
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 
 const downloadInvoice = async (req, res) => {
     try {
@@ -14,12 +16,12 @@ const downloadInvoice = async (req, res) => {
         console.log('order', order);
 
         if (!order) {
-            return res.status(404).send('Order not found');
+            return res.status(STATUSCODES.NOT_FOUND).send(MESSAGES.ORDER.NOT_FOUND);
         }
 
         const item = order.items.find(item => item.productId._id.toString() === productId);
         if (!item) {
-            return res.status(404).send('Product not found in this order');
+            return res.status(STATUSCODES.NOT_FOUND).send(MESSAGES.ORDER.NO_PRODUCT);
         }
 
         const invoiceNumber = order.invoiceNumber;
@@ -145,7 +147,7 @@ const downloadInvoice = async (req, res) => {
         doc.end();
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while generating the invoice');
+        res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
     }
 };
 

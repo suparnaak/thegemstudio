@@ -1,6 +1,8 @@
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productsSchema");
 const Review = require("../../models/reviewSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const loadReview = async (req, res) => {
     try {
       const user = req.session.user;
@@ -32,17 +34,17 @@ const loadReview = async (req, res) => {
                 existingReview: existingReview
             });
           } else {
-            res.status(404).render("page-404", { user: user });
+            res.status(STATUSCODES.NOT_FOUND).render("page-404", { user: user });
           }
         } else {
-          res.status(403).render("page-404", { user: user });
+          res.status(STATUSCODES.FORBIDDEN).render("page-404", { user: user });
         }
       } else {
         res.redirect("/login");
       }
     } catch (error) {
       console.log("Error loading review page:", error);
-      res.status(500).render("page-404", { user: user });
+      res.status(STATUSCODES.INTERNAL_SERVER_ERROR).render("page-404", { user: user });
     }
   };
   const submitReview = async (req, res) => {
@@ -52,11 +54,11 @@ const loadReview = async (req, res) => {
         const user = req.session.user;
 
         if (!rating || rating < 1 || rating > 5) {
-            return res.status(400).json({ message: "Please provide a valid rating between 1 and 5." });
+            return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.REVIEW.VALID_RANGE });
         }
 
         if (!reviewText || reviewText.trim().length < 10) {
-            return res.status(400).json({ message: "Review must be at least 10 characters long." });
+            return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.REVIEW.VALID_LENGTH  });
         }
 
         const existingReview = await Review.findOne({
@@ -65,7 +67,7 @@ const loadReview = async (req, res) => {
         });
 
         if (existingReview) {
-            return res.status(400).json({ message: "You have already submitted a review for this product." });
+            return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.REVIEW.ALREADY_SUBMITED });
         }
 
         const order = await Order.findOne({
@@ -75,7 +77,7 @@ const loadReview = async (req, res) => {
         });
 
         if (!order) {
-            return res.status(403).json({ message: "You can only review products you have purchased and received." });
+            return res.status(STATUSCODES.FORBIDDEN).json({ message: MESSAGES.REVIEW.FORBIDDEN });
         }
 
         const newReview = new Review({
@@ -86,10 +88,10 @@ const loadReview = async (req, res) => {
         });
 
         await newReview.save();
-        res.status(200).json({ message: "Review submitted successfully!" });
+        res.status(STATUSCODES.OK).json({ message: MESSAGES.REVIEW.CREATED });
     } catch (error) {
         console.error("Error submitting review:", error);
-        res.status(500).json({ message: "An error occurred while submitting your review." });
+        res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
     }
 };
   module.exports = {

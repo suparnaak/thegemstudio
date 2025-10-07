@@ -1,6 +1,8 @@
 const User = require("../../models/userSchema");
 const Order = require("../../models/orderSchema");
 const Coupon = require("../../models/couponSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
@@ -66,7 +68,7 @@ const forgotPassword = async (req, res) => {
     console.log("Password Reset OTP sent", otp);
   } catch (error) {
     console.error("forgot password error", error);
-    res.render("forgot-password", { message: "Please try again later" });
+    res.render("forgot-password", { message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 // Verify OTP
@@ -86,7 +88,7 @@ const verifyOtp = async (req, res) => {
       console.log("No OTP found in session");
       return res.status(400).json({
         success: false,
-        message: "OTP expired or not found. Please request a new one.",
+        message: MESSAGES.AUTH.OTP_EXPIRED,
       });
     }
 
@@ -96,20 +98,20 @@ const verifyOtp = async (req, res) => {
       req.session.resetPasswordOtp = null;
       return res.status(200).json({
         success: true,
-        message: "OTP verified successfully",
+        message: MESSAGES.AUTH.OTP_MATCH,
         redirectUrl: "/reset-password",
       });
     } else {
       console.log("OTP mismatch");
       return res
-        .status(400)
-        .json({ success: false, message: "Invalid OTP. Please try again." });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.AUTH.INVALID_OTP });
     }
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    return res.status(500).json({
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "An error occurred while verifying OTP",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -119,8 +121,8 @@ const resendOtp = async (req, res) => {
     const email = req.session.resetPasswordEmail;
     if (!email) {
       return res
-        .status(400)
-        .json({ success: false, message: "Email not found in session" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.AUTH.NO_EMAIL });
     }
 
     const otp = generateOtp();
@@ -130,19 +132,19 @@ const resendOtp = async (req, res) => {
     if (emailSent) {
       console.log("Resend Otp", otp);
       res
-        .status(200)
-        .json({ success: true, message: "OTP resent successfully" });
+        .status(STATUSCODES.OK)
+        .json({ success: true, message: MESSAGES.AUTH.OTP_RESENT });
     } else {
-      res.status(500).json({
+      res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: "Failed to resend OTP. Please try again",
+        message: MESSAGES.GENERAL.SERVER_ERROR,
       });
     }
   } catch (error) {
     console.error("Error resending OTP", error);
-    res.status(500).json({
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Internal Server error. Please try again",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -163,21 +165,21 @@ const resetPassword = async (req, res) => {
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Session expired. Please request a password reset again.",
+        message: MESSAGES.AUTH.SESSION_EXPIRED,
       });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
       return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+        .status(STATUSCODES.NOT_FOUND)
+        .json({ success: false, message: MESSAGES.AUTH.NO_USER});
     }
 
     if (password !== cpassword) {
       return res
-        .status(400)
-        .json({ success: false, message: "Passwords do not match" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ success: false, message: MESSAGES.AUTH.PASSWORD_MISMATCH });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -188,13 +190,13 @@ const resetPassword = async (req, res) => {
     req.session.resetPasswordEmail = null;
 
     res
-      .status(200)
-      .json({ success: true, message: "Password reset successfully!" });
+      .status(STATUSCODES.OK)
+      .json({ success: true, message: MESSAGES.AUTH.PWD_RESET });
   } catch (error) {
     console.error("Error resetting password:", error);
     res
-      .status(500)
-      .json({ success: false, message: "Error resetting password" });
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 //load account
@@ -206,7 +208,7 @@ const loadMyAccount = async (req, res) => {
     }
   } catch (error) {
     console.log("My account page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 //load chnage passwords
@@ -218,7 +220,7 @@ const loadChangePassword = async (req, res) => {
     }
   } catch (error) {
     console.log("Change Password not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 //change password
@@ -230,30 +232,30 @@ const changePassword = async (req, res) => {
    
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(STATUSCODES.NOT_FOUND).json({ success: false, message: MESSAGES.AUTH.NO_USER });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ success: false, message: MESSAGES.AUTH.INVALID_CREDENTIALS });
     }
 
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ success: false, message: 'New password and confirm password do not match' });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ success: false, message: MESSAGES.AUTH.PASSWORD_MISMATCH });
     }
 
     if (currentPassword === newPassword) {
-      return res.status(400).json({ success: false, message: 'New password cannot be the same as the current password' });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ success: false, message:  MESSAGES.AUTH.NO_SAME_PWD});
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
-    return res.status(200).json({ success: true, message: 'Password changed successfully!' });
+    return res.status(STATUSCODES.OK).json({ success: true, message: MESSAGES.AUTH.PWD_SAVED });
   } catch (error) {
     console.error('Error changing password:', error);
-    return res.status(500).json({ success: false, message: 'An error occurred while changing the password' });
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ success: false, message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 //load orders
@@ -294,7 +296,7 @@ const loadMyOrders = async (req, res) => {
     }
   } catch (error) {
     console.log("Orders page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 
@@ -302,7 +304,7 @@ const updateProfile = async (req, res) => {
   const { userId, name, phone } = req.body;
   try {
     if (!name || !phone) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.GENERAL.REQUIRED });
     }
 
     const user = await User.findByIdAndUpdate(
@@ -312,13 +314,13 @@ const updateProfile = async (req, res) => {
     );
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(STATUSCODES.FORBIDDEN).json({ message: MESSAGES.AUTH.NO_USER });
     }
     req.session.user.name = name;
-    res.json({ message: "Profile updated successfully", user });
+    res.json({ message: MESSAGES.AUTH.USER_SAVED, user });
   } catch (error) {
     console.error("Error updating profile:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 

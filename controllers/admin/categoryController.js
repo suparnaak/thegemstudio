@@ -1,6 +1,7 @@
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productsSchema");
-
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 // List categories
 const listCategories = async (req, res) => {
   try {
@@ -49,15 +50,15 @@ const addCategory = async (req, res) => {
     const formattedName = name.trim().toLowerCase();
 
     if (!isValidCategoryName(formattedName)) {
-      return res.json({ error: "Invalid Category Name." });
+      return res.json({ error: MESSAGES.CATEGORY.INVALID });
     }
 
     const existingCategory = await Category.findOne({ name: formattedName });
     if (existingCategory) {
-      res.json({ error: "Category name already exists" });
+      res.json({ error: MESSAGES.CATEGORY.ALREADY_EXISTS });
     } else {
       const newCategory = new Category({
-        name: formattedName,
+        name: name,
         description,
         offer,
       });
@@ -66,7 +67,7 @@ const addCategory = async (req, res) => {
     }
   } catch (error) {
     console.log("Error adding category:", error);
-    res.json({ error: "Error adding category" });
+    res.json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -89,20 +90,20 @@ const editCategory = async (req, res) => {
     const formattedName = name.trim().toLowerCase();
 
     if (!isValidCategoryName(formattedName)) {
-      return res.json({ error: "Invalid Category Name." });
+      return res.json({ error: MESSAGES.CATEGORY.INVALID });
     }
 
     const existingCategory = await Category.findOne({ name: formattedName });
     if (existingCategory && existingCategory._id.toString() !== id) {
-      return res.json({ error: "Category name already exists" });
+      return res.json({ error: MESSAGES.CATEGORY.ALREADY_EXISTS });
     }
 
     await Category.findByIdAndUpdate(id, { name, description, offer });
 
-    res.json({ success: true, message: "Category updated successfully" });
+    res.json({ success: true, message: MESSAGES.CATEGORY.UPDATED });
   } catch (error) {
     console.log("Error editing category:", error);
-    res.json({ error: "Error updating category" });
+    res.json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 

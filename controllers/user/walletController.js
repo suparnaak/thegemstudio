@@ -1,5 +1,7 @@
 const Wallet = require("../../models/walletSchema");
 const Razorpay = require("razorpay");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const crypto = require("crypto");
 
 // Initialize Razorpay
@@ -46,7 +48,7 @@ const loadWallet = async (req, res) => {
     }
   } catch (error) {
     console.error("Error loading wallet:", error);
-    res.status(500).render("error", { message: "Error loading wallet" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).render("error", { message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -66,7 +68,7 @@ const addMoneyToWallet = async (req, res) => {
     res.json({ order });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ error: "Could not create order" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 //verify wallet payment
@@ -76,7 +78,7 @@ const verifyWalletPayment = async (req, res) => {
     const user = req.session.user;
 
     if (!user) {
-      return res.status(401).json({ error: "User not logged in" });
+      return res.status(STATUSCODES.UNAUTHORIZED).json({ error: MESSAGES.GENERAL.NO_USER });
     }
 
     const userId = user._id;
@@ -90,7 +92,7 @@ const verifyWalletPayment = async (req, res) => {
     if (signature === payment.razorpay_signature) {
       const wallet = await Wallet.findOne({ userId });
       if (!wallet) {
-        return res.status(404).json({ error: "Wallet not found" });
+        return res.status(STATUSCODES.NOT_FOUND).json({ error: MESSAGES.GENERAL.RESOURCE_NOT_FOUND });
       }
 
       const amountInRupees = order.amount / 100;
@@ -107,18 +109,18 @@ const verifyWalletPayment = async (req, res) => {
 
       return res.json({
         success: true,
-        message: "Payment verified and wallet updated successfully",
+        message: MESSAGES.WALLET.TOPUP_SUCCESS,
         newBalance: wallet.balance,
       });
     } else {
-      return res.status(400).json({
+      return res.status(STATUSCODES.BAD_REQUEST).json({
         success: false,
-        message: "Payment verification failed",
+        message: MESSAGES.PAYMENT.VERIFY_FAILED,
       });
     }
   } catch (error) {
     console.error("Error verifying payment:", error);
-    return res.status(500).json({ error: "Could not verify payment" });
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 

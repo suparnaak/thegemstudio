@@ -1,6 +1,7 @@
 const Coupon = require("../../models/couponSchema");
 const crypto = require("crypto");
-
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 //list coupons
 const listCoupons = async (req, res) => {
   try {
@@ -98,12 +99,12 @@ const addCoupons = async (req, res) => {
 
     if (!code.trim()) {
       return res
-        .status(400)
-        .json({ message: "Coupon code cannot be empty or spaces only" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ message: MESSAGES.COUPON.INVALID });
     }
     if (min_order_price <= 0 || discount_rs <= 0 || usage_limit <= 0) {
-      return res.status(400).json({
-        message: "Price, discount, and usage limit must be positive values",
+      return res.status(STATUSCODES.BAD_REQUEST).json({
+        message: MESSAGES.COUPON.INVALID_NUMBER,
       });
     }
 
@@ -117,18 +118,18 @@ const addCoupons = async (req, res) => {
 
     if (startDate < today) {
       return res
-        .status(400)
-        .json({ message: "Start date should not be before today" });
+        .status(STATUSCODES.BAD_REQUEST)
+        .json({ message: MESSAGES.COUPON.INVALID_START_DATE });
     }
     if (endDate < today || endDate < startDate) {
-      return res.status(400).json({
-        message: "End date should not be before today or the start date",
+      return res.status(STATUSCODES.BAD_REQUEST).json({
+        message: MESSAGES.COUPON.INVALID_END_DATE ,
       });
     }
 
     const existingCoupon = await Coupon.findOne({ code });
     if (existingCoupon) {
-      return res.status(400).json({ message: "Coupon code already exists" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.COUPON.ALREADY_EXISTS });
     }
 
     const newCoupon = new Coupon({
@@ -146,14 +147,14 @@ const addCoupons = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Coupon added successfully",
+      message: MESSAGES.COUPON.CREATED,
       coupon: newCoupon,
     });
   } catch (error) {
     console.error("Error adding coupon:", error);
-    res.status(500).json({
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Failed to add coupon",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
       error: error.message,
     });
   }
@@ -173,15 +174,15 @@ const deleteCoupon = async (req, res) => {
     );
 
     if (!updatedCoupon) {
-      return res.status(404).json({ success: false, message: "Coupon not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ success: false, message: MESSAGES.GENERAL.RESOURCE_NOT_FOUND });
     }
 
-    res.json({ success: true, message: "Coupon deleted successfully" });
+    res.json({ success: true, message: MESSAGES.COUPON.DELETED });
   } catch (err) {
     console.error("Error in deleteCoupon:", err);
-    res.status(500).json({
+    res.status(STATUSCODES.BAD_REQUEST).json({
       success: false,
-      message: "An error occurred while deleting the coupon",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };

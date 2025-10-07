@@ -4,23 +4,40 @@
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <div class="card">
-                    <div class="card-header bg-success text-white">
-                        <h2 class="text-center">Order Placed Successfully!</h2>
+                    <% 
+                      // Normalize paymentStatus and detect failure
+                      const paymentStatusStr = String(order.paymentStatus || '').toLowerCase();
+                      const paymentFailed = paymentStatusStr.includes('fail');
+
+                      // Calculate total of subtotals & coupon discount robustly
+                      const totalSubtotals = (order.items || []).reduce((sum, item) => sum + (item.subtotal || 0), 0);
+                      const couponDiscount = totalSubtotals - (order.grandTotal || 0);
+                    %>
+
+                    <div class="card-header <%= paymentFailed ? 'bg-danger text-white' : 'bg-success text-white' %>">
+                        <h2 class="text-center">
+                            <%= paymentFailed ? 'Payment Failed' : 'Order Placed Successfully!' %>
+                        </h2>
                     </div>
-                    <!-- <a href="/download-invoice/<%= order.orderId %>" >Download Invoice</a> -->
+
                     <div class="card-body">
+                        <% if (paymentFailed) { %>
+                            <p class="lead text-center">
+                                Your payment is failed. Please try again from your <a href="/my-orders">Orders</a> page.
+                                
+                            </p>
+                        <% } else { %>
+                            <p class="lead text-center">Thank you! Your order has been placed successfully.</p>
+                        <% } %>
+
                         <h4>Order Details</h4>
-                        <p><strong>Order ID:</strong>
-                            <%= order.orderId %>
-                        </p>
-                        <p><strong>Order Date:</strong>
-                            <%= order.orderDate.toLocaleDateString() %>
-                        </p>
-                        <p><strong>Payment Method:</strong>
-                            <%= order.paymentMethod %>
-                        </p>
+                        <p><strong>Order ID:</strong> <%= order.orderId %></p>
+                        <p><strong>Order Date:</strong> <%= order.orderDate.toLocaleDateString() %></p>
+                        <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
                         <p><strong>Payment Status:</strong>
-                            <%= order.paymentStatus %>
+                            <span class="<%= paymentFailed ? 'text-danger font-weight-bold' : 'text-success font-weight-bold' %>">
+                                <%= order.paymentStatus %>
+                            </span>
                         </p>
 
                         <h5 class="mt-4">Items Ordered</h5>
@@ -30,27 +47,22 @@
                                     <th style="text-align: left;">Product</th>
                                     <th style="text-align: left;">Quantity</th>
                                     <th style="text-align: left;">Price</th>
-                                    <th style="text-align: left;">Discounted Price</th>
+                                    <th style="text-align: left;">Discounted Price (per unit)</th>
                                     <th style="text-align: left;">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <% order.items.forEach(item=> { %>
+                                <% (order.items || []).forEach(item => { %>
                                     <tr>
+                                        <td style="text-align: left;"><%= item.productId.name %></td>
+                                        <td style="text-align: left;"><%= item.quantity %></td>
+                                        <td style="text-align: left;">₹<%= item.price.toFixed(2) %></td>
                                         <td style="text-align: left;">
-                                            <%= item.productId.name %>
+                                            ₹<%= ( (item.subtotal || 0) / (item.quantity || 1) ).toFixed(2) %>
                                         </td>
-                                        <td style="text-align: left;">
-                                            <%= item.quantity %>
-                                        </td>
-                                        <td style="text-align: left;">₹<%= item.price.toFixed(2) %>
-                                        </td>
-                                        <td style="text-align: left;">₹<%= item.subtotal.toFixed(2)/item.quantity %>
-                                        </td>
-                                        <td style="text-align: left;">₹<%= item.subtotal.toFixed(2) %>
-                                        </td>
+                                        <td style="text-align: left;">₹<%= (item.subtotal || 0).toFixed(2) %></td>
                                     </tr>
-                                    <% }); %>
+                                <% }); %>
                             </tbody>
                         </table>
 
@@ -61,23 +73,19 @@
                             <%= order.address.city %>, <%= order.address.country %><br>
                             Phone: <%= order.address.mobile %>
                         </p>
-                        <h4 class="mt-4">
-                            <% 
-                            // Calculate total of subtotals
-                            const totalSubtotals = order.items.reduce((sum, item) => sum + item.subtotal, 0);
-                            
-                            // Calculate the coupon discount
-                            const couponDiscount = totalSubtotals - order.grandTotal;
-                            %>
-                            Coupon Discount: ₹<%= couponDiscount.toFixed(2) %>
-                        </h4>
-    
-                        <h4 class="mt-4">Grand Total: ₹<%= order.grandTotal.toFixed(2) %>
-                        </h4>
+
+                        <h4 class="mt-4">Coupon Discount: ₹<%= (couponDiscount || 0).toFixed(2) %></h4>
+                        <h4 class="mt-2">Grand Total: ₹<%= (order.grandTotal || 0).toFixed(2) %></h4>
 
                         <div class="mt-5 text-center">
-                            <a href="/products" class="btn btn-primary">Continue Shopping</a>
-                            <a href="/my-orders" class="btn btn-secondary">View All Orders</a>
+                            <% if (paymentFailed) { %>
+                               
+ -->                                <a href="/my-orders" class="btn btn-secondary mr-2">View Orders</a>
+                                <a href="/products" class="btn btn-outline-primary">Continue Shopping</a>
+                            <% } else { %>
+                                <a href="/products" class="btn btn-primary mr-2">Continue Shopping</a>
+                                <a href="/my-orders" class="btn btn-secondary">View All Orders</a>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -85,4 +93,4 @@
         </div>
     </div>
 
-    <%- include("../../views/partials/user/footer") %>
+<%- include("../../views/partials/user/footer") %>

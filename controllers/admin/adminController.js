@@ -5,6 +5,8 @@ const Brand = require("../../models/brandSchema");
 const Order = require("../../models/orderSchema");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const STATUSCODES =require("../../utilities/statusCodes")
+const MESSAGES = require("../../utilities/messages");
 
 //page error
 const pageerror = async (req, res) => {
@@ -32,11 +34,11 @@ const login = async (req, res) => {
         return res.redirect("/admin/dashboard");
       } else {
         return res.render("admin-login", {
-          message: "Invalid email or password",
+          message: MESSAGES.AUTH.INVALID_CREDENTIALS,
         });
       }
     } else {
-      return res.render("admin-login", { message: "Admin not found" });
+      return res.render("admin-login", { message: MESSAGES.AUTH.ADMIN_NOT_FOUND });
     }
   } catch (error) {
     console.log("login error", error);
@@ -211,7 +213,7 @@ const getSalesData = async (req, res) => {
     res.json(categorySales);
   } catch (error) {
     console.error("Error in getSalesData:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -256,7 +258,7 @@ const getPaymentData = async (req, res) => {
     res.json(paymentMethods);
   } catch (error) {
     console.error("Error in getPaymentData:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ error: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 

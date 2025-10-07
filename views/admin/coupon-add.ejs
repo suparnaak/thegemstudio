@@ -1,175 +1,314 @@
 <%- include("../../views/partials/admin/header") %>
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-                <h2 class="text-center mb-4">Add Coupon</h2>
-                <form id="addCouponForm" action="/admin/coupons/add" method="post">
-                    <div class="mb-3">
-                        <label for="code" class="form-label">Coupon Code</label>
-                        <input type="text" class="form-control" id="code" name="code" value="<%= couponCode %>"
-                            required>
-                        <div class="invalid-feedback">Please provide a valid coupon code (no spaces allowed).</div>
-                    </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+            <h2 class="text-center mb-4">Add Coupon</h2>
+            <form id="addCouponForm" action="/admin/coupons/add" method="post" novalidate>
+                <div class="mb-3">
+                    <label for="code" class="form-label">Coupon Code</label>
+                    <input type="text" class="form-control" id="code" name="code" value="<%= couponCode %>">
+                    <small class="text-danger" id="code-error"></small>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="minOrderPrice" class="form-label">Minimum Order Price</label>
-                        <input type="number" class="form-control" id="minOrderPrice" name="min_order_price"
-                            placeholder="Enter minimum order price" required>
-                        <div class="invalid-feedback">Please enter a valid price (greater than 0).</div>
-                    </div>
+                <div class="mb-3">
+                    <label for="minOrderPrice" class="form-label">Minimum Order Price</label>
+                    <input type="number" class="form-control" id="minOrderPrice" name="min_order_price"
+                        placeholder="Enter minimum order price">
+                    <small class="text-danger" id="minOrderPrice-error"></small>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="discountRs" class="form-label">Discount Rs</label>
-                        <input type="number" class="form-control" id="discountRs" name="discount_rs"
-                            placeholder="Enter discount rs" required>
-                        <div class="invalid-feedback">Please enter a valid discount rs (greater than 0).</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="start_date" required>
-                        <div class="invalid-feedback">Start date should not be before today.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="end_date" required>
-                        <div class="invalid-feedback">End date should not be before start date or today.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description"
-                            placeholder="Enter coupon description"></textarea>
-                        <div class="invalid-feedback">Please provide a valid description (no spaces allowed).</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="usageLimit" class="form-label">Usage Limit</label>
-                        <input type="number" class="form-control" id="usageLimit" name="usage_limit"
-                            placeholder="Enter usage limit" required>
-                        <div class="invalid-feedback">Please enter a valid usage limit (greater than 0).</div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add Coupon</button>
-                </form>
-            </div>
+                <div class="mb-3">
+                    <label for="discountRs" class="form-label">Discount Rs</label>
+                    <input type="number" class="form-control" id="discountRs" name="discount_rs"
+                        placeholder="Enter discount rs">
+                    <small class="text-danger" id="discountRs-error"></small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="start_date">
+                    <small class="text-danger" id="startDate-error"></small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="end_date">
+                    <small class="text-danger" id="endDate-error"></small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description"
+                        placeholder="Enter coupon description"></textarea>
+                    <small class="text-danger" id="description-error"></small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="usageLimit" class="form-label">Usage Limit</label>
+                    <input type="number" class="form-control" id="usageLimit" name="usage_limit"
+                        placeholder="Enter usage limit">
+                    <small class="text-danger" id="usageLimit-error"></small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Add Coupon</button>
+            </form>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('addCouponForm');
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('addCouponForm');
+        const code = document.getElementById('code');
+        const minOrderPrice = document.getElementById('minOrderPrice');
+        const discountRs = document.getElementById('discountRs');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+        const description = document.getElementById('description');
+        const usageLimit = document.getElementById('usageLimit');
 
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
-                const code = document.getElementById('code');
-                const minOrderPrice = document.getElementById('minOrderPrice');
-                const discountRs = document.getElementById('discountRs');
-                const startDate = document.getElementById('startDate');
-                const endDate = document.getElementById('endDate');
-                const description = document.getElementById('description');
-                const usageLimit = document.getElementById('usageLimit');
+        const codeError = document.getElementById('code-error');
+        const minOrderPriceError = document.getElementById('minOrderPrice-error');
+        const discountRsError = document.getElementById('discountRs-error');
+        const startDateError = document.getElementById('startDate-error');
+        const endDateError = document.getElementById('endDate-error');
+        const descriptionError = document.getElementById('description-error');
+        const usageLimitError = document.getElementById('usageLimit-error');
 
-                let isValid = true;
-                const isNotEmptyOrSpaces = (str) => str.trim().length > 0;
-                const isPositiveNumber = (num) => num > 0;
+        const isNotEmptyOrSpaces = (str) => str && str.trim().length > 0;
+        const isPositiveNumber = (num) => num > 0;
 
-                const today = new Date().toISOString().split('T')[0];
-                const startValue = startDate.value;
-                const endValue = endDate.value;
+        // Validation functions
+        const validateCode = () => {
+            if (!isNotEmptyOrSpaces(code.value)) {
+                codeError.textContent = 'Coupon code is required.';
+                code.classList.add('is-invalid');
+                return false;
+            }
+            codeError.textContent = '';
+            code.classList.remove('is-invalid');
+            return true;
+        };
 
-                if (!isNotEmptyOrSpaces(code.value)) {
-                    code.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    code.classList.remove('is-invalid');
+        const validateMinOrderPrice = () => {
+            if (!isPositiveNumber(minOrderPrice.value)) {
+                minOrderPriceError.textContent = 'Minimum order price must be greater than 0.';
+                minOrderPrice.classList.add('is-invalid');
+                return false;
+            }
+            minOrderPriceError.textContent = '';
+            minOrderPrice.classList.remove('is-invalid');
+            return true;
+        };
+
+        const validateDiscountRs = () => {
+            const maxDiscountPercentage = 50;
+            const minOrderPriceValue = Number(minOrderPrice.value);
+            const discountRsValue = Number(discountRs.value);
+            const maxFlatDiscount = (minOrderPriceValue * maxDiscountPercentage) / 100;
+
+            if (!isPositiveNumber(discountRsValue)) {
+                discountRsError.textContent = 'Discount must be greater than 0.';
+                discountRs.classList.add('is-invalid');
+                return false;
+            }
+
+            if (discountRsValue > maxFlatDiscount) {
+                discountRsError.textContent = `Discount cannot exceed ₹${maxFlatDiscount.toFixed(2)} (${maxDiscountPercentage}% of the min order price).`;
+                discountRs.classList.add('is-invalid');
+                return false;
+            }
+
+            discountRsError.textContent = '';
+            discountRs.classList.remove('is-invalid');
+            return true;
+        };
+
+        const validateStartDate = () => {
+            const today = new Date().toISOString().split('T')[0];
+            const startValue = startDate.value;
+
+            if (!startValue) {
+                startDateError.textContent = 'Start date is required.';
+                startDate.classList.add('is-invalid');
+                return false;
+            }
+
+            if (startValue < today) {
+                startDateError.textContent = 'Start date cannot be before today.';
+                startDate.classList.add('is-invalid');
+                return false;
+            }
+
+            startDateError.textContent = '';
+            startDate.classList.remove('is-invalid');
+            return true;
+        };
+
+        const validateEndDate = () => {
+            const today = new Date().toISOString().split('T')[0];
+            const startValue = startDate.value;
+            const endValue = endDate.value;
+
+            if (!endValue) {
+                endDateError.textContent = 'End date is required.';
+                endDate.classList.add('is-invalid');
+                return false;
+            }
+
+            if (endValue < today) {
+                endDateError.textContent = 'End date cannot be before today.';
+                endDate.classList.add('is-invalid');
+                return false;
+            }
+
+            if (startValue && endValue < startValue) {
+                endDateError.textContent = 'End date cannot be before start date.';
+                endDate.classList.add('is-invalid');
+                return false;
+            }
+
+            endDateError.textContent = '';
+            endDate.classList.remove('is-invalid');
+            return true;
+        };
+
+        const validateDescription = () => {
+            if (!isNotEmptyOrSpaces(description.value)) {
+                descriptionError.textContent = 'Description is required.';
+                description.classList.add('is-invalid');
+                return false;
+            }
+            descriptionError.textContent = '';
+            description.classList.remove('is-invalid');
+            return true;
+        };
+
+        const validateUsageLimit = () => {
+            if (!isPositiveNumber(usageLimit.value)) {
+                usageLimitError.textContent = 'Usage limit must be greater than 0.';
+                usageLimit.classList.add('is-invalid');
+                return false;
+            }
+            usageLimitError.textContent = '';
+            usageLimit.classList.remove('is-invalid');
+            return true;
+        };
+
+        code.addEventListener('blur', validateCode);
+        minOrderPrice.addEventListener('blur', validateMinOrderPrice);
+        discountRs.addEventListener('blur', validateDiscountRs);
+        startDate.addEventListener('blur', validateStartDate);
+        endDate.addEventListener('blur', validateEndDate);
+        description.addEventListener('blur', validateDescription);
+        usageLimit.addEventListener('blur', validateUsageLimit);
+
+        code.addEventListener('input', () => {
+            if (code.value.trim().length > 0) {
+                codeError.textContent = '';
+                code.classList.remove('is-invalid');
+            }
+        });
+
+        minOrderPrice.addEventListener('input', () => {
+            if (minOrderPrice.value.trim().length > 0) {
+                minOrderPriceError.textContent = '';
+                minOrderPrice.classList.remove('is-invalid');
+                if (discountRs.value.trim().length > 0) {
+                    validateDiscountRs();
                 }
-                if (!isPositiveNumber(minOrderPrice.value)) {
-                    minOrderPrice.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    minOrderPrice.classList.remove('is-invalid');
-                }
-                const maxDiscountPercentage = 50;
-                const minOrderPriceValue = Number(minOrderPrice.value);
-                const discountRsValue = Number(discountRs.value);
-                const maxFlatDiscount = (minOrderPriceValue * maxDiscountPercentage) / 100;
+            }
+        });
 
-                if (!isPositiveNumber(discountRsValue) || discountRsValue > maxFlatDiscount) {
-                    discountRs.classList.add('is-invalid');
-                    if (discountRsValue > maxFlatDiscount) {
-                        discountRs.setCustomValidity(`Discount cannot exceed ₹${maxFlatDiscount.toFixed(2)} (${maxDiscountPercentage}% of the min order price).`);
-                        discountRs.reportValidity();
-                    }
-                    isValid = false;
-                } else {
-                    discountRs.classList.remove('is-invalid');
-                    discountRs.setCustomValidity('');
-                }
-                if (startValue < today) {
-                    startDate.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    startDate.classList.remove('is-invalid');
-                }
-                if (endValue < startValue || endValue < today) {
-                    endDate.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    endDate.classList.remove('is-invalid');
-                }
+        discountRs.addEventListener('input', () => {
+            if (discountRs.value.trim().length > 0) {
+                discountRsError.textContent = '';
+                discountRs.classList.remove('is-invalid');
+            }
+        });
 
-                if (!isNotEmptyOrSpaces(description.value)) {
-                    description.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    description.classList.remove('is-invalid');
-                }
-                if (!isPositiveNumber(usageLimit.value)) {
-                    usageLimit.classList.add('is-invalid');
-                    isValid = false;
-                } else {
-                    usageLimit.classList.remove('is-invalid');
-                }
+        startDate.addEventListener('change', () => {
+            startDateError.textContent = '';
+            startDate.classList.remove('is-invalid');
+            if (endDate.value) {
+                validateEndDate();
+            }
+        });
 
-                if (isValid) {
-                    const formData = new FormData(form);
-                    const data = Object.fromEntries(formData.entries());
+        endDate.addEventListener('change', () => {
+            endDateError.textContent = '';
+            endDate.classList.remove('is-invalid');
+        });
 
-                    fetch('/admin/coupons/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    })
-                        .then(response => response.json())
-                        .then(result => {
-                            if (result.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Coupon Added',
-                                    text: 'Coupon has been added successfully!',
-                                }).then(() => {
-                                    window.location.href = '/admin/coupons';
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: result.message || 'An error occurred while adding the coupon.',
-                                });
-                            }
-                        })
-                        .catch(error => {
+        description.addEventListener('input', () => {
+            if (description.value.trim().length > 0) {
+                descriptionError.textContent = '';
+                description.classList.remove('is-invalid');
+            }
+        });
+
+        usageLimit.addEventListener('input', () => {
+            if (usageLimit.value.trim().length > 0) {
+                usageLimitError.textContent = '';
+                usageLimit.classList.remove('is-invalid');
+            }
+        });
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const isCodeValid = validateCode();
+            const isMinOrderPriceValid = validateMinOrderPrice();
+            const isDiscountRsValid = validateDiscountRs();
+            const isStartDateValid = validateStartDate();
+            const isEndDateValid = validateEndDate();
+            const isDescriptionValid = validateDescription();
+            const isUsageLimitValid = validateUsageLimit();
+
+            const isValid = isCodeValid && isMinOrderPriceValid && isDiscountRsValid && 
+                           isStartDateValid && isEndDateValid && isDescriptionValid && isUsageLimitValid;
+
+            if (isValid) {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                fetch('/admin/coupons/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Coupon Added',
+                                text: 'Coupon has been added successfully!',
+                            }).then(() => {
+                                window.location.href = '/admin/coupons';
+                            });
+                        } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: 'Something went wrong, please try again later.',
+                                text: result.message || 'An error occurred while adding the coupon.',
                             });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Something went wrong, please try again later.',
                         });
-                }
-            });
+                    });
+            }
         });
-
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <%- include("../../views/partials/admin/footer") %>
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<%- include("../../views/partials/admin/footer") %>

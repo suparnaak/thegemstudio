@@ -1,6 +1,8 @@
 const Product = require("../../models/productsSchema");
 const Wishlist = require("../../models/wishlistSchema");
 const Category = require("../../models/categorySchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const Cart = require("../../models/cartSchema");
 //ladd to wishlist
 const addToWishlist = async (req, res) => {
@@ -9,30 +11,30 @@ const addToWishlist = async (req, res) => {
     const userId = req.session.user;
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.PRODUCT.NOT_FOUND });
     }
     if (product.quantity === 0) {
-      return res.status(400).json({ message: "Out of stock" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.PRODUCT.OUT_OF_STOCK });
     }
 
     if (!product.isListed) {
-      return res.status(400).json({ message: "Product is not available" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.PRODUCT.UNAVAILABLE });
     }
     let wishlist = await Wishlist.findOne({ userId });
     if (!wishlist) {
       wishlist = new Wishlist({ userId, items: [] });
     }
     if (wishlist.items.some((item) => item.product.toString() === productId)) {
-      return res.status(200).json({ message: "Already in wishlist" });
+      return res.status(STATUSCODES.OK).json({ message: MESSAGES.WISHLSIT.ALREADY });
     }
     wishlist.items.push({ product: productId });
 
     await wishlist.save();
 
-    return res.status(200).json({ message: "Added to wishlist" });
+    return res.status(STATUSCODES.OK).json({ message: MESSAGES.WISHLSIT.ADDED });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 //load wish list
@@ -52,7 +54,7 @@ const loadWishlist = async (req, res) => {
     }
   } catch (error) {
     console.log("Wishlist page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 //remove from wishlist
@@ -69,13 +71,13 @@ const removeFromWishlist = async (req, res) => {
       );
       await wishlist.save();
 
-      return res.json({ message: "Product removed from wishlist" });
+      return res.json({ message: MESSAGES.WISHLSIT.REMOVED });
     } else {
-      return res.status(404).json({ message: "Wishlist not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.WISHLSIT.NOT_FOUND });
     }
   } catch (error) {
     console.error("Error removing from wishlist:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR});
   }
 };
 //add to cart
@@ -86,12 +88,12 @@ const addToCart = async (req, res) => {
 
     const product = await Product.findById(productId).populate("category");
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.PRODUCT.NOT_FOUND });
     }
 
     const category = await Category.findById(product.category._id);
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.CATEGORY.NOT_FOUND });
     }
 
     const originalPrice = product.price;
@@ -115,7 +117,7 @@ const addToCart = async (req, res) => {
       (item) => item.product.toString() === productId
     );
     if (existingItem) {
-      return res.json({ message: "Product already in cart" });
+      return res.json({ message: MESSAGES.CART.EXISTS });
     }
 
     cart.items.push({
@@ -128,10 +130,10 @@ const addToCart = async (req, res) => {
     cart.grandTotal += finalPrice;
     await cart.save();
 
-    return res.json({ message: "Product added to cart" });
+    return res.json({ message: MESSAGES.CART.PRODUCT_ADDED });
   } catch (error) {
     console.error("Error adding product to cart:", error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 

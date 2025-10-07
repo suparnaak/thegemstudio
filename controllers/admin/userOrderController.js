@@ -2,6 +2,8 @@ const Product = require("../../models/productsSchema");
 const Order = require("../../models/orderSchema");
 const Wallet = require("../../models/walletSchema");
 const User = require("../../models/userSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 
 //list orders
 const listOrders = async (req, res) => {
@@ -53,7 +55,7 @@ const listOrders = async (req, res) => {
       currentPage: 1,
       totalPages: 1,
       search: req.query.search || "",
-      error: "An error occurred while fetching orders.",
+      error: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -67,12 +69,12 @@ const listOrderDetails = async (req, res) => {
       .populate("items.productId", "name price discount");
 
     if (!order) {
-      return res.status(404).send("Order not found");
+      return res.status(STATUSCODES.BAD_REQUEST).send(MESSAGES.ORDER.NOT_FOUND);
     }
     res.render("order-details", { order });
   } catch (error) {
     console.error("Error fetching order details:", error);
-    res.status(500).send("An error occurred while fetching order details");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 
@@ -82,19 +84,19 @@ const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findById(orderId);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.ORDER.NOT_FOUND});
     }
 
     const item = order.items.find((i) => i.productId.equals(productId));
     if (!item) {
       return res
-        .status(404)
-        .json({ message: "Product not found in the order" });
+        .status(STATUSCODES.NOT_FOUND)
+        .json({ message: MESSAGES.ORDER.NO_PRODUCT });
     }
 
     const product = await Product.findById(item.productId);
     if (!product) {
-      return res.status(404).json({ message: "Product details not found" });
+      return res.status(STATUSCODES.NOT_FOUND).json({ message: MESSAGES.ORDER.NO_PRODUCT});
     }
 
     const validStatusTransitions = {
@@ -105,7 +107,7 @@ const updateOrderStatus = async (req, res) => {
       "Return Pending": ["Returned"],
     };
     if (!validStatusTransitions[item.deliveryStatus]?.includes(newStatus)) {
-      return res.status(400).json({
+      return res.status(STATUSCODES.BAD_REQUEST).json({
         message: `Invalid status transition from ${item.deliveryStatus} to ${newStatus}`,
       });
     }
@@ -183,7 +185,7 @@ const updateOrderStatus = async (req, res) => {
           order.paymentStatus !== "Paid" &&
           item.deliveryStatus === "Pending"
         ) {
-          return res.status(400).json({
+          return res.status(STATUSCODES.BAD_REQUEST).json({
             message: "Payment not completed. Cannot update delivery status.",
           });
         }
@@ -204,8 +206,8 @@ const updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error("Error updating order status:", error);
     return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGES.GENERAL.SERVER_ERROR, error: error.message });
   }
 };
 function generateTransactionId() {

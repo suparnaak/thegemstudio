@@ -5,6 +5,8 @@ const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Wallet = require("../../models/walletSchema");
 const Coupon = require("../../models/couponSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 const crypto = require("crypto");
 const Razorpay = require("razorpay");
 require("dotenv").config();
@@ -44,7 +46,7 @@ const loadCheckout = async (req, res) => {
         unavailableProducts,
         grandTotal: "0.00",
         coupons: [],
-        errorMessage: "Your cart is empty. Add items before checking out.",
+        errorMessage: MESSAGES.ORDER.CART_EMPTY,
       });
     }
 
@@ -93,7 +95,7 @@ const loadCheckout = async (req, res) => {
         grandTotal: grandTotal.toFixed(2),
         coupons,
         errorMessage:
-          "Some items are no longer available. Please review your cart.",
+          MESSAGES.ORDER.NOT_AVAILABLE,
       });
     }
 
@@ -123,7 +125,7 @@ const loadCheckout = async (req, res) => {
       unavailableProducts: [],
       grandTotal: "0.00",
       coupons: [],
-      errorMessage: "Server error loading checkout. Please try again.",
+      errorMessage: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -222,10 +224,10 @@ const confirmOrder = async (req, res) => {
       appliedCoupon = JSON.parse(appliedCoupon);
     }
     if (!address) {
-      return res.status(400).json({ message: "Address is required" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.ORDER.ADDRESS_REQ });
     }
     if (!paymentMethod) {
-      return res.status(400).json({ message: "Invalid payment method" });
+      return res.status(STATUSCODES.BAD_REQUEST).json({ message: MESSAGES.ORDER.INVALID_PAYMENT });
     }
 
     const cart = await Cart.findOne({ userId }).populate("items.product");
@@ -268,7 +270,7 @@ const confirmOrder = async (req, res) => {
             });
           }
         }
-        return res.status(400).render("cart", {
+        return res.status(STATUSCODES.BAD_REQUEST).render("cart", {
           user:               req.session.user,
           cart:               availableItems,
           grandTotal:         newTotal.toFixed(2),
@@ -363,7 +365,7 @@ const confirmOrder = async (req, res) => {
 
   } catch (error) {
     console.error("Error in confirmOrder:", error);
-    return res.status(500).json({ message: "Failed to place order", error: error.message });
+    return res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR, error: error.message });
   }
 };
 
@@ -420,8 +422,8 @@ const verifyPayment = async (req, res) => {
   } catch (error) {
     console.error("Error in verifyPayment:", error);
     res
-      .status(500)
-      .json({ message: "Payment verification failed", error: error.message });
+      .status(STATUSCODES.INTERNAL_SERVER_ERROR)
+      .json({ message: MESSAGES.GENERAL.SERVER_ERROR, error: error.message });
   }
 };
 
@@ -439,7 +441,7 @@ const loadCancelOrder = async (req, res) => {
     return res.render("cancelOrder", {
       user,
       order: null,
-      message: "No order found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
   const item = order.items.find((item) => item.productId.equals(productId));
@@ -448,7 +450,7 @@ const loadCancelOrder = async (req, res) => {
       order,
       user,
       item: null,
-      message: "No product found",
+      message: MESSAGES.ORDER.NO_PRODUCT,
     });
   }
   res.render("cancelOrder", { order, product, user, item });
@@ -467,7 +469,7 @@ const cancelOrder = async (req, res) => {
       return res.render("cancelOrder", {
         user: req.session.user,
         order: null,
-        message: "Order or product not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
 
@@ -476,7 +478,7 @@ const cancelOrder = async (req, res) => {
       return res.render("cancelOrder", {
         user: req.session.user,
         order,
-        message: "Product not in this order",
+        message: MESSAGES.ORDER.NO_PRODUCT,
       });
     }
 
@@ -527,7 +529,7 @@ const cancelOrder = async (req, res) => {
     console.error(err);
     return res.render("cancelOrder", {
       user: req.session.user,
-      message: "Internal server error",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -554,7 +556,7 @@ const loadCancelConfirmation = async (req, res) => {
     return res.render("cancelOrder", {
       user: user,
       order: null,
-      message: "Order or product not found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
   const canceledItem = order.items.find((item) =>
@@ -565,7 +567,7 @@ const loadCancelConfirmation = async (req, res) => {
     return res.render("cancelOrder", {
       user: user,
       order: null,
-      message: "Order or product not found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
 
@@ -591,7 +593,7 @@ const loadReturnOrder = async (req, res) => {
     return res.render("returnOrder", {
       user,
       order: null,
-      message: "No order found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
   const item = order.items.find((item) => item.productId.equals(productId));
@@ -600,7 +602,7 @@ const loadReturnOrder = async (req, res) => {
       order,
       user,
       item: null,
-      message: "No product found",
+      message: MESSAGES.ORDER.NO_PRODUCT,
     });
   }
   res.render("returnOrder", { order, product, user, item });
@@ -619,7 +621,7 @@ const returnOrder = async (req, res) => {
       return res.render("returnOrder", {
         user: req.session.user,
         order: null,
-        message: "Order or product not found",
+        message: MESSAGES.ORDER.NOT_FOUND,
       });
     }
 
@@ -628,47 +630,13 @@ const returnOrder = async (req, res) => {
       return res.render("returnOrder", {
         user: req.session.user,
         order,
-        message: "Product not in this order",
+        message: MESSAGES.ORDER.NO_PRODUCT,
       });
     }
-
-    await Product.findByIdAndUpdate(productId, {
-      $inc: { quantity: item.quantity },
-      $set: {
-        status: (product.quantity + item.quantity) > 0 ? "Available" : "Out of Stock",
-      },
-    });
 
     item.deliveryStatus = "Return Pending";
     item.returnReason = returnReason;
     item.deliveryDate = new Date();
-
-    if (order.paymentStatus === "Paid") {
-      const allDiscountedTotal = order.items.reduce((sum, it) => sum + it.subtotal, 0);
-      const totalCoupon = Math.max(0, allDiscountedTotal - order.grandTotal);
-      const myCouponShare = totalCoupon > 0 ? (item.subtotal / allDiscountedTotal) * totalCoupon : 0;
-      const refundAmount = parseFloat((item.subtotal - myCouponShare).toFixed(2));
-
-      if (isNaN(refundAmount) || refundAmount < 0) {
-        throw new Error(`Invalid refund amount: ${refundAmount}`);
-      }
-
-      let wallet = await Wallet.findOne({ userId });
-      if (!wallet) {
-        wallet = new Wallet({ userId, balance: 0, transactions: [] });
-      }
-
-      wallet.balance = Number((wallet.balance + refundAmount).toFixed(2));
-      wallet.transactions.push({
-        type: "credit",
-        amount: refundAmount,
-        description: `Refund for returned item ${product.name} (Order ${order.orderId})`,
-        date: new Date(),
-        transactionId: generateTransactionId(),
-      });
-      await wallet.save();
-    }
-
     await order.save();
 
     return res.redirect(`/my-orders/return-confirmation/${orderId}/${productId}`);
@@ -676,7 +644,7 @@ const returnOrder = async (req, res) => {
     console.error(err);
     return res.render("returnOrder", {
       user: req.session.user,
-      message: "Internal server error",
+      message: MESSAGES.GENERAL.SERVER_ERROR,
     });
   }
 };
@@ -698,7 +666,7 @@ const loadReturnConfirmation = async (req, res) => {
     return res.render("returnOrder", {
       user: user,
       order: null,
-      message: "Order or product not found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
   const returnedItem = order.items.find((item) =>
@@ -709,7 +677,7 @@ const loadReturnConfirmation = async (req, res) => {
     return res.render("returnOrder", {
       user: user,
       order: null,
-      message: "Order or product not found",
+      message: MESSAGES.ORDER.NOT_FOUND,
     });
   }
 

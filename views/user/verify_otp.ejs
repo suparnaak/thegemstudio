@@ -238,17 +238,16 @@
             });
             return false;
         }
-        //resend otp
         function resendOTP() {
-            clearInterval(timerInterval); // Stop the current timer
-            timer = 60; // Reset timer
-            document.getElementById('otp').disabled = false; // Re-enable OTP input
-            document.getElementById('timerValue').classList.remove('expired'); // Remove expired class
-            startTimer(); // Start the countdown timer
+            clearInterval(timerInterval); 
+            timer = 60; 
+            document.getElementById('otp').disabled = false;
+            document.getElementById('timerValue').classList.remove('expired'); 
+            startTimer(); 
 
             $.ajax({
                 type: 'POST',
-                url: '/resend-otp', // Make sure this matches the route in your Express router
+                url: '/resend-otp', 
                 success: function (response) {
                     if (response.success) {
                         Swal.fire({
@@ -274,7 +273,7 @@
                 }
             });
 
-            return false; // Prevent default form submission behavior
+            return false;
         }
 
 

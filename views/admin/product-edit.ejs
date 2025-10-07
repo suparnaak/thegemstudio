@@ -1,341 +1,442 @@
 <%- include("../../views/partials/admin/header") %>
 
-  <div class="container-fluid">
-    <div class="row">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
+      <div class="container mt-4">
+        <h2>Edit Product</h2>
+      
+        <% if (typeof query !== 'undefined' && query.status) { %>
+          <div class="alert alert-<%= query.status === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+            <%= query.message %>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <% } %>
 
-      <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
-        <div class="container mt-4">
-          <h2>Edit Product</h2>
-        
-          <!-- Display error/success messages -->
-          <% if (typeof query !== 'undefined' && query.status) { %>
-            <div class="alert alert-<%= query.status === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
-              <%= query.message %>
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-          <% } %>
-        
-          <form action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
-            <div class="form-group">
-              <label for="name">Product Name</label>
-              <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
-              <small id="nameError" class="text-danger" style="display:none;">Product name cannot contain only spaces.</small>
-            </div>
-        
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea class="form-control" id="description" name="description" required><%= product.description %></textarea>
-              <small id="descriptionError" class="text-danger" style="display:none;">Description cannot contain only spaces.</small>
-            </div>
-        
-            <div class="form-group">
-              <label for="brand">Brand</label>
-              <select class="form-control same-width" id="brand" name="brand" required>
-                <% brands.forEach(brand => { %>
-                  <option value="<%= brand._id %>" <%= product.brand._id.equals(brand._id) ? 'selected' : '' %>><%= brand.brandName %></option>
-                <% }) %>
-              </select>
-            </div>
-        
-            <!-- Category, Color, and Material placed together above image upload -->
-            <div class="form-group">
-              <label for="category">Category</label>
-              <select class="form-control same-width" id="category" name="category" required>
-                <% categories.forEach(category => { %>
-                  <option value="<%= category._id %>" <%= product.category._id.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
-                <% }) %>
-              </select>
-            </div>
-        
-            <div class="form-group">
-              <label for="color">Color</label>
-              <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
-              <small id="colorError" class="text-danger" style="display:none;">Color cannot contain only spaces.</small>
-            </div>
-        
-            <div class="form-group">
-              <label for="material">Material</label>
-              <input type="text" class="form-control" id="material" name="material" value="<%= product.material %>" required>
-              <small id="materialError" class="text-danger" style="display:none;">Material cannot contain only spaces.</small>
-            </div>
-        
-            <!-- Continue with other form fields -->
-            <div class="form-group">
-              <label for="price">Price</label>
-              <input type="number" class="form-control" id="price" name="price" value="<%= product.price %>" required min="0">
-            </div>
-        
-            <div class="form-group">
-              <label for="discount">Discount (%)</label>
-              <input type="number" class="form-control" id="discount" name="discount" value="<%= product.discount %>" min="0" max="90">
-            </div>
-        
-            <div class="form-group">
-              <label for="quantity">Quantity</label>
-              <input type="number" class="form-control" id="quantity" name="quantity" value="<%= product.quantity %>" required min="0">
-            </div>
-        
-            <div class="form-group">
-              <label for="status">Stock Status</label>
-              <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" required readonly>
-            </div>
-        
-            <!-- Image Upload Section -->
-            <div class="form-group">
-              <label for="existingImages">Current Product Images (Minimum 3 required)</label>
-              <div class="d-flex flex-wrap" id="existingImagesContainer">
-                <% if (product.images && product.images.length > 0) { %>
-                  <% product.images.forEach(function(image, index) { %>
-                    <div class="me-2 mb-2 image-item">
-                      <img src="<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
-                      <div>
-                        <input type="checkbox" name="removeImages" value="<%= image %>" onchange="validateImageCount()"> Remove
-                      </div>
+        <% if (typeof errors !== 'undefined' && Object.keys(errors).length > 0) { %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2">
+              <% Object.values(errors).forEach(error => { %>
+                <li><%= error %></li>
+              <% }); %>
+            </ul>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        <% } %>
+      
+        <form id="edit-product-form" action="/admin/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" novalidate>
+          <div class="form-group">
+            <label for="name">Product Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : product.name %>">
+            <small class="text-danger" id="nameError"><%= typeof errors !== 'undefined' && errors.name ? errors.name : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description"><%= typeof formData !== 'undefined' ? formData.description : product.description %></textarea>
+            <small class="text-danger" id="descriptionError"><%= typeof errors !== 'undefined' && errors.description ? errors.description : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="brand">Brand</label>
+            <select class="form-control same-width" id="brand" name="brand">
+              <% brands.forEach(brand => { %>
+                <% const selectedBrand = typeof formData !== 'undefined' ? formData.brand : product.brand._id.toString(); %>
+                <option value="<%= brand._id %>" <%= brand._id.toString() === selectedBrand ? 'selected' : '' %>><%= brand.brandName %></option>
+              <% }) %>
+            </select>
+            <small class="text-danger" id="brandError"><%= typeof errors !== 'undefined' && errors.brand ? errors.brand : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select class="form-control same-width" id="category" name="category">
+              <% categories.forEach(category => { %>
+                <% const selectedCategory = typeof formData !== 'undefined' ? formData.category : product.category._id.toString(); %>
+                <option value="<%= category._id %>" <%= category._id.toString() === selectedCategory ? 'selected' : '' %>><%= category.name %></option>
+              <% }) %>
+            </select>
+            <small class="text-danger" id="categoryError"><%= typeof errors !== 'undefined' && errors.category ? errors.category : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="color">Color</label>
+            <input type="text" class="form-control" id="color" name="color" value="<%= typeof formData !== 'undefined' ? formData.color : product.color %>">
+            <small class="text-danger" id="colorError"><%= typeof errors !== 'undefined' && errors.color ? errors.color : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="material">Material</label>
+            <input type="text" class="form-control" id="material" name="material" value="<%= typeof formData !== 'undefined' ? formData.material : product.material %>">
+            <small class="text-danger" id="materialError"><%= typeof errors !== 'undefined' && errors.material ? errors.material : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="price">Price</label>
+            <input type="number" class="form-control" id="price" name="price" value="<%= typeof formData !== 'undefined' ? formData.price : product.price %>" min="0">
+            <small class="text-danger" id="priceError"><%= typeof errors !== 'undefined' && errors.price ? errors.price : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="discount">Discount (%)</label>
+            <input type="number" class="form-control" id="discount" name="discount" value="<%= typeof formData !== 'undefined' ? formData.discount : product.discount %>" min="0" max="90">
+            <small class="text-danger" id="discountError"><%= typeof errors !== 'undefined' && errors.discount ? errors.discount : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" value="<%= typeof formData !== 'undefined' ? formData.quantity : product.quantity %>" min="0">
+            <small class="text-danger" id="quantityError"><%= typeof errors !== 'undefined' && errors.quantity ? errors.quantity : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="status">Stock Status</label>
+            <input type="text" class="form-control" id="status" name="status" value="<%= product.status %>" readonly>
+          </div>
+      
+          <div class="form-group">
+            <label for="existingImages">Current Product Images (Minimum 3 required)</label>
+            <div class="d-flex flex-wrap" id="existingImagesContainer">
+              <% if (product.images && product.images.length > 0) { %>
+                <% product.images.forEach(function(image, index) { %>
+                  <% const isRemoved = typeof removedImages !== 'undefined' && removedImages.includes(image); %>
+                  <div class="me-2 mb-2 image-item">
+                    <img src="<%= image %>" class="img-thumbnail" alt="Product Image" style="max-width: 150px;">
+                    <div>
+                      <input type="checkbox" name="removeImages" value="<%= image %>" <%= isRemoved ? 'checked' : '' %>> Remove
                     </div>
-                  <% }) %>
-                <% } else { %>
-                  <p>No images available for this product.</p>
-                <% } %>
-              </div>
-              <small id="imageCountError" class="text-danger" style="display:none;">At least 3 images are required. Please add more images or uncheck some for removal.</small>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <p>No images available for this product.</p>
+              <% } %>
             </div>
-        
-            <div class="form-group">
-              <label for="images">Upload New Images</label>
-              <input type="file" class="form-control" id="images" name="images" multiple accept="image/*" onchange="validateImageCount()">
-            </div>
-        
-            <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
-        
-            <button type="submit" class="btn btn-success" id="submitBtn">Update Product</button><br><br>
-          </form>
-        </div>
-        
+            <small class="text-danger" id="imageCountError"><%= typeof errors !== 'undefined' && errors.imageCount ? errors.imageCount : '' %></small>
+          </div>
+      
+          <div class="form-group">
+            <label for="images">Upload New Images</label>
+            <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+          </div>
+      
+          <div id="imagePreviewContainer" class="d-flex flex-wrap mb-3"></div>
+      
+          <button type="submit" class="btn btn-success" id="submitBtn">Update Product</button><br><br>
+        </form>
+      </div>
+    </div>
   </div>
-  </div>
-  <script>
-    function hasOnlySpaces(value) {
-      return value.trim().length === 0;
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const form = document.getElementById('edit-product-form');
+  const nameInput = document.getElementById('name');
+  const descriptionInput = document.getElementById('description');
+  const brandInput = document.getElementById('brand');
+  const categoryInput = document.getElementById('category');
+  const colorInput = document.getElementById('color');
+  const materialInput = document.getElementById('material');
+  const priceInput = document.getElementById('price');
+  const discountInput = document.getElementById('discount');
+  const quantityInput = document.getElementById('quantity');
+  const fileInput = document.getElementById('images');
+  const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+  const submitBtn = document.getElementById('submitBtn');
+
+  const nameError = document.getElementById('nameError');
+  const descriptionError = document.getElementById('descriptionError');
+  const brandError = document.getElementById('brandError');
+  const categoryError = document.getElementById('categoryError');
+  const colorError = document.getElementById('colorError');
+  const materialError = document.getElementById('materialError');
+  const priceError = document.getElementById('priceError');
+  const discountError = document.getElementById('discountError');
+  const quantityError = document.getElementById('quantityError');
+  const imageCountError = document.getElementById('imageCountError');
+
+  const isEmptyOrSpaces = (str) => !str || str.trim().length === 0;
+  const hasOnlyLettersSpacesHyphens = (str) => /^[a-zA-Z\s\-]+$/.test(str.trim());
+
+  function validateName() {
+    if (isEmptyOrSpaces(nameInput.value)) {
+      nameError.textContent = 'Product name is required.';
+      nameInput.classList.add('is-invalid');
+      return false;
     }
+    nameError.textContent = '';
+    nameInput.classList.remove('is-invalid');
+    return true;
+  }
 
-    function hasNumbersOrSpecialChars(value) {
-      // Allow only letters, spaces, and common color/material words with hyphens
-      const regex = /^[a-zA-Z\s\-]+$/;
-      return !regex.test(value.trim());
+  function validateDescription() {
+    if (isEmptyOrSpaces(descriptionInput.value)) {
+      descriptionError.textContent = 'Description is required.';
+      descriptionInput.classList.add('is-invalid');
+      return false;
     }
+    descriptionError.textContent = '';
+    descriptionInput.classList.remove('is-invalid');
+    return true;
+  }
 
-    function validateField(fieldId, errorId) {
-      const field = document.getElementById(fieldId);
-      const errorElement = document.getElementById(errorId);
+  function validateBrand() {
+    if (isEmptyOrSpaces(brandInput.value)) {
+      brandError.textContent = 'Please select a brand.';
+      brandInput.classList.add('is-invalid');
+      return false;
+    }
+    brandError.textContent = '';
+    brandInput.classList.remove('is-invalid');
+    return true;
+  }
 
-      if (hasOnlySpaces(field.value)) {
-        errorElement.style.display = 'inline';
-        field.classList.add('is-invalid');
-      } else {
-        errorElement.style.display = 'none';
-        field.classList.remove('is-invalid');
+  function validateCategory() {
+    if (isEmptyOrSpaces(categoryInput.value)) {
+      categoryError.textContent = 'Please select a category.';
+      categoryInput.classList.add('is-invalid');
+      return false;
+    }
+    categoryError.textContent = '';
+    categoryInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validateColor() {
+    const value = colorInput.value.trim();
+    if (isEmptyOrSpaces(value)) {
+      colorError.textContent = 'Color is required.';
+      colorInput.classList.add('is-invalid');
+      return false;
+    }
+    if (!hasOnlyLettersSpacesHyphens(value)) {
+      colorError.textContent = 'Color can only contain letters, spaces, and hyphens.';
+      colorInput.classList.add('is-invalid');
+      return false;
+    }
+    colorError.textContent = '';
+    colorInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validateMaterial() {
+    const value = materialInput.value.trim();
+    if (isEmptyOrSpaces(value)) {
+      materialError.textContent = 'Material is required.';
+      materialInput.classList.add('is-invalid');
+      return false;
+    }
+    if (!hasOnlyLettersSpacesHyphens(value)) {
+      materialError.textContent = 'Material can only contain letters, spaces, and hyphens.';
+      materialInput.classList.add('is-invalid');
+      return false;
+    }
+    materialError.textContent = '';
+    materialInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validatePrice() {
+    const value = priceInput.value.trim();
+    if (isEmptyOrSpaces(value) || parseFloat(value) < 0) {
+      priceError.textContent = 'Price must be 0 or greater.';
+      priceInput.classList.add('is-invalid');
+      return false;
+    }
+    priceError.textContent = '';
+    priceInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validateDiscount() {
+    const value = discountInput.value.trim();
+    if (isEmptyOrSpaces(value)) {
+      discountError.textContent = 'Discount is required.';
+      discountInput.classList.add('is-invalid');
+      return false;
+    }
+    const discount = parseFloat(value);
+    if (discount < 0 || discount > 90) {
+      discountError.textContent = 'Discount must be between 0 and 90%.';
+      discountInput.classList.add('is-invalid');
+      return false;
+    }
+    discountError.textContent = '';
+    discountInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validateQuantity() {
+    const value = quantityInput.value.trim();
+    if (isEmptyOrSpaces(value) || parseFloat(value) < 0) {
+      quantityError.textContent = 'Quantity must be 0 or greater.';
+      quantityInput.classList.add('is-invalid');
+      return false;
+    }
+    quantityError.textContent = '';
+    quantityInput.classList.remove('is-invalid');
+    return true;
+  }
+
+  function validateImageCount() {
+    const existingImages = document.querySelectorAll('input[name="removeImages"]');
+    const newImageFiles = fileInput.files;
+    
+    let remainingExistingImages = 0;
+    existingImages.forEach(function(checkbox) {
+      if (!checkbox.checked) {
+        remainingExistingImages++;
       }
+    });
+    
+    const newImagesCount = newImageFiles ? newImageFiles.length : 0;
+    const totalImages = remainingExistingImages + newImagesCount;
+    
+    if (totalImages < 3) {
+      imageCountError.textContent = `At least 3 images are required. You will have ${totalImages} image(s) after update.`;
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-secondary');
+      submitBtn.classList.remove('btn-success');
+      return false;
     }
+    
+    imageCountError.textContent = '';
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('btn-secondary');
+    submitBtn.classList.add('btn-success');
+    return true;
+  }
 
-    function validateColorMaterialField(fieldId, errorId) {
-      const field = document.getElementById(fieldId);
-      const errorElement = document.getElementById(errorId);
-
-      if (hasOnlySpaces(field.value)) {
-        errorElement.textContent = `${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)} cannot contain only spaces.`;
-        errorElement.style.display = 'inline';
-        field.classList.add('is-invalid');
-        return false;
-      } else if (hasNumbersOrSpecialChars(field.value)) {
-        errorElement.textContent = `${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)} can only contain letters, spaces, and hyphens.`;
-        errorElement.style.display = 'inline';
-        field.classList.add('is-invalid');
-        return false;
-      } else {
-        errorElement.style.display = 'none';
-        field.classList.remove('is-invalid');
-        return true;
-      }
+  nameInput.addEventListener('blur', validateName);
+  nameInput.addEventListener('input', () => {
+    if (nameInput.value.trim().length > 0) {
+      nameError.textContent = '';
+      nameInput.classList.remove('is-invalid');
     }
+  });
 
-    function validateImageCount() {
-      const existingImages = document.querySelectorAll('input[name="removeImages"]');
-      const newImageFiles = document.getElementById('images').files;
-      const errorElement = document.getElementById('imageCountError');
-      const submitBtn = document.getElementById('submitBtn');
-      
-      let remainingExistingImages = 0;
-      existingImages.forEach(function(checkbox) {
-        if (!checkbox.checked) {
-          remainingExistingImages++;
+  descriptionInput.addEventListener('blur', validateDescription);
+  descriptionInput.addEventListener('input', () => {
+    if (descriptionInput.value.trim().length > 0) {
+      descriptionError.textContent = '';
+      descriptionInput.classList.remove('is-invalid');
+    }
+  });
+
+  brandInput.addEventListener('blur', validateBrand);
+  brandInput.addEventListener('change', validateBrand);
+
+  categoryInput.addEventListener('blur', validateCategory);
+  categoryInput.addEventListener('change', validateCategory);
+
+  colorInput.addEventListener('blur', validateColor);
+  colorInput.addEventListener('input', validateColor);
+
+  materialInput.addEventListener('blur', validateMaterial);
+  materialInput.addEventListener('input', validateMaterial);
+
+  priceInput.addEventListener('blur', validatePrice);
+  priceInput.addEventListener('input', () => {
+    if (priceInput.value.trim().length > 0) {
+      priceError.textContent = '';
+      priceInput.classList.remove('is-invalid');
+    }
+  });
+
+  discountInput.addEventListener('blur', validateDiscount);
+  discountInput.addEventListener('input', () => {
+    if (discountInput.value.trim().length > 0) {
+      discountError.textContent = '';
+      discountInput.classList.remove('is-invalid');
+    }
+  });
+
+  quantityInput.addEventListener('blur', validateQuantity);
+  quantityInput.addEventListener('input', () => {
+    if (quantityInput.value.trim().length > 0) {
+      quantityError.textContent = '';
+      quantityInput.classList.remove('is-invalid');
+    }
+  });
+
+  // images - noof images
+  document.querySelectorAll('input[name="removeImages"]').forEach(checkbox => {
+    checkbox.addEventListener('change', validateImageCount);
+  });
+
+  fileInput.addEventListener('change', function() {
+    const files = fileInput.files;
+    imagePreviewContainer.innerHTML = '';
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageData = event.target.result;
+        const imagePreview = document.createElement('div');
+        imagePreview.className = 'image-preview me-2 mb-2';
+        imagePreview.style.cssText = 'display: inline-block; border: 1px solid #ddd; padding: 5px; border-radius: 4px;';
+        
+        const img = document.createElement('img');
+        img.src = imageData;
+        img.style.cssText = 'max-width: 150px; max-height: 150px; display: block;';
+        
+        const fileName = document.createElement('small');
+        fileName.textContent = file.name;
+        fileName.style.cssText = 'display: block; text-align: center; margin-top: 5px;';
+        
+        imagePreview.appendChild(img);
+        imagePreview.appendChild(fileName);
+        imagePreviewContainer.appendChild(imagePreview);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    validateImageCount();
+  });
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const isNameValid = validateName();
+    const isDescriptionValid = validateDescription();
+    const isBrandValid = validateBrand();
+    const isCategoryValid = validateCategory();
+    const isColorValid = validateColor();
+    const isMaterialValid = validateMaterial();
+    const isPriceValid = validatePrice();
+    const isDiscountValid = validateDiscount();
+    const isQuantityValid = validateQuantity();
+    const isImageCountValid = validateImageCount();
+
+    const isValid = isNameValid && isDescriptionValid && isBrandValid && 
+                   isCategoryValid && isColorValid && isMaterialValid && 
+                   isPriceValid && isDiscountValid && isQuantityValid && 
+                   isImageCountValid;
+
+    if (isValid) {
+      Swal.fire({
+        title: 'Updating Product...',
+        text: 'Please wait while we update your product',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading()
         }
       });
       
-      const newImagesCount = newImageFiles ? newImageFiles.length : 0;
-      
-      const totalImages = remainingExistingImages + newImagesCount;
-      
-      if (totalImages < 3) {
-        errorElement.style.display = 'inline';
-        submitBtn.disabled = true;
-        submitBtn.classList.add('btn-secondary');
-        submitBtn.classList.remove('btn-success');
-        return false;
-      } else {
-        errorElement.style.display = 'none';
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('btn-secondary');
-        submitBtn.classList.add('btn-success');
-        return true;
-      }
+      form.submit();
     }
+  });
 
-    function validateForm() {
-      const textFields = [
-        { id: 'name', error: 'nameError' },
-        { id: 'description', error: 'descriptionError' },
-        { id: 'brand', error: 'brandError' }
-      ];
+  document.addEventListener('DOMContentLoaded', function() {
+    validateImageCount();
+  });
+</script>
 
-      const colorMaterialFields = [
-        { id: 'color', error: 'colorError' },
-        { id: 'material', error: 'materialError' }
-      ];
-
-      let isValid = true;
-
-      textFields.forEach(function (field) {
-        const inputField = document.getElementById(field.id);
-        const errorField = document.getElementById(field.error);
-
-        if (hasOnlySpaces(inputField.value)) {
-          errorField.style.display = 'inline';
-          inputField.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          errorField.style.display = 'none';
-          inputField.classList.remove('is-invalid');
-        }
-      });
-
-      colorMaterialFields.forEach(function (field) {
-        if (!validateColorMaterialField(field.id, field.error)) {
-          isValid = false;
-        }
-      });
-
-      if (!validateImageCount()) {
-        isValid = false;
-      }
-
-      return isValid;
-    }
-
-    document.getElementById('name').addEventListener('blur', function () {
-      validateField('name', 'nameError');
-    });
-
-    document.getElementById('description').addEventListener('blur', function () {
-      validateField('description', 'descriptionError');
-    });
-
-    document.getElementById('brand').addEventListener('blur', function () {
-      validateField('brand', 'brandError');
-    });
-
-    document.getElementById('color').addEventListener('blur', function () {
-      validateColorMaterialField('color', 'colorError');
-    });
-
-    document.getElementById('color').addEventListener('input', function () {
-      validateColorMaterialField('color', 'colorError');
-    });
-
-    document.getElementById('material').addEventListener('blur', function () {
-      validateColorMaterialField('material', 'materialError');
-    });
-
-    document.getElementById('material').addEventListener('input', function () {
-      validateColorMaterialField('material', 'materialError');
-    });
-
-    document.querySelector('form').addEventListener('submit', function (event) {
-      if (!validateForm()) {
-        event.preventDefault();
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-      validateImageCount();
-    });
-  </script>
-  
-  <script>
-    const fileInput = document.getElementById('images');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-
-    fileInput.addEventListener('change', function () {
-      const files = fileInput.files;
-      imagePreviewContainer.innerHTML = '';
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const imageData = event.target.result;
-          const imagePreview = document.createElement('div');
-          imagePreview.className = 'image-preview me-2 mb-2';
-          imagePreview.style.cssText = 'display: inline-block; border: 1px solid #ddd; padding: 5px; border-radius: 4px;';
-          
-          const img = document.createElement('img');
-          img.src = imageData;
-          img.style.cssText = 'max-width: 150px; max-height: 150px; display: block;';
-          
-          const fileName = document.createElement('small');
-          fileName.textContent = file.name;
-          fileName.style.cssText = 'display: block; text-align: center; margin-top: 5px;';
-          
-          imagePreview.appendChild(img);
-          imagePreview.appendChild(fileName);
-          imagePreviewContainer.appendChild(imagePreview);
-
-          img.addEventListener('click', function () {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.cssText = 'display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);';
-            
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            modalContent.style.cssText = 'margin: 15% auto; padding: 20px; width: 80%; max-width: 700px; background-color: white; border-radius: 5px;';
-            
-            const closeButton = document.createElement('span');
-            closeButton.className = 'close';
-            closeButton.innerHTML = '&times;';
-            closeButton.style.cssText = 'color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;';
-            closeButton.addEventListener('click', function () {
-              document.body.removeChild(modal);
-              if (typeof cropper !== 'undefined') {
-                cropper.destroy();
-              }
-            });
-            modalContent.appendChild(closeButton);
-
-            const cropImage = document.createElement('img');
-            cropImage.src = imageData;
-            cropImage.style.cssText = 'max-width: 100%;';
-            modalContent.appendChild(cropImage);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-      
-      validateImageCount();
-    });
-  </script>
-
-  <%- include("../../views/partials/admin/footer") %></document_content>
+<%- include("../../views/partials/admin/footer") %>

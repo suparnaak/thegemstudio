@@ -1,5 +1,6 @@
 const User = require("../../models/userSchema");
-
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 // List users 
 const listUsers = async (req, res) => {
   try {
@@ -48,7 +49,7 @@ const blockUser = async (req, res) => {
     res.json({ success: true, isBlocked: true });
   } catch (error) {
     console.log("Error blocking user", error);
-    res.status(500).json({ success: false });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ success: false });
   }
 };
 
@@ -60,7 +61,7 @@ const unblockUser = async (req, res) => {
 res.json({ success: true, isBlocked: false });
   } catch (error) {
     console.log("Error unblocking user", error);
-    res.status(500).json({ success: false });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ success: false });
   }
 };
 

@@ -1,12 +1,15 @@
 const User = require("../../models/userSchema");
 const Address = require("../../models/addressSchema");
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
+
 const loadManageAddresses = async (req, res) => {
   try {
     const user = req.session.user;
     const addresses = await Address.find({ userId: user._id });
     if (!addresses || addresses.length === 0) {
       return res.render("addresses-page", {
-        message: "No addresses added. Add a new address to get started!",
+        message: MESSAGES.ADDRESS.NO_ADDRESS,
         addresses: [],
         user: req.session.user,
       });
@@ -18,8 +21,8 @@ const loadManageAddresses = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching addresses:", error);
-    res.status(500).render("addresses-page", {
-      message: "Failed to fetch addresses due to an error.",
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).render("addresses-page", {
+      message: MESSAGES.GENERAL.SERVER_ERROR,
       addresses: [],
       user: user,
     });
@@ -34,7 +37,7 @@ const loadAddAddress = async (req, res) => {
     }
   } catch (error) {
     console.log("Add address page not found:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 
@@ -63,7 +66,7 @@ const addAddress = async (req, res) => {
     res.render("addresses-page", { user: user, addresses: addresses });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to add address" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 
@@ -82,14 +85,14 @@ const loadEditAddress = async (req, res) => {
         
         res.render("edit-address", { user: user, address: address });
       } else {
-        res.render("edit-address", { user: user, address: null, message: "No address found" });
+        res.render("edit-address", { user: user, address: null, message: MESSAGES.ADDRESS.NO_ADDRESS });
       }
     } else {
       res.redirect("/login");
     }
   } catch (error) {
     console.error("Error loading edit address page:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 const editAddress = async (req, res) => {
@@ -100,7 +103,7 @@ const editAddress = async (req, res) => {
     const address = await Address.findOne({ _id: addressId, userId: userId });
 
     if (!address) {
-      return res.status(403).send("You do not have permission to edit this address");
+      return res.status(STATUSCODES.FORBIDDEN).send(MESSAGES.ADDRESS.DENY_EDIT);
     }
 
     // Update the address
@@ -117,7 +120,7 @@ const editAddress = async (req, res) => {
     res.redirect("/manage-addresses");
   } catch (error) {
     console.error("Error updating address:", error);
-    res.status(500).send("Server Error");
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).send(MESSAGES.GENERAL.SERVER_ERROR);
   }
 };
 //delete address
@@ -129,10 +132,10 @@ const deleteAddress = async (req, res) => {
 
     await Address.findOneAndDelete({ _id: addressId });
 
-    res.json({ message: "Address deleted successfully" });
+    res.json({ message: MESSAGES.ADDRESS.DELETED });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to delete address" });
+    res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.GENERAL.SERVER_ERROR });
   }
 };
 module.exports = {

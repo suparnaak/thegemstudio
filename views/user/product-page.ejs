@@ -1,326 +1,370 @@
 <!--header begins-->
 <%- include("../../views/partials/user/header") %>
-    <!--header ends-->
+<!--header ends-->
 
-    <div class="breadcrumbs">
-        <div class="container_12">
-            <div class="grid_12">
-                <a href="/">Home</a><span></span><a href="/products">Products</a><span></span><span class="current">
-                    <%= product.name %>
-                </span>
-            </div><!-- .grid_12 -->
-        </div><!-- .container_12 -->
-    </div><!-- .breadcrumbs -->
-    <section id="main">
-        <div class="container_12">
-            <div id="content" class="grid_12">
-                <header>
-                    <h1 class="page_title">
-                        <%= product.name %>
-                    </h1>
-                </header>
-                <article class="product_page negative-grid">
-                    <div class="grid_5 img_slid" id="products">
-                        <img class="sale" src="/img/sale.png" alt="Sale">
-                        <div class="preview slides_container">
-                            <div class="prev_bg">
-                                <a href="<%= product.images[0] %>" class="jqzoom" rel='gal1' title="">
-                                    <img src="<%= product.images[0] %>" alt="<%= product.name %>"
-                                        title="" style="width: 100%">
-                                </a>
-                            </div>
-                        </div><!-- .preview -->
+<div class="breadcrumbs">
+  <div class="container_12">
+    <div class="grid_12">
+      <a href="/">Home</a><span></span><a href="/products">Products</a
+      ><span></span><span class="current"> <%= product.name %> </span>
+    </div>
+    <!-- .grid_12 -->
+  </div>
+  <!-- .container_12 -->
+</div>
+<!-- .breadcrumbs -->
+<section id="main">
+  <div class="container_12">
+    <div id="content" class="grid_12">
+      <header>
+        <h1 class="page_title"><%= product.name %></h1>
+      </header>
+      <article class="product_page negative-grid">
+        <div class="grid_5 img_slid" id="products">
+          <img class="sale" src="/img/sale.png" alt="Sale" />
+          <div class="preview slides_container">
+            <div class="prev_bg">
+              <a
+                href="<%= product.images[0] %>"
+                class="jqzoom"
+                rel="gal1"
+                title=""
+              >
+                <img
+                  src="<%= product.images[0] %>"
+                  alt="<%= product.name %>"
+                  title=""
+                  style="width: 100%"
+                />
+              </a>
+            </div>
+          </div>
+          <!-- .preview -->
 
-                        <div class="next_prev">
-                            <a id="img_prev" class="arows" href="#"><span>Prev</span></a>
-                            <a id="img_next" class="arows" href="#"><span>Next</span></a>
-                        </div><!-- .next_prev -->
+          <div class="next_prev">
+            <a id="img_prev" class="arows" href="#"><span>Prev</span></a>
+            <a id="img_next" class="arows" href="#"><span>Next</span></a>
+          </div>
+          <!-- .next_prev -->
 
-                        <ul class="small_img clearfix" id="thumblist">
-                            <% product.images.forEach((image, index)=> { %>
-                                <li>
-                                    <a class="zoomThumbActive" href='javascript:void(0);'
-                                        rel="{gallery: 'gal1', smallimage: '<%= image %>', largeimage: '<%= image %>'}">
-                                        <img src='<%= image %>' alt="">
-                                    </a>
-                                </li>
-                                <% }) %>
-                        </ul><!-- .small_img -->
-                        <div id="pagination"></div>
-                    </div><!-- .grid_5 -->
+          <ul class="small_img clearfix" id="thumblist">
+            <% product.images.forEach((image, index)=> { %>
+            <li>
+              <a
+                class="zoomThumbActive"
+                href="javascript:void(0);"
+                rel="{gallery: 'gal1', smallimage: '<%= image %>', largeimage: '<%= image %>'}"
+              >
+                <img src="<%= image %>" alt="" />
+              </a>
+            </li>
+            <% }) %>
+          </ul>
+          <!-- .small_img -->
+          <div id="pagination"></div>
+        </div>
+        <!-- .grid_5 -->
 
-                    <div class="grid_7">
-                        <div class="entry_content">
-                            <p>
-                                <%= product.brand.brandName %>
-                            </p>
+        <div class="grid_7">
+          <div class="entry_content">
+            <p><%= product.brand.brandName %></p>
 
-                            <div class="ava_price">
-                                <div class="price">
-                                    <% if (product.discount> 0 || product.category.offer > 0) { %>
-                                        <div class="price_old">₹<%= product.price %>
-                                        </div>
-                                        ₹<%= product.finalPrice %>
-                                            <% } else { %>
-                                                ₹<%= product.price %>
-                                                    <% } %>
-                                </div><!-- .price -->
-                                <div class="availability_sku">
-                                    <div class="availability">
-                                        Availability: <span>
-                                            <%= product.status %>
-                                        </span>
-                                    </div>
-                                    <div class="sku">
-                                        SKU: <span>
-                                            <%= product.sku || 'Not Available' %>
-                                        </span>
-                                    </div>
-                                    <div class="parameter_selection">
-                                        Material: <span>
-                                            <%= product.material %>
-                                        </span>
-                                    </div>
-                                    <div class="quantity_selection">
-                                        Quantity:
-                                        <select name="quantity" id="quantity">
-                                            <% for (var i=1; i <=5; i++) { %>
-                                                <option value="<%= i %>">
-                                                    <%= i %>
-                                                </option>
-                                                <% } %>
-                                        </select>
-                                    </div>
-                                    <!-- .parameter_selection -->
-                                </div><!-- .availability_sku -->
-                                <div class="clear"></div>
-                            </div><!-- .ava_price -->
-                            <div class="cart">
-                                <a href="#" class="bay" data-id="<%= product._id %>" id="addToCartBtn"
-                                    style="width:150px"
-                                    ><img
-                                        src="/img/bg_cart.png" alt="Buy" title="">Add to Cart</a>
-                                <a href="#" class="wishlist" data-id="<%= product._id %>"><span></span>Add
-                                    to Wishlist</a>
-                            </div><!-- .cart -->
-                        </div><!-- .entry_content -->
-                    </div><!-- .grid_7 -->
+            <div class="ava_price">
+              <div class="price">
+                <% if (product.discount> 0 || product.category.offer > 0) { %>
+                <div class="price_old">₹<%= product.price %></div>
+                ₹<%= product.finalPrice %> <% } else { %> ₹<%= product.price %>
+                <% } %>
+              </div>
+              <!-- .price -->
+              <div class="availability_sku">
+                <div class="availability">
+                  Availability: <span> <%= product.status %> </span>
+                </div>
+                <div class="sku">
+                  SKU: <span> <%= product.sku || 'Not Available' %> </span>
+                </div>
+                <div class="parameter_selection">
+                  Material: <span> <%= product.material %> </span>
+                </div>
+                <div class="quantity_selection">
+                  Quantity:
+                  <select name="quantity" id="quantity">
+                    <% for (var i=1; i <=5; i++) { %>
+                    <option value="<%= i %>"><%= i %></option>
+                    <% } %>
+                  </select>
+                </div>
+                <!-- .parameter_selection -->
+              </div>
+              <!-- .availability_sku -->
+              <div class="clear"></div>
+            </div>
+            <!-- .ava_price -->
+            <div class="cart">
+              <a
+                href="#"
+                class="bay"
+                data-id="<%= product._id %>"
+                id="addToCartBtn"
+                style="width: 150px"
+                ><img src="/img/bg_cart.png" alt="Buy" title="" />Add to Cart</a
+              >
+              <a href="#" class="wishlist" data-id="<%= product._id %>"
+                ><span></span>Add to Wishlist</a
+              >
+            </div>
+            <!-- .cart -->
+          </div>
+          <!-- .entry_content -->
+        </div>
+        <!-- .grid_7 -->
+        <div class="clear"></div>
+        <!-- review and description tabs -->
+        <div class="grid_12">
+          <div id="wrapper_tab" class="tab1">
+            <a href="#" class="tab1 tab_link">Description</a>
+            <a href="#" class="tab2 tab_link">Reviews</a>
+            <div class="clear"></div>
+            <div class="tab1 tab_body">
+              <h4>About This Item</h4>
+              <p><%= product.description %></p>
+              <div class="clear"></div>
+            </div>
+            <!-- .tab1 .tab_body -->
+            <div class="tab2 tab_body">
+              <h4>Customer Reviews</h4>
+              <ul class="comments">
+                <% if (reviews.length === 0) { %>
+                <li><p>No reviews yet.</p></li>
+                <% } else { %> <% reviews.forEach(review => { %>
+                <li>
+                  <div class="autor"><%= review.userId.name %></div>
+                  ,
+                  <time datetime="<%= review.createdAt.toISOString() %>"
+                    ><%= new Date(review.createdAt).toLocaleDateString()
+                    %></time
+                  >
+                  <div class="evaluation">
+                    <div class="quality">
+                      <% for (let i = 0; i < 5; i++) { %> <% if (i <
+                      review.rating) { %>
+                      <a class="plus" href="#"></a>
+                      <!-- Star filled -->
+                      <% } else { %>
+                      <a href="#"></a>
+                      <!-- Star empty -->
+                      <% } %> <% } %>
+                    </div>
                     <div class="clear"></div>
-                    <!-- review and description tabs -->
-                    <div class="grid_12">
-                        <div id="wrapper_tab" class="tab1">
-                            <a href="#" class="tab1 tab_link">Description</a>
-                            <a href="#" class="tab2 tab_link">Reviews</a>
-                            <div class="clear"></div>
-                            <div class="tab1 tab_body">
-                                <h4>About This Item</h4>
-                                <p>
-                                    <%= product.description %>
-                                </p>
-                                <div class="clear"></div>
-                            </div><!-- .tab1 .tab_body -->
-                            <div class="tab2 tab_body">
-                                <h4>Customer Reviews</h4>
-                                <ul class="comments">
-                                    <% if (reviews.length === 0) { %>
-                                        <li><p>No reviews yet.</p></li>
-                                    <% } else { %>
-                                        <% reviews.forEach(review => { %>
-                                            <li>
-                                                <div class="autor"><%= review.userId.name %></div>, <time datetime="<%= review.createdAt.toISOString() %>"><%= new Date(review.createdAt).toLocaleDateString() %></time>
-                                                <div class="evaluation">
-                                                    <div class="quality">
-                                                        <% for (let i = 0; i < 5; i++) { %>
-                                                            <% if (i < review.rating) { %>
-                                                                <a class="plus" href="#"></a> <!-- Star filled -->
-                                                            <% } else { %>
-                                                                <a href="#"></a> <!-- Star empty -->
-                                                            <% } %>
-                                                        <% } %>
-                                                    </div>
-                                                    <div class="clear"></div>
-                                                </div><!-- .evaluation -->
-                                                <p><%= review.reviewText %></p>
-                                            </li>
-                                        <% }); %>
-                                    <% } %>
-                                </ul><!-- .comments -->
-                                <div class="clear"></div>
-                            </div><!-- .tab2 .tab_body -->
-                            <div class="tab3 tab_body">
-                                <h4>Custom Tab</h4>
-                                <div class="clear"></div>
-                            </div><!-- .tab3 .tab_body -->
-                            <div class="clear"></div>
-                        </div>​<!-- #wrapper_tab -->
-                        <div class="clear"></div>
-                    </div><!-- .grid_12 -->
-                    <div class="clear"></div>
-                    <!-- //review and description tab -->
-                </article><!-- .product_page -->
-                <!-- related products -->
-                <div class="related negative-grid">
-                    <div class="c_header">
-                        <div class="grid_10">
-                            <h2>Related Products</h2>
-                        </div><!-- .grid_10 -->
-                        <div class="grid_2">
-                            <a id="next_c1" class="next arows" href="#"><span>Next</span></a>
-                            <a id="prev_c1" class="prev arows" href="#"><span>Prev</span></a>
-                        </div><!-- .grid_2 -->
-                    </div><!-- .c_header -->
-                    <div class="related_list">
-                        <% if (relatedProducts.length> 0) { %>
-                            <ul id="listing" class="products">
-                                <% relatedProducts.forEach((product)=> { %>
-                                    <li>
-                                        <article class="grid_3 article">
-                                            <% if (product.discount> 0) { %>
-                                                <img class="sale" src="/img/sale.png" alt="Sale">
-                                                <% } %>
-                                                    <div class="prev">
-                                                        <a href="/product_page/<%= product._id %>"><img
-                                                                src="<%= product.images[0] %>"
-                                                                alt="<%= product.name %>" title=""></a>
-                                                    </div><!-- .prev -->
-                                                    <h3 class="title">
-                                                        <%= product.name %>
-                                                    </h3>
-                                                    <div class="cart">
-                                                        <div class="price">
-                                                            <% if (product.discount> 0) { %>
-                                                                <div class="vert">
-                                                                    ₹<%= product.price - (product.price *
-                                                                        product.discount / 100) %>
-                                                                        <div class="price_old">₹<%= product.price %>
-                                                                        </div>
-                                                                </div>
-                                                                <% } else { %>
-                                                                    <div class="vert">₹<%= product.price %>
-                                                                    </div>
-                                                                    <% } %>
-                                                        </div>
-                                                    </div><!-- .cart -->
-                                        </article><!-- .grid_3.article -->
-                                    </li>
-                                    <% }); %>
-                            </ul><!-- #listing -->
-                            <% } else { %>
-                                <p class="text-danger">No related products available at the moment.</p>
-                                <% } %>
-                    </div><!-- .brands_list -->
-                </div><!-- .related --> <!-- .related products -->
-                <div class="clear"></div>
-                <div class="clear"></div>
-                <br><br>
-            </div><!-- #content -->
-        </div><!-- .container_12 -->
-    </section><!-- #main -->
-    <div class="clear"></div>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script>
-        document.getElementById('addToCartBtn').addEventListener('click', function (e) {
-            e.preventDefault();
-            const productId = this.getAttribute('data-id');
-            const quantity = document.getElementById('quantity').value; // Get selected quantity
+                  </div>
+                  <!-- .evaluation -->
+                  <p><%= review.reviewText %></p>
+                </li>
+                <% }); %> <% } %>
+              </ul>
+              <!-- .comments -->
+              <div class="clear"></div>
+            </div>
+            <!-- .tab2 .tab_body -->
+            <div class="tab3 tab_body">
+              <h4>Custom Tab</h4>
+              <div class="clear"></div>
+            </div>
+            <!-- .tab3 .tab_body -->
+            <div class="clear"></div>
+          </div>
+          ​<!-- #wrapper_tab -->
+          <div class="clear"></div>
+        </div>
+        <!-- .grid_12 -->
+        <div class="clear"></div>
+        <!-- //review and description tab -->
+      </article>
+      <!-- .product_page -->
+      <!-- related products -->
+      <div class="related negative-grid">
+        <div class="c_header">
+          <div class="grid_10">
+            <h2>Related Products</h2>
+          </div>
+          <!-- .grid_10 -->
+          <div class="grid_2">
+            <a id="next_c1" class="next arows" href="#"><span>Next</span></a>
+            <a id="prev_c1" class="prev arows" href="#"><span>Prev</span></a>
+          </div>
+          <!-- .grid_2 -->
+        </div>
+        <!-- .c_header -->
+        <div class="related_list">
+          <% if (relatedProducts.length> 0) { %>
+          <ul id="listing" class="products">
+            <% relatedProducts.forEach((product)=> { %>
+            <li>
+              <article class="grid_3 article">
+                <% if (product.discount> 0) { %>
+                <img class="sale" src="/img/sale.png" alt="Sale" />
+                <% } %>
+                <div class="prev">
+                  <a href="/product_page/<%= product._id %>"
+                    ><img
+                      src="<%= product.images[0] %>"
+                      alt="<%= product.name %>"
+                      title=""
+                  /></a>
+                </div>
+                <!-- .prev -->
+                <h3 class="title"><%= product.name %></h3>
+                <div class="cart">
+                  <div class="price">
+                    <% if (product.discount> 0) { %>
+                    <div class="vert">
+                      ₹<%= product.price - (product.price * product.discount /
+                      100) %>
+                      <div class="price_old">₹<%= product.price %></div>
+                    </div>
+                    <% } else { %>
+                    <div class="vert">₹<%= product.price %></div>
+                    <% } %>
+                  </div>
+                </div>
+                <!-- .cart -->
+              </article>
+              <!-- .grid_3.article -->
+            </li>
+            <% }); %>
+          </ul>
+          <!-- #listing -->
+          <% } else { %>
+          <p class="text-danger">
+            No related products available at the moment.
+          </p>
+          <% } %>
+        </div>
+        <!-- .brands_list -->
+      </div>
+      <!-- .related -->
+      <!-- .related products -->
+      <div class="clear"></div>
+      <div class="clear"></div>
+      <br /><br />
+    </div>
+    <!-- #content -->
+  </div>
+  <!-- .container_12 -->
+</section>
+<!-- #main -->
+<div class="clear"></div>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+  document
+    .getElementById("addToCartBtn")
+    .addEventListener("click", function (e) {
+      e.preventDefault();
+      const productId = this.getAttribute("data-id");
+      const quantity = document.getElementById("quantity").value;
 
-            fetch('/cart/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId: productId, quantity: quantity })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        swal({
-                            title: "Success!",
-                            text: "Product added to cart successfully!",
-                            icon: "success",
-                            button: "OK",
-                        });
-                        updateCartDisplay(data.headerData.totalPrice, data.headerData.recentItems);
-                    } else {
-                        swal({
-                            title: "Error!",
-                            text: data.error || "Failed to add product to cart",
-                            icon: "error",
-                            button: "OK",
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    swal({
-                        title: "Error!",
-                        text: "Login to add items to cart",
-                        icon: "error",
-                        button: "OK",
-                    });
-                });
+      fetch("/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId: productId, quantity: quantity }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            swal({
+              title: "Success!",
+              text: "Product added to cart successfully!",
+              icon: "success",
+              button: "OK",
+            });
+            updateCartDisplay(
+              data.headerData.totalPrice,
+              data.headerData.recentItems
+            );
+          } else {
+            swal({
+              title: "Error!",
+              text: data.error || "Failed to add product to cart",
+              icon: "error",
+              button: "OK",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          swal({
+            title: "Error!",
+            text: "Login to add items to cart",
+            icon: "error",
+            button: "OK",
+          });
         });
-        document.querySelector('.wishlist').addEventListener('click', function (e) {
-            e.preventDefault();
-            const productId = this.getAttribute('data-id');
-            fetch('/wishlist/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId: productId }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === 'Added to wishlist') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: 'Product added to wishlist!',
-                        });
-                    } else if (data.message === 'Out of stock') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Out of Stock',
-                            text: 'This product is currently out of stock!',
-                        });
-                    } else if (data.message === 'Blocked by admin') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Blocked',
-                            text: 'You are blocked by the admin and cannot add products to the wishlist.',
-                        });
-                    } else if (data.message === 'Already in wishlist') {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Already Added',
-                            text: 'This product is already in your wishlist!',
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'An error occurred while adding the product to the wishlist.',
-                    });
-                });
+    });
+  document.querySelector(".wishlist").addEventListener("click", function (e) {
+    e.preventDefault();
+    const productId = this.getAttribute("data-id");
+    fetch("/wishlist/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ productId: productId }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message === "Added to wishlist") {
+          Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: "Product added to wishlist!",
+          });
+        } else if (data.message === "Out of stock") {
+          Swal.fire({
+            icon: "error",
+            title: "Out of Stock",
+            text: "This product is currently out of stock!",
+          });
+        } else if (data.message === "Blocked by admin") {
+          Swal.fire({
+            icon: "error",
+            title: "Blocked",
+            text: "You are blocked by the admin and cannot add products to the wishlist.",
+          });
+        } else if (data.message === "Already in wishlist") {
+          Swal.fire({
+            icon: "info",
+            title: "Already Added",
+            text: "This product is already in your wishlist!",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "An error occurred while adding the product to the wishlist.",
         });
+      });
+  });
 
-        function updateCartDisplay(totalPrice, recentItems) {
-            // Update total price in the cart
-            document.querySelector('#cart_nav span').textContent = `₹${totalPrice.toFixed(2)}`;
+  function updateCartDisplay(totalPrice, recentItems) {
+    document.querySelector(
+      "#cart_nav span"
+    ).textContent = `₹${totalPrice.toFixed(2)}`;
 
-            // Clear existing recent items, but keep the heading and buttons
-            const recentItemsContainer = document.querySelector('.cart_cont');
-            const heading = recentItemsContainer.querySelector('.recently');
-            recentItemsContainer.querySelectorAll('li:not(.no_border):not(.recently)').forEach(item => item.remove());
+    const recentItemsContainer = document.querySelector(".cart_cont");
+    const heading = recentItemsContainer.querySelector(".recently");
+    recentItemsContainer
+      .querySelectorAll("li:not(.no_border):not(.recently)")
+      .forEach((item) => item.remove());
 
-            // Populate recent items
-            recentItems.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `
+    recentItems.forEach((item) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
             <a href="/product_page/${item.product._id}" class="prev_cart">
                 <div class="cart_vert">
                     <img src="${item.product.images[0]}" alt="${item.product.name}" title="${item.product.name}" />
@@ -335,13 +379,16 @@
            
             <div class="clear"></div>
         `;
-                recentItemsContainer.insertBefore(li, recentItemsContainer.querySelector('.no_border:last-child'));
-            });
+      recentItemsContainer.insertBefore(
+        li,
+        recentItemsContainer.querySelector(".no_border:last-child")
+      );
+    });
 
-            // Update no items message
-            if (recentItems.length === 0) {
-                recentItemsContainer.innerHTML += '<li class="no_items">No items in the cart</li>';
-            }
-        }   
-    </script>
-    <%- include("../../views/partials/user/footer") %>
+    if (recentItems.length === 0) {
+      recentItemsContainer.innerHTML +=
+        '<li class="no_items">No items in the cart</li>';
+    }
+  }
+</script>
+<%- include("../../views/partials/user/footer") %>

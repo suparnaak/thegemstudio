@@ -4,17 +4,19 @@
   <div class="row">
     <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
       <h1>Add New Brand</h1>
-      <form id="brandForm" action="/admin/brands/add" method="POST">
+      <form id="brandForm" action="/admin/brands/add" method="POST" novalidate>
         <div class="form-group">
           <label for="brandName">Brand Name</label>
-          <input type="text" class="form-control" id="brandName" name="brandName" required />
+          <input type="text" class="form-control" id="brandName" name="brandName" />
+          <small class="text-danger" id="brandName-error"></small>
         </div>
         <div class="form-group">
           <label for="description">Description</label>
-          <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          <small class="text-danger" id="description-error"></small>
         </div>
         <button type="submit" class="btn btn-success">Add Brand</button>
-        <div class="error-message text-danger"></div>
+        <div class="error-message text-danger mt-2"></div>
       </form>
     </div>
   </div>
@@ -22,28 +24,70 @@
 
 <script>
   const form = document.querySelector("#brandForm");
+  const brandNameInput = document.querySelector("#brandName");
+  const descriptionInput = document.querySelector("#description");
+  const brandNameError = document.querySelector("#brandName-error");
+  const descriptionError = document.querySelector("#description-error");
+  const errorMessage = document.querySelector(".error-message");
 
   const isEmptyOrSpaces = (str) => {
     return !str || str.trim().length === 0;
   };
 
+  const validateBrandName = () => {
+    const value = brandNameInput.value;
+    if (isEmptyOrSpaces(value)) {
+      brandNameError.textContent = "Brand name is required.";
+      brandNameInput.classList.add("is-invalid");
+      return false;
+    }
+    brandNameError.textContent = "";
+    brandNameInput.classList.remove("is-invalid");
+    return true;
+  };
+
+  const validateDescription = () => {
+    const value = descriptionInput.value;
+    if (isEmptyOrSpaces(value)) {
+      descriptionError.textContent = "Description is required.";
+      descriptionInput.classList.add("is-invalid");
+      return false;
+    }
+    descriptionError.textContent = "";
+    descriptionInput.classList.remove("is-invalid");
+    return true;
+  };
+
+  brandNameInput.addEventListener("blur", validateBrandName);
+  descriptionInput.addEventListener("blur", validateDescription);
+
+  brandNameInput.addEventListener("input", () => {
+    if (brandNameInput.value.trim().length > 0) {
+      brandNameError.textContent = "";
+      brandNameInput.classList.remove("is-invalid");
+    }
+  });
+
+  descriptionInput.addEventListener("input", () => {
+    if (descriptionInput.value.trim().length > 0) {
+      descriptionError.textContent = "";
+      descriptionInput.classList.remove("is-invalid");
+    }
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    const brandName = document.querySelector("#brandName").value;
-    const description = document.querySelector("#description").value;
-    const errorMessage = document.querySelector(".error-message");
-
     errorMessage.innerHTML = "";
 
-    if (isEmptyOrSpaces(brandName)) {
-      errorMessage.innerHTML = "Brand name cannot be empty or only spaces.";
+    const isBrandNameValid = validateBrandName();
+    const isDescriptionValid = validateDescription();
+
+    if (!isBrandNameValid || !isDescriptionValid) {
       return;
     }
-    if (isEmptyOrSpaces(description)) {
-      errorMessage.innerHTML = "Description cannot be empty or only spaces.";
-      return;
-    }
+
+    const brandName = brandNameInput.value.trim();
+    const description = descriptionInput.value.trim();
 
     try {
       const response = await fetch("/admin/brands/add", {
@@ -60,6 +104,7 @@
       }
     } catch (error) {
       console.log(error);
+      errorMessage.innerHTML = "An error occurred while adding the brand.";
     }
   });
 </script>

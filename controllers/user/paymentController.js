@@ -2,6 +2,8 @@ const Order = require("../../models/orderSchema");
 const Cart = require("../../models/cartSchema")
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const MESSAGES=require("../../utilities/messages");
+const STATUSCODES=require("../../utilities/statusCodes")
 // Initialize Razorpay
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -16,28 +18,28 @@ const retryPayment = async (req, res) => {
 
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(400).json({ 
+            return res.status(STATUSCODES.BAD_REQUEST).json({ 
                 success: false, 
-                error: 'Order not found' 
+                error: MESSAGES.ORDER.NOT_FOUND 
             });
         }
 
         if (order.paymentMethod === 'Cash On Delivery') {
-            return res.status(400).json({ 
+            return res.status(STATUSCODES.BAD_REQUEST).json({ 
                 success: false, 
-                error: 'Cannot retry payment for Cash On Delivery orders' 
+                error: MESSAGES.PAYMENT.PAYMENT_ERROR_COD 
             });
         }
 
         if (!['Failed', 'Pending'].includes(order.paymentStatus)) {
-            return res.status(400).json({ 
+            return res.status(STATUSCODES.BAD_REQUEST).json({ 
                 success: false, 
                 error: `Cannot retry payment for orders with status: ${order.paymentStatus}` 
             });
         }
 
         if (order.grandTotal !== amount) {
-            return res.status(400).json({ 
+            return res.status(STATUSCODES.BAD_REQUEST).json({ 
                 success: false, 
                 error: `Amount mismatch. Expected: ${order.grandTotal}, Received: ${amount}` 
             });
@@ -57,9 +59,9 @@ const retryPayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating Razorpay order:', error);
-        res.status(500).json({ 
+        res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
-            error: 'Unable to create payment order',
+            error: MESSAGES.GENERAL.SERVER_ERROR,
             details: error.message 
         });
     }
@@ -85,11 +87,11 @@ const verifyRetryPayment = async (req, res) => {
 
             res.json({ success: true });
         } else {
-            res.json({ success: false, error: 'Payment verification failed' });
+            res.json({ success: false, error: MESSAGES.PAYMENT.VERIFY_FAILED });
         }
     } catch (error) {
         console.error('Payment verification error:', error);
-        res.status(500).json({ success: false, error: 'Payment verification failed' });
+        res.status(STATUSCODES.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.GENERAL.SERVER_ERROR });
     }
 };
 module.exports = {

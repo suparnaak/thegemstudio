@@ -4,21 +4,24 @@
     <div class="row">
       <div class="col-lg-10 col-md-9 ml-sm-auto p-4">
         <h1>Add New Category</h1>
-        <form id="categoryForm" action="/admin/categories/add" method="POST">
+        <form id="categoryForm" action="/admin/categories/add" method="POST" novalidate>
           <div class="form-group">
             <label for="name">Category Name</label>
-            <input type="text" class="form-control" id="name" name="name" required />
+            <input type="text" class="form-control" id="name" name="name" />
+            <small class="text-danger" id="name-error"></small>
           </div>
           <div class="form-group">
             <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            <small class="text-danger" id="description-error"></small>
           </div>
           <div class="form-group">
             <label for="offer">Offer (%)</label>
-            <input type="number" class="form-control" id="offer" name="offer" value="0" min="0" max="90" required />
+            <input type="number" class="form-control" id="offer" name="offer" value="0" min="0" max="90" />
+            <small class="text-danger" id="offer-error"></small>
           </div>
           <button type="submit" class="btn btn-success">Add Category</button>
-          <div class="error-message text-danger"></div>
+          <div class="error-message text-danger mt-2"></div>
         </form>
       </div>
     </div>
@@ -26,34 +29,100 @@
 
   <script>
     const form = document.querySelector("#categoryForm");
+    const nameInput = document.querySelector("#name");
+    const descriptionInput = document.querySelector("#description");
+    const offerInput = document.querySelector("#offer");
+    const nameError = document.querySelector("#name-error");
+    const descriptionError = document.querySelector("#description-error");
+    const offerError = document.querySelector("#offer-error");
+    const errorMessage = document.querySelector(".error-message");
 
     const isEmptyOrSpaces = (str) => {
       return !str || str.trim().length === 0;
     };
 
+    const validateName = () => {
+      const value = nameInput.value;
+      if (isEmptyOrSpaces(value)) {
+        nameError.textContent = "Category name is required.";
+        nameInput.classList.add("is-invalid");
+        return false;
+      }
+      nameError.textContent = "";
+      nameInput.classList.remove("is-invalid");
+      return true;
+    };
+
+    const validateDescription = () => {
+      const value = descriptionInput.value;
+      if (isEmptyOrSpaces(value)) {
+        descriptionError.textContent = "Description is required.";
+        descriptionInput.classList.add("is-invalid");
+        return false;
+      }
+      descriptionError.textContent = "";
+      descriptionInput.classList.remove("is-invalid");
+      return true;
+    };
+
+    const validateOffer = () => {
+      const value = offerInput.value;
+      if (isEmptyOrSpaces(value)) {
+        offerError.textContent = "Offer percentage is required.";
+        offerInput.classList.add("is-invalid");
+        return false;
+      }
+      const offerNum = parseFloat(value);
+      if (isNaN(offerNum) || offerNum < 0 || offerNum > 90) {
+        offerError.textContent = "Offer must be between 0 and 90 percent.";
+        offerInput.classList.add("is-invalid");
+        return false;
+      }
+      offerError.textContent = "";
+      offerInput.classList.remove("is-invalid");
+      return true;
+    };
+
+    nameInput.addEventListener("blur", validateName);
+    descriptionInput.addEventListener("blur", validateDescription);
+    offerInput.addEventListener("blur", validateOffer);
+
+    nameInput.addEventListener("input", () => {
+      if (nameInput.value.trim().length > 0) {
+        nameError.textContent = "";
+        nameInput.classList.remove("is-invalid");
+      }
+    });
+
+    descriptionInput.addEventListener("input", () => {
+      if (descriptionInput.value.trim().length > 0) {
+        descriptionError.textContent = "";
+        descriptionInput.classList.remove("is-invalid");
+      }
+    });
+
+    offerInput.addEventListener("input", () => {
+      if (offerInput.value.trim().length > 0) {
+        offerError.textContent = "";
+        offerInput.classList.remove("is-invalid");
+      }
+    });
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const name = document.querySelector("#name").value;
-      const description = document.querySelector("#description").value;
-      const offer = document.querySelector("#offer").value;
-      const errorMessage = document.querySelector(".error-message");
-
       errorMessage.innerHTML = "";
 
-      if (isEmptyOrSpaces(name)) {
-        errorMessage.innerHTML = "Category name cannot be empty or only spaces.";
-        return;
-      }
-      if (isEmptyOrSpaces(description)) {
-        errorMessage.innerHTML = "Description cannot be empty or only spaces.";
+      const isNameValid = validateName();
+      const isDescriptionValid = validateDescription();
+      const isOfferValid = validateOffer();
+
+      if (!isNameValid || !isDescriptionValid || !isOfferValid) {
         return;
       }
 
-      if (offer < 0 || offer > 90) {
-        errorMessage.innerHTML = "Offer must be between 0 and 90 percent.";
-        return;
-      }
+      const name = nameInput.value.trim();
+      const description = descriptionInput.value.trim();
+      const offer = offerInput.value.trim();
 
       try {
         const response = await fetch("/admin/categories/add", {
@@ -70,6 +139,7 @@
         }
       } catch (error) {
         console.log(error);
+        errorMessage.innerHTML = "An error occurred while adding the category.";
       }
     });
   </script>
